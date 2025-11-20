@@ -9,7 +9,7 @@ Incomplete docs, might be different between SMC program revisions...
 Input: `0x01`
 
 Returns three bytes:
-1. Power-up cause
+1. Power-up cause (see table below)
 2. Number of boot attempts
 3. Single bit (purpose TODO)
 
@@ -18,6 +18,28 @@ If it doesn't get it in time, it resets everything and tries again up to 5 times
 
 The SMC doesn't care how many times this command is received; you can send it over and over and the values
 should be the same every time. All that matters is you send it at least once.
+
+Known power-up causes are taken from xeBuild and xenon-emu.
+
+| Value | Description                                                                   |
+|-------|-------------------------------------------------------------------------------|
+| 0x11  | Console power button                                                          |
+| 0x12  | Console DVD eject button                                                      |
+| 0x15  | Undocumented (TODO)                                                           |
+| 0x16  | Undocumented (TODO)                                                           |
+| 0x20  | IR remote power button                                                        |
+| 0x21  | Eject button on Xbox universal remote                                         |
+| 0x22  | IR remote guide/X button                                                      |
+| 0x24  | IR remote Windows button                                                      |
+| 0x30  | "HalReturnToFirmware(1 or 2 or 3) = hard reset by smc"                        |
+| 0x31  | "After leaving pnc charge mode via power button"                              |
+| 0x41  | Kiosk/debug pin (EXT_PWR_ON_N pulled low)                                     |
+| 0x55  | Wireless controller X button                                                  |
+| 0x56  | Wired controller 1 X button (fat front top USB, slim front left USB)          |
+| 0x57  | Wired controller 2 X button (fat front bottom USB, slim front right USB)      |
+| 0x58  | Wired controller 3 X button (slim back middle USB)                            |
+| 0x59  | Wired controller 4 X button (slim back top USB)                               |
+| 0x5A  | Wired controller 5 X button (fat back USB, slim back bottom USB)              |
 
 ### 0x04 - TODO
 
@@ -142,10 +164,10 @@ TODO
 ### 0x9A - System error (RRoD)
 
 Input bytes:
-- 1. Command 0x9A
-- 2. TODO (must be less than 0x0F?)
-- 3. Error code as 4x2-bit packed values
-- 4. Flags (bit 0 = hardware failure, bit 1 = one green/two red?, both bits 0/1 clear = RRoD classic)
+1. Command `0x9A`
+2. TODO (must be less than 0x0F?)
+3. Error code as 4x2-bit packed values
+4. Flags (bit 0 = hardware failure, bit 1 = one green/two red?, both bits 0/1 clear = RRoD classic)
 
 TODO
 
@@ -156,9 +178,9 @@ TODO
 ### 0x9C - Set persistent memory cell values
 
 Inputs:
-- 1. Command 0x9C
-- 2. Persistent memory cell value 1 (e.g., in Falcon at DAT_INTMEM_66)
-- 3. Persistent memory cell value 2 (e.g., in Falcon at DAT_INTMEM_67)
+1. Command `0x9C`
+2. Persistent memory cell value 1 (e.g., in Falcon at DAT_INTMEM_66)
+3. Persistent memory cell value 2 (e.g., in Falcon at DAT_INTMEM_67)
 
 Outputs: Nothing
 
