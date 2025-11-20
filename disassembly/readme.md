@@ -1,0 +1,3 @@
+# SMC disassembly
+
+Straight outta Ghidra, all work in progress, don't expect them to be complete or entirely accurate...
