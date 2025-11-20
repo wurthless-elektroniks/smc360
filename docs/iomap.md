@@ -6,27 +6,27 @@ Work-in-progress...
 
 | Bit    | Ghidra symbol | Xenon    | Zephyr | Falcon/Jasper | Trinity | Corona | Winchester |
 |--------|---------------|----------|--------|---------------|---------|--------|------------|
-| ???h.0 | P0.0          | CPU_PWRGD                         | TODO    | TODO   | TODO       |
-| ???h.1 | P0.1          | GPU_RST_N                         | TODO    | TODO   | TODO       |
-| ???h.2 | P0.2          | ARGON_CLK                         | TODO    | TODO   | TODO       |
-| ???h.3 | P0.3          | ARGON_DATA                        | TODO    | TODO   | TODO       |
-| ???h.4 | P0.4          | SB_RST_N                          | TODO    | TODO   | TODO       |
-| ???h.5 | P0.5          | SB_MAIN_PWRGD_R                   | TODO    | TODO   | TODO       |
-| ???h.6 | P0.6          | CPU_RST_N                         | TODO    | TODO   | TODO       |
-| ???h.7 | P0.7          | GPU_RESET_DONE                    | TODO    | TODO   | TODO       |
+| ???h.0 | P0.0          | CPU_PWRGD                         ||| TODO    | TODO   | TODO       |
+| ???h.1 | P0.1          | GPU_RST_N                         ||| TODO    | TODO   | TODO       |
+| ???h.2 | P0.2          | ARGON_CLK                         ||| TODO    | TODO   | TODO       |
+| ???h.3 | P0.3          | ARGON_DATA                        ||| TODO    | TODO   | TODO       |
+| ???h.4 | P0.4          | SB_RST_N                          ||| TODO    | TODO   | TODO       |
+| ???h.5 | P0.5          | SB_MAIN_PWRGD_R                   ||| TODO    | TODO   | TODO       |
+| ???h.6 | P0.6          | CPU_RST_N                         ||| TODO    | TODO   | TODO       |
+| ???h.7 | P0.7          | GPU_RESET_DONE                    ||| TODO    | TODO   | TODO       |
 
 ## ??? - Port 1
 
 | Bit    | Ghidra symbol | Xenon    | Zephyr | Falcon/Jasper | Trinity | Corona | Winchester |
 |--------|---------------|----------|--------|---------------|---------|--------|------------|
-| ???h.0 | P1.0          | EJECTSW_N                         | TODO    | TODO   | TODO       |
-| ???h.1 | P1.1          | TILTSW_N                          | TODO    | TODO   | TODO       |
-| ???h.2 | P1.2          | BINDSW_N                          | TODO    | TODO   | TODO       |
-| ???h.3 | P1.3          | VREG_V1P8_EN_N                    | TODO    | TODO   | TODO       |
-| ???h.4 | P1.4          | VREG_V5P0_SEL                     | TODO    | TODO   | TODO       |
-| ???h.5 | P1.5          | 5VPO_ENABLE                       | TODO    | TODO   | TODO       |
-| ???h.6 | P1.6          | VREG_CPU_PWRGD                    | TODO    | TODO   | TODO       |
-| ???h.7 | P1.7          | VREG_CPU_EN                       | TODO    | TODO   | TODO       |
+| ???h.0 | P1.0          | EJECTSW_N                         ||| TODO    | TODO   | TODO       |
+| ???h.1 | P1.1          | TILTSW_N                          ||| TODO    | TODO   | TODO       |
+| ???h.2 | P1.2          | BINDSW_N                          ||| TODO    | TODO   | TODO       |
+| ???h.3 | P1.3          | VREG_V1P8_EN_N                    ||| TODO    | TODO   | TODO       |
+| ???h.4 | P1.4          | VREG_V5P0_SEL                     ||| TODO    | TODO   | TODO       |
+| ???h.5 | P1.5          | 5VPO_ENABLE                       ||| TODO    | TODO   | TODO       |
+| ???h.6 | P1.6          | VREG_CPU_PWRGD                    ||| TODO    | TODO   | TODO       |
+| ???h.7 | P1.7          | VREG_CPU_EN                       ||| TODO    | TODO   | TODO       |
 
 ## ??? - Port 2
 
@@ -46,10 +46,10 @@ Work-in-progress...
 | Bit    | Ghidra symbol | Xenon    | Zephyr | Falcon/Jasper | Trinity | Corona | Winchester |
 |--------|---------------|----------|--------|---------------|---------|--------|------------|
 | 0C0h.0 | FIFLG.0       | DBG_LED0                          ||| TODO    | TODO   | TODO       |
-| 0C0h.1 | FIFLG.1       | DBG_LED1 | VREG_V5P0_VMEM_PWRGD   | TODO    | TODO   | TODO       |
-| 0C0h.2 | FIFLG.2       | DBG_LED2 | ANA_VRST_OK            | TODO    | TODO   | TODO       |
-| 0C0h.3 | FIFLG.3       | DBG_LED3 | GPU_TCLK_R             | TODO    | TODO   | TODO       |
-| 0C0h.4 | FIFLG.4       | DDC_CLK  | HDMI_DDC_CLK           | TODO    | TODO   | TODO       |
+| 0C0h.1 | FIFLG.1       | DBG_LED1 | VREG_V5P0_VMEM_PWRGD   || TODO    | TODO   | TODO       |
+| 0C0h.2 | FIFLG.2       | DBG_LED2 | ANA_VRST_OK            || TODO    | TODO   | TODO       |
+| 0C0h.3 | FIFLG.3       | DBG_LED3 | GPU_TCLK_R             || TODO    | TODO   | TODO       |
+| 0C0h.4 | FIFLG.4       | DDC_CLK  | HDMI_DDC_CLK           || TODO    | TODO   | TODO       |
 | 0C0h.5 | FIFLG.5       | AV_MODE0                          ||| TODO    | TODO   | TODO       |
 | 0C0h.6 | FIFLG.6       | AV_MODE1                          ||| TODO    | TODO   | TODO       |
 | 0C0h.7 | FIFLG.7       | AV_MODE2                          ||| TODO    | TODO   | TODO       |
