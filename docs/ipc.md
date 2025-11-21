@@ -6,12 +6,14 @@ Incomplete docs, might be different between SMC program revisions...
 
 ### 0x01 - Get powerup cause
 
-Input: `0x01`
+Input bytes:
+1. Command `0x01`
 
-Returns three bytes:
+Output bytes:
 1. Power-up cause (see table below)
-2. Number of boot attempts
-3. Single bit (purpose TODO)
+2. Always zero
+3. Number of boot attempts
+4. Single bit (purpose TODO)
 
 The SMC expects this command to be sent within a certain time period after the CPU is released from reset.
 If it doesn't get it in time, it resets everything and tries again up to 5 times, then gives up with a RRoD.
@@ -25,7 +27,7 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 |-------|-------------------------------------------------------------------------------|
 | 0x11  | Console power button                                                          |
 | 0x12  | Console DVD eject button                                                      |
-| 0x15  | Undocumented (TODO)                                                           |
+| 0x15  | RTC wakeup                                                                    |
 | 0x16  | Undocumented (TODO)                                                           |
 | 0x20  | IR remote power button                                                        |
 | 0x21  | Eject button on Xbox universal remote                                         |
@@ -41,13 +43,29 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 | 0x59  | Wired controller 4 X button (slim back top USB)                               |
 | 0x5A  | Wired controller 5 X button (fat back USB, slim back bottom USB)              |
 
-### 0x04 - TODO
+### 0x04 - Get RTC value and RTC alarm setting
+
+Input bytes:
+1. Command `0x04`
+
+Output bytes:
+1. RTC flags???
+2. RTC byte 1
+3. RTC byte 2
+4. RTC byte 3
+5. RTC byte 4
+6. RTC wakeup value byte 4
+7. RTC wakeup value byte 3
+8. RTC wakeup value byte 2
+9. RTC wakeup value byte 1
 
 TODO
 
 ### 0x07 - Get temperatures
 
 TODO
+
+TODO: describe. two bytes per sensor, returned in order CPU, GPU, eDRAM, Chassis
 
 ### 0x0A - Get DVD tray state
 
@@ -105,11 +123,11 @@ TODO
 
 TODO
 
-### 0x1E - TODO
+### 0x1E - Read 12 bytes from SMC memory (SMC_READ_82_INT)
 
 TODO
 
-### 0x20 - TODO
+### 0x20 - Read 12 bytes from SMC memory (SMC_READ_8E_INT)
 
 TODO
 
@@ -117,7 +135,15 @@ TODO
 
 TODO
 
-### 0x85 - TODO
+### 0x85 - Set RTC
+
+Input bytes:
+1. Command `0x85`
+2. RTC value byte 1
+3. RTC value byte 2
+4. RTC value byte 3
+5. RTC value byte 4
+6. RTC flags???
 
 TODO
 
@@ -137,9 +163,15 @@ TODO
 
 TODO
 
-### 0x8D - TODO
+### 0x8D - Assert/de-assert AUD_CLAMP
 
-TODO
+Inputs:
+1. Command `0x8D`
+2. One bit (bit 0): if 0, assert AUD_CLAMP (mutes audio), else de-assert it (unmutes audio)
+
+No outputs.
+
+The flag that sets AUD_CLAMP defaults to 0 on reboot, which mutes audio until the CPU requests it to be unmuted.
 
 ### 0x90 - TODO
 
@@ -171,7 +203,16 @@ Input bytes:
 
 TODO
 
-### 0x9B - TODO
+### 0x9B - Set RTC wake time
+
+Input bytes:
+1. Command `0x9B`
+2. RTC wakeup timestamp byte 1
+3. RTC wakeup timestamp byte 2
+4. RTC wakeup timestamp byte 3
+5. RTC wakeup timestamp byte 4
+
+Setting all bytes to 0 disables the alarm.
 
 TODO
 
@@ -184,13 +225,13 @@ Inputs:
 
 Outputs: Nothing
 
-### 0x9D - TODO
+### 0x9D - Write 12 bytes from FIFO to SMC memory (SMC_SET_82_INT)
 
 TODO
 
-### 0x9F - TODO
+### 0x9F - Write 12 bytes from FIFO to SMC memory (SMC_SET_9F_INT)
 
-TODO
+Same as command 0x9D but writes to a different address.
 
 ## See also
 
