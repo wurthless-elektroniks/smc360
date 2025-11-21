@@ -14,6 +14,34 @@
 
 ## Hacked SMCs
 
+### Infinite reboot patch
+
+The "vanilla" SMC hack done for systems that need infinite boot attempts (i.e., RGH) is to look for the
+pattern `05 3x E5 3x B4 05 1x`, which represents this code (Falcon in this example):
+
+```
+sysreset_watchdog_exec_state_10:
+    INC        g_num_boot_tries      ; increment death counter
+    MOV        A,g_num_boot_tries
+    CJNE       A,#0x5,LAB_CODE_12ba  ; if it's not 5, try again
+    
+    ; execution falls through to failure case otherwise
+```
+
+Then it's enough to change the `inc` instruction to a `nop` (change `05 xx` to `00 00`).
+
+Evolution of the pattern between different SMC revisions:
+
+- Xenon:      `05 3E E5 3E B4 05 10`
+- Zephyr:     `05 3E E5 3E B4 05 10`
+- Falcon:     `05 3C E5 3C B4 05 1E`
+- Jasper:     `05 3F E5 3F B4 05 10`
+- Trinity:    `05 3C E5 3C B4 05 1E`
+- Corona:     `05 3D E5 3D B4 05 1E`
+- Winchester: `05 3D E5 3D B4 05 1E`
+
+### More elaborate hacked SMCs
+
 Typical hacked SMCs:
 
 - CR4 was created by Team Xecuter and adds I2C slowdown control on DBG_LED0 for RGH2+ (also Muffin/Mufas).
