@@ -127,9 +127,13 @@ TODO
 
 TODO
 
+Not present on Xenon
+
 ### 0x20 - Read 12 bytes from SMC memory (SMC_READ_8E_INT)
 
 TODO
+
+Not present on Xenon
 
 ### 0x82 - Reset/powerdown
 
@@ -229,9 +233,13 @@ Outputs: Nothing
 
 TODO
 
+Not present on Xenon
+
 ### 0x9F - Write 12 bytes from FIFO to SMC memory (SMC_SET_9F_INT)
 
 Same as command 0x9D but writes to a different address.
+
+Not present on Xenon
 
 ## See also
 
