@@ -2,6 +2,37 @@
 
 Incomplete docs, might be different between SMC program revisions...
 
+## Talking to the SMC from the CPU
+
+To talk to the SMC, you must initialize the PCI space fully. Normally hwinit does this for you and you'll
+be able to talk to the SMC (and other southbridgey stuff) at 0xEA001000. But if your code runs before hwinit
+happens, or you're running a completely custom CB or other payload, then it's up to you to initialize everything
+before accessing the SMC. [Mate's CPU key dumper](https://codeberg.org/hax360/tools/src/branch/main/glitchtools/dumpkey/src/dumpkey.S)
+was probably the first custom code to do this; [CB_Y in RGH1.3](https://github.com/wurthless-elektroniks/RGH1.3/blob/main/ppc/cb_y.s)
+takes a similar approach but was written to be easier to read and maintain.
+
+The SMC has two FIFOs, which are its inbox (0xEA001080 for data and 0xEA001084 status) and its outbox
+(0xEA001090 for data and 0xEA001094 for status). Plenty of code exists to demonstrate how to use all of these,
+but the basics are:
+
+- The PowerPC reads and writes data from the SMC FIFOs 32 bits at a time. The PCI space is little-endian
+  so `stwbrx` is typically used to access it. In reality it's better to use big endian accesses with the SMC
+  inbox and outbox because a hypothetical command `f0 01 02 03` would be written in little endian as 0x030201F0.
+
+- The flags at 0xEA001084 and 0xEA001094 are simple mutex registers; the CPU and SMC can both write to these
+  to indicate that something is accessing the FIFOs. When writing a message, the CPU will spin while
+  `(0xEA001084 & 4)` (the SMC inbox) is non-zero, then will set the register to 4, write its message,
+  then clear it. The SMC will then pick up the message, set the flag, process the message (even to discard it),
+  then clear it. The same goes for 0xEA001094, which belongs to the SMC's outbox.
+
+- The SMC reads and writes data from the SMC FIFOS eight bits at at a time. The SMC doesn't really care that
+  the CPU has written 8 bytes when the message only requires 6, it will ignore the rest of the message.
+  You'll see code in libxenon writing more bytes than necessary to the FIFO, but it was probably written that way 
+  to make the code easier to reuse.
+
+- If the SMC doesn't recognize a command, it will simply be ignored, and the SMC will not write any response
+  to the outbox.
+
 ## Commands
 
 ### 0x01 - Get powerup cause
