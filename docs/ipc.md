@@ -25,13 +25,33 @@ but the basics are:
   then clear it. The SMC will then pick up the message, set the flag, process the message (even to discard it),
   then clear it. The same goes for 0xEA001094, which belongs to the SMC's outbox.
 
-- The SMC reads and writes data from the SMC FIFOS eight bits at at a time. The SMC doesn't really care that
+
+## Talking to the CPU from the SMC
+
+Much TODO.
+
+- The SMC reads and writes data from the SMC FIFOs eight bits at at a time. The SMC doesn't really care that
   the CPU has written 8 bytes when the message only requires 6, it will ignore the rest of the message.
   You'll see code in libxenon writing more bytes than necessary to the FIFO, but it was probably written that way 
   to make the code easier to reuse.
 
-- If the SMC doesn't recognize a command, it will simply be ignored, and the SMC will not write any response
-  to the outbox.
+- When the SMC responds, it will first clear the outbox, then write the command byte to the first byte position
+  and finally handle the command. If the command produces no outputs, then none will be written; otherwise it will
+  set the outbox control pointer to position 1 (second byte) and begin writing its outputs there. If the SMC doesn't
+  recognize the command, it will still acknowledge it through this mechanism, but it won't do anything else with it,
+  it will simply be ignored.
+
+### IPC SFRs
+
+These have to be reverse engineered in full. Don't think anyone's done that before...
+
+| SFR  | Ghidra symbol | Description                            |
+|------|---------------|----------------------------------------|
+| 0D5h | HPSC          | Outbox write; pointer auto-increments  |
+| 0D6h | DAT_SFR_d6    | Outbox control; sets pointer           |
+| 0E1h | EPCON         | Inbox read; pointer auto-increments    |
+| 0E2h | RXSTAT        | Inbox control, sets pointer            |
+
 
 ## Commands
 
