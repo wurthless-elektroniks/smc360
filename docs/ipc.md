@@ -39,7 +39,7 @@ Much TODO.
   and finally handle the command. If the command produces no outputs, then none will be written; otherwise it will
   set the outbox control pointer to position 1 (second byte) and begin writing its outputs there. If the SMC doesn't
   recognize the command, it will still acknowledge it through this mechanism, but it won't do anything else with it,
-  it will simply be ignored.
+  it will simply be ignored. (TODO: rewrite this, no response happens for anything 0x80 or greater...)
 
 ### IPC SFRs
 
@@ -64,7 +64,7 @@ Output bytes:
 1. Power-up cause (see table below)
 2. Always zero
 3. Number of boot attempts
-4. Single bit (purpose TODO)
+4. Single bit, bit 0 indicates SMC config load error (1 if true)
 
 The SMC expects this command to be sent within a certain time period after the CPU is released from reset.
 If it doesn't get it in time, it resets everything and tries again up to 5 times, then gives up with a RRoD.
@@ -79,7 +79,7 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 | 0x11  | Console power button                                                          |
 | 0x12  | Console DVD eject button                                                      |
 | 0x15  | RTC wakeup                                                                    |
-| 0x16  | Undocumented (TODO)                                                           |
+| 0x16  | RTC wakeup unexpectedly?? (clears persistent SMC memory values)               |
 | 0x20  | IR remote power button                                                        |
 | 0x21  | Eject button on Xbox universal remote                                         |
 | 0x22  | IR remote guide/X button                                                      |
@@ -252,11 +252,13 @@ TODO
 
 Input bytes:
 1. Command `0x9A`
-2. TODO (must be less than 0x0F?)
-3. Error code as 4x2-bit packed values
+2. Error code as 4x2-bit packed values
+3. Error code as 4x2-bit packed values (always sent twice)
 4. Flags (bit 0 = hardware failure, bit 1 = one green/two red?, both bits 0/1 clear = RRoD classic)
 
-TODO
+Outputs: Nothing
+
+Error code from IPC cannot be less than 0100 (reserved for SMC errors); if it is, it'll be ignored.
 
 ### 0x9B - Set RTC wake time
 

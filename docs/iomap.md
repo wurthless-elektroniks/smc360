@@ -2,7 +2,14 @@
 
 Work-in-progress...
 
-## ??? - Port 0
+## DDRs
+
+The Data Direction Registers set the GPIOs as inputs or outputs.
+
+TODO: document. 0A2h~0A6h DDRs probably, 0A5h is definitely port 3 DDR
+Also TODO: find proper pullup setting registers, as the default pullups are most pathetic thing ever
+
+## 080h - Port 0
 
 | Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
 |--------|---------------|-------------------|---------|--------|------------|
@@ -15,7 +22,7 @@ Work-in-progress...
 | ???h.6 | P0.6          | CPU_RST_N         | TODO    | TODO   | TODO       |
 | ???h.7 | P0.7          | GPU_RESET_DONE    | TODO    | TODO   | TODO       |
 
-## ??? - Port 1
+## 090h - Port 1
 
 | Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
 |--------|---------------|-------------------|---------|--------|------------|
@@ -34,7 +41,7 @@ Work-in-progress...
   Stingray leaves the tiltswitch position unpopulated and Winchester removes it
   entirely, but both still have the line pulled up to 3v3.
 
-## ??? - Port 2
+## 0A0h - Port 2
 
 | Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
 |--------|---------------|-------------------|---------|--------|------------|

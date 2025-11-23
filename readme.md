@@ -2,5 +2,5 @@
 
 360 SMC not well documented. Must document it well.
 
-This is provided for people who want to get started on SMC hacking. However it will probably never be thorough or complete.
+This is provided for people who want to get started on SMC hacking. However it will probably never be thorough, complete, or correct.
 
