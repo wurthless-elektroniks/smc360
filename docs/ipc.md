@@ -16,7 +16,7 @@ The SMC has two FIFOs, which are its inbox (0xEA001080 for data and 0xEA001084 s
 but the basics are:
 
 - The PowerPC reads and writes data from the SMC FIFOs 32 bits at a time. The PCI space is little-endian
-  so `stwbrx` is typically used to access it. In reality it's better to use big endian accesses with the SMC
+  so `lwbrx` and `stwbrx` are typically used to access it. In reality it's better to use big endian accesses with the SMC
   inbox and outbox because a hypothetical command `f0 01 02 03` would be written in little endian as 0x030201F0.
 
 - The flags at 0xEA001084 and 0xEA001094 are simple mutex registers; the CPU and SMC can both write to these
@@ -52,10 +52,9 @@ These have to be reverse engineered in full. Don't think anyone's done that befo
 | 0E1h | EPCON         | Inbox read; pointer auto-increments    |
 | 0E2h | RXSTAT        | Inbox control, sets pointer            |
 
-
 ## Commands
 
-### 0x01 - Get powerup cause
+### 0x01 - Get powerup cause (also complete handshake/disable reset watchdog)
 
 Input bytes:
 1. Command `0x01`
@@ -67,7 +66,8 @@ Output bytes:
 4. Single bit, bit 0 indicates SMC config load error (1 if true)
 
 The SMC expects this command to be sent within a certain time period after the CPU is released from reset.
-If it doesn't get it in time, it resets everything and tries again up to 5 times, then gives up with a RRoD.
+If it doesn't get it in time, it resets everything and tries again. After five failed attempts, the SMC
+gives up with a RRoD.
 
 The SMC doesn't care how many times this command is received; you can send it over and over and the values
 should be the same every time. All that matters is you send it at least once.
@@ -84,9 +84,9 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 | 0x21  | Eject button on Xbox universal remote                                         |
 | 0x22  | IR remote guide/X button                                                      |
 | 0x24  | IR remote Windows button                                                      |
-| 0x30  | "HalReturnToFirmware(1 or 2 or 3) = hard reset by smc"                        |
+| 0x30  | CPU requested reboot via IPC                                                  |
 | 0x31  | "After leaving pnc charge mode via power button"                              |
-| 0x41  | Kiosk/debug pin (EXT_PWR_ON_N pulled low)                                     |
+| 0x41  | Kiosk/debug pin (/EXT_PWR_ON_N pulled low)                                    |
 | 0x55  | Wireless controller X button                                                  |
 | 0x56  | Wired controller 1 X button (fat front top USB, slim front left USB)          |
 | 0x57  | Wired controller 2 X button (fat front bottom USB, slim front right USB)      |
@@ -114,9 +114,23 @@ TODO
 
 ### 0x07 - Get temperatures
 
-TODO
+Input bytes:
+0. Command `0x07`
 
-TODO: describe. two bytes per sensor, returned in order CPU, GPU, eDRAM, Chassis
+Output bytes:
+
+0. Command `0x07`
+1. CPU temperature, fraction of degrees
+2. CPU temperature, degrees
+3. GPU temperature, fraction of degrees
+4. GPU temperature, degrees
+5. eDRAM temperature, fraction of degrees
+6. eDRAM temperature, degrees
+7. Chassis temperature, fraction of degrees
+8. Chassis temperature, degrees
+9. Not sure yet
+
+All temperatures returned are in degrees Celsius.
 
 ### 0x0A - Get DVD tray state
 
@@ -137,7 +151,7 @@ Returns the following bytes:
 4. Persistent memory cell A
 5. Persistent memory cell B
 
-This is actually the first SMC command to be sent, although it's in hwinit so it's understandable that
+This is actually the first command the CPU sends to the SMC, although it's in hwinit so it's understandable that
 a lot of people missed it.
 
 For whatever reason, the program doesn't actually read the header bytes at 0x100~0x102; instead it

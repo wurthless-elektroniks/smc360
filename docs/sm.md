@@ -18,4 +18,27 @@ with no clear purpose.
 
 Most tasks run in 20 ms intervals, but a few others run in "real time" after the 20 ms block is done.
 
+## State machines at a glance
 
+These are NOT listed in their order of operations as they're different between SMCs.
+
+Every 20 ms:
+- Monitor various powergood signals and RRoD if something goes wrong
+- Read /EXT_PWR_ON_N
+- Read power and eject switches
+- Read bind switch (that pairs wireless controllers to the RF board)
+- Read tilt switch
+- Update AUD_CLAMP to mute/unmute audio outputs
+- Read IR receiver
+- Check if temperature sensor is returning values via I2C and RRoD if it isn't
+- Check temperature sensors and go into overheat protection if thermal protection trips
+- Update debug LED logic
+- Check various power-on events and act on them
+- If powering up, run the power-up sequence
+- If coming out of reset, make sure all devices reset and that GetPowerUpCause arrives from the CPU in time,
+  trying several times until finally giving up with a RRoD
+- If resetting, run the hardware reset sequence
+- If powering down, run the power-down sequence
+
+In a loop as fast as possible:
+- TODO
