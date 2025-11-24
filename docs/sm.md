@@ -41,4 +41,5 @@ Every 20 ms:
 - If powering down, run the power-down sequence
 
 In a loop as fast as possible:
-- TODO
+- Handle CPU-to-SMC IPC communication (split into different tasks)
+- Update Argon state

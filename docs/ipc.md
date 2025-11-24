@@ -35,12 +35,6 @@ Much TODO.
   You'll see code in libxenon writing more bytes than necessary to the FIFO, but it was probably written that way 
   to make the code easier to reuse.
 
-- When the SMC responds, it will first clear the outbox, then write the command byte to the first byte position
-  and finally handle the command. If the command produces no outputs, then none will be written; otherwise it will
-  set the outbox control pointer to position 1 (second byte) and begin writing its outputs there. If the SMC doesn't
-  recognize the command, it will still acknowledge it through this mechanism, but it won't do anything else with it,
-  it will simply be ignored. (TODO: rewrite this, no response happens for anything 0x80 or greater...)
-
 ### IPC SFRs
 
 These have to be reverse engineered in full. Don't think anyone's done that before...
@@ -53,6 +47,17 @@ These have to be reverse engineered in full. Don't think anyone's done that befo
 | 0E2h | RXSTAT        | Inbox control, sets pointer            |
 
 ## Commands
+
+SMC commands are broken up into two kinds: getters (bit 7 clear), which are expected to return
+a response, and setters (bit 7 set) which do not respond at all.
+
+When a getter command is sent, the SMC will clear the outbox to zero, then the first byte (i.e., byte 0)
+of the outbox will be set to the command ID (needed because some SMC-to-CPU IPC messages happen asynchronously).
+If it turns out to be an unrecognized command, the SMC will short-circuit here and not respond with anything
+else, only an acknowledgement that it got the message. If it does recognize the getter command ID, then the rest
+of the message will be populated. This is why the output formats listed below start with index 0.
+
+Setter messages aren't acknowledged at all; no response is sent, and unrecognized commands are silently dropped.
 
 ### 0x01 - Get powerup cause (also complete handshake/disable reset watchdog)
 
@@ -140,6 +145,12 @@ TODO
 
 TODO
 
+### 0x11 - I2C transaction
+
+Also called "pure pain and suffering to fully reverse engineer", as I2C operations are handled asynchronously.
+
+I hope you can understand this TODO item.
+
 ### 0x12 - Get SMC version and two persistent memory cells
 
 Input: `0x12`
@@ -176,9 +187,10 @@ hardcodes those values right into the command handler. Here's how it looks in th
 Note that the persistent memory cells (labelled DAT_INTMEM_66 and DAT_INTMEM_67 here) will have been cleared to zero if the
 power-up cause is 0x16.
 
-### 0x13 - TODO
+### 0x13 - Copy inbox contents to outbox
 
-TODO
+This does exactly what it does on the tin: it copies the entire inbox to the outbox. It doesn't care how many bytes the CPU
+has written to the inbox; it will always read and write 16 bytes.
 
 ### 0x16 - TODO
 
@@ -186,7 +198,10 @@ TODO
 
 ### 0x17 - Get tilt switch status
 
-TODO
+Outputs:
+
+0. Command `0x17`
+1. Single bit indicating tilt switch orientation (0 = no tilt, 1 = tilt)
 
 ### 0x1E - Read 12 bytes from SMC memory (SMC_READ_82_INT)
 

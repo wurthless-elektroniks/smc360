@@ -415,9 +415,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00f4()
+                             undefined ipc_inbox_get_status()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00f4                                   XREF[1]:     CODE:2289(c)  
+                             ipc_inbox_get_status                            XREF[1]:     CODE:2289(c)  
        CODE:00f4 e5 e2           MOV        A,RXSTAT                                                   = ??
        CODE:00f6 a2 e4           MOV        CY,ACC.4                                                   = ??
        CODE:00f8 22              RET
@@ -428,9 +428,12 @@
        CODE:00fd 00              ??         00h
        CODE:00fe 00              ??         00h
        CODE:00ff 00              ??         00h
-       CODE:0100 31              ??         31h    1
-       CODE:0101 01              ??         01h
-       CODE:0102 06              ??         06h
+       CODE:0100 31              ??         31h    1                                                   SMC program revision
+                                                                                                       Falcon v1
+       CODE:0101 01              ??         01h                                                        SMC major version
+                                                                                                       = 1
+       CODE:0102 06              ??         06h                                                        SMC minor version
+                                                                                                       = .06
        CODE:0103 01              ??         01h
        CODE:0104 01              ??         01h
        CODE:0105 08              ??         08h
@@ -1613,7 +1616,7 @@
        CODE:0885 02 0a 7c        LJMP       LAB_CODE_0a7c
                              LAB_CODE_0888                                   XREF[1]:     CODE:0882(j)  
        CODE:0888 b4 13 03        CJNE       A,#0x13,LAB_CODE_088e
-       CODE:088b 02 0a 9b        LJMP       LAB_CODE_0a9b
+       CODE:088b 02 0a 9b        LJMP       ipc_handle_copy_inbox_to_outbox
                              LAB_CODE_088e                                   XREF[1]:     CODE:0888(j)  
        CODE:088e b4 1e 03        CJNE       A,#0x1e,LAB_CODE_0894
        CODE:0891 02 0a b0        LJMP       LAB_CODE_0ab0
@@ -1891,7 +1894,7 @@
        CODE:0a95 e5 67           MOV        A,DAT_INTMEM_67                                            = ??
        CODE:0a97 12 24 2f        LCALL      ipc_fifo_write                                             undefined ipc_fifo_write()
        CODE:0a9a 22              RET
-                             LAB_CODE_0a9b                                   XREF[1]:     CODE:088b(j)  
+                             ipc_handle_copy_inbox_to_outbox                 XREF[1]:     CODE:088b(j)  
        CODE:0a9b 74 01           MOV        A,#0x1
        CODE:0a9d 12 24 08        LCALL      FUN_CODE_2408                                              undefined FUN_CODE_2408()
        CODE:0aa0 74 01           MOV        A,#0x1
@@ -2335,7 +2338,7 @@
        CODE:0d8a 12 24 2a        LCALL      FUN_CODE_242a                                              undefined FUN_CODE_242a()
        CODE:0d8d 74 83           MOV        A,#0x83
        CODE:0d8f 12 24 2f        LCALL      ipc_fifo_write                                             undefined ipc_fifo_write()
-       CODE:0d92 12 24 39        LCALL      FUN_CODE_2439                                              undefined FUN_CODE_2439()
+       CODE:0d92 12 24 39        LCALL      ipc_outbox_release                                         undefined ipc_outbox_release()
        CODE:0d95 d3              SETB       CY
        CODE:0d96 22              RET
                              LAB_CODE_0d97                                   XREF[1]:     CODE:0d5b(j)  
@@ -3999,7 +4002,7 @@
        CODE:1752 22              RET
                              LAB_CODE_1753                                   XREF[1]:     CODE:17fd(j)  
        CODE:1753 74 00           MOV        A,#0x0                                                     turns all LEDs off
-       CODE:1755 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1755 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1758 c2 42           CLR        28.2                                                       = ??
        CODE:175a 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_175d                                   XREF[1]:     CODE:1808(j)  
@@ -4007,7 +4010,7 @@
        CODE:175f a2 05           MOV        CY,20.5                                                    = ??
        CODE:1761 92 e0           MOV        ACC.0,CY                                                   = ??
        CODE:1763 d2 e1           SETB       ACC.1                                                      = ??
-       CODE:1765 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1765 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1768 c2 43           CLR        28.3                                                       = ??
        CODE:176a 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_176d                                   XREF[1]:     CODE:1813(j)  
@@ -4037,7 +4040,7 @@
        CODE:179b a2 f3           MOV        CY,B.3                                                     = ??
        CODE:179d 92 e3           MOV        ACC.3,CY                                                   = ??
                              LAB_CODE_179f                                   XREF[2]:     CODE:177d(j), CODE:1795(j)  
-       CODE:179f 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:179f 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:17a2 c2 47           CLR        28.7                                                       = ??
        CODE:17a4 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_17a7                                   XREF[1]:     CODE:180e(j)  
@@ -4046,13 +4049,13 @@
        CODE:17ab b3              CPL        CY
        CODE:17ac 72 15           ORL        CY,22.5                                                    = ??
        CODE:17ae 92 e0           MOV        ACC.0,CY                                                   = ??
-       CODE:17b0 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:17b0 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:17b3 c2 4a           CLR        29.2                                                       = ??
        CODE:17b5 c2 15           CLR        22.5                                                       = ??
        CODE:17b7 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_17ba                                   XREF[1]:     CODE:1803(j)  
        CODE:17ba 74 40           MOV        A,#0x40
-       CODE:17bc 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:17bc 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:17bf 02 19 65        LJMP       argon_sm_go_state_7
                              LAB_CODE_17c2                                   XREF[1]:     CODE:182d(j)  
        CODE:17c2 74 20           MOV        A,#0x20
@@ -4064,7 +4067,7 @@
        CODE:17ce b3              CPL        CY
                              LAB_CODE_17cf                                   XREF[1]:     CODE:17c9(j)  
        CODE:17cf 92 f7           MOV        B.7,CY                                                     = ??
-       CODE:17d1 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:17d1 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:17d4 c2 45           CLR        28.5                                                       = ??
        CODE:17d6 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_17d9                                   XREF[1]:     CODE:1831(j)  
@@ -4081,7 +4084,7 @@
        CODE:17ea 52 34           ANL        DAT_INTMEM_34,A                                            = ??
        CODE:17ec 74 40           MOV        A,#0x40
        CODE:17ee 2a              ADD        A,R2
-       CODE:17ef 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:17ef 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:17f2 02 19 6a        LJMP       argon_sm_go_state_8
                              argon_sm_exec_state_0                           XREF[1]:     CODE:1a13(j)  
        CODE:17f5 d2 40           SETB       28.0                                                       mutex? idk
@@ -4137,12 +4140,12 @@
        CODE:1849 75 f0 08        MOV        B,#0x8
        CODE:184c 84              DIV        AB
        CODE:184d 24 41           ADD        A,#0x41
-       CODE:184f 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:184f 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1852 02 19 4c        LJMP       argon_sm_go_state_2
                              LAB_CODE_1855                                   XREF[1]:     CODE:181e(j)  
        CODE:1855 c2 49           CLR        29.1                                                       = ??
-       CODE:1857 74 42           MOV        A,#0x42
-       CODE:1859 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1857 74 42           MOV        A,#0x42                                                    undocumented debug state
+       CODE:1859 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:185c 02 19 51        LJMP       argon_sm_go_state_3
                              LAB_CODE_185f                                   XREF[4]:     CODE:1845(j), CODE:1866(j), 
                                                                                           CODE:1869(j), CODE:186f(j)  
@@ -4156,8 +4159,9 @@
        CODE:186e e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
        CODE:186f 70 ee           JNZ        LAB_CODE_185f
        CODE:1871 d2 38           SETB       27.0                                                       = ??
-       CODE:1873 74 04           MOV        A,#0x4
-       CODE:1875 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1873 74 04           MOV        A,#0x4                                                     argon command 0x04
+                                                                                                       = SYNC
+       CODE:1875 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1878 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_187b                                   XREF[1]:     CODE:1836(j)  
        CODE:187b 78 b1           MOV        R0,#0xb1
@@ -4173,7 +4177,7 @@
        CODE:188d 54 0f           ANL        A,#0xf
        CODE:188f 24 40           ADD        A,#0x40
                              LAB_CODE_1891                                   XREF[1]:     CODE:188b(j)  
-       CODE:1891 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1891 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1894 02 19 60        LJMP       argon_sm_go_state_6
                              LAB_CODE_1897                                   XREF[1]:     CODE:1887(j)  
        CODE:1897 d2 d5           SETB       F0                                                         = ??
@@ -4190,47 +4194,55 @@
                                                                                                        must be set
        CODE:18ac 20 f5 35        JB         B.5,LAB_CODE_18e4                                          if it is, go to state 4,
                                                                                                        which updates LEDs
-       CODE:18af 74 90           MOV        A,#0x90                                                    otherwise, throw the message out
+       CODE:18af 74 90           MOV        A,#0x90                                                    otherwise, send command 0x90 to the
+                                                                                                       argon (another undocumented state)
        CODE:18b1 80 2a           SJMP       LAB_CODE_18dd
                              LAB_CODE_18b3                                   XREF[1]:     CODE:18a7(j)  
-       CODE:18b3 aa 5a           MOV        R2,DAT_INTMEM_5a                                           if this is zero
-                                                                                                       throw the request out
-       CODE:18b5 ba 00 04        CJNE       R2,#0x0,LAB_CODE_18bc
+       CODE:18b3 aa 5a           MOV        R2,DAT_INTMEM_5a                                           if this is zero, the RRoD display
+                                                                                                       is in "blink general error type" mode
+       CODE:18b5 ba 00 04        CJNE       R2,#0x0,LAB_CODE_18bc                                      otherwise, it's in
+                                                                                                       "display advanced error code" mode
                              LAB_CODE_18b8                                   XREF[4]:     CODE:18c9(j), CODE:18cd(j), 
                                                                                           CODE:18d7(j), CODE:18db(j)  
-       CODE:18b8 44 c0           ORL        A,#0xc0                                                    set this and head to state 1
+       CODE:18b8 44 c0           ORL        A,#0xc0                                                    argon command 0xCx
+                                                                                                       starts slow-blinking red LEDs
+                                                                                                       0xC0 clears them
        CODE:18ba 80 21           SJMP       LAB_CODE_18dd
                              LAB_CODE_18bc                                   XREF[1]:     CODE:18b5(j)  
-       CODE:18bc e5 59           MOV        A,DAT_INTMEM_59                                            = ??
-       CODE:18be 5a              ANL        A,R2
+       CODE:18bc e5 59           MOV        A,DAT_INTMEM_59                                            read error code to be displayed
+       CODE:18be 5a              ANL        A,R2                                                       AND mask it
+                                                                                                       (remember the error code is
+                                                                                                        4x2 bits)
        CODE:18bf 70 0e           JNZ        LAB_CODE_18cf
        CODE:18c1 ea              MOV        A,R2
        CODE:18c2 23              RL         A
        CODE:18c3 55 59           ANL        A,DAT_INTMEM_59                                            = ??
        CODE:18c5 70 04           JNZ        LAB_CODE_18cb
-       CODE:18c7 74 11           MOV        A,#0x11
+       CODE:18c7 74 11           MOV        A,#0x11                                                    if both of these bits of the
+                                                                                                       error code were 0, then send
+                                                                                                       0xD1 (fast blink all red lights)
        CODE:18c9 80 ed           SJMP       LAB_CODE_18b8
                              LAB_CODE_18cb                                   XREF[1]:     CODE:18c5(j)  
-       CODE:18cb 74 18           MOV        A,#0x18
+       CODE:18cb 74 18           MOV        A,#0x18                                                    guess this blinks two lights
        CODE:18cd 80 e9           SJMP       LAB_CODE_18b8
                              LAB_CODE_18cf                                   XREF[1]:     CODE:18bf(j)  
        CODE:18cf ea              MOV        A,R2
        CODE:18d0 23              RL         A
        CODE:18d1 55 59           ANL        A,DAT_INTMEM_59                                            = ??
        CODE:18d3 70 04           JNZ        LAB_CODE_18d9
-       CODE:18d5 74 12           MOV        A,#0x12
+       CODE:18d5 74 12           MOV        A,#0x12                                                    = 0xD2, fast blink one light
        CODE:18d7 80 df           SJMP       LAB_CODE_18b8
                              LAB_CODE_18d9                                   XREF[1]:     CODE:18d3(j)  
-       CODE:18d9 74 1f           MOV        A,#0x1f
+       CODE:18d9 74 1f           MOV        A,#0x1f                                                    guess this blinks three lights
        CODE:18db 80 db           SJMP       LAB_CODE_18b8
                              LAB_CODE_18dd                                   XREF[3]:     CODE:18a1(j), CODE:18b1(j), 
                                                                                           CODE:18ba(j)  
-       CODE:18dd 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:18dd 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:18e0 c2 48           CLR        29.0                                                       = ??
        CODE:18e2 80 63           SJMP       argon_sm_go_state_1
                              LAB_CODE_18e4                                   XREF[1]:     CODE:18ac(j)  
        CODE:18e4 74 90           MOV        A,#0x90
-       CODE:18e6 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:18e6 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:18e9 c2 48           CLR        29.0                                                       = ??
        CODE:18eb 80 69           SJMP       argon_sm_go_state_4
                              argon_sm_exec_state_1                           XREF[1]:     CODE:1a16(j)  
@@ -4259,7 +4271,7 @@
        CODE:1912 4a              ORL        A,R2
        CODE:1913 f5 f0           MOV        B,A
        CODE:1915 eb              MOV        A,R3
-       CODE:1916 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1916 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1919 80 2c           SJMP       argon_sm_go_state_1
                              argon_sm_exec_state_3                           XREF[1]:     CODE:1a1c(j)  
        CODE:191b 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
@@ -4268,7 +4280,7 @@
        CODE:1923 44 40           ORL        A,#0x40
        CODE:1925 f5 f0           MOV        B,A
        CODE:1927 74 22           MOV        A,#0x22
-       CODE:1929 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:1929 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:192c 80 19           SJMP       argon_sm_go_state_1
                              argon_sm_exec_state_4                           XREF[1]:     CODE:1a1f(j)  
        CODE:192e 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
@@ -4277,8 +4289,9 @@
        CODE:1936 78 ae           MOV        R0,#0xae
        CODE:1938 e6              MOV        A,@R0=>DAT_INTMEM_ae                                       read RoL state
        CODE:1939 54 0f           ANL        A,#0xf                                                     red bits only please
-       CODE:193b 44 b0           ORL        A,#0xb0
-       CODE:193d 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:193b 44 b0           ORL        A,#0xb0                                                    0xB0 = 1011 xxxx
+                                                                                                       = SET_RED_LEDS
+       CODE:193d 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1940 80 19           SJMP       argon_sm_go_state_5
                              argon_sm_go_state_0                             XREF[10]:    CODE:18f2(j), CODE:18f9(j), 
                                                                                           CODE:1920(j), CODE:1933(j), 
@@ -4339,8 +4352,8 @@
        CODE:197a e6              MOV        A,@R0=>DAT_INTMEM_ae                                       = ??
        CODE:197b c4              SWAP       A
        CODE:197c 54 0f           ANL        A,#0xf                                                     keep green lights only
-       CODE:197e 44 a0           ORL        A,#0xa0
-       CODE:1980 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:197e 44 a0           ORL        A,#0xa0                                                    command 0xAx = SET_GREEN_LEDS
+       CODE:1980 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1983 80 c2           SJMP       argon_sm_go_state_1
                              argon_sm_exec_state_6                           XREF[1]:     CODE:1a25(j)  
        CODE:1985 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
@@ -4395,7 +4408,7 @@
        CODE:19dc 50 fc           JNC        LAB_CODE_19da
        CODE:19de 74 20           MOV        A,#0x20
        CODE:19e0 2a              ADD        A,R2
-       CODE:19e1 12 2a 15        LCALL      FUN_CODE_2a15                                              undefined FUN_CODE_2a15()
+       CODE:19e1 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:19e4 02 19 47        LJMP       argon_sm_go_state_1
                              **************************************************************
                              *                          FUNCTION                          *
@@ -4976,7 +4989,8 @@
        CODE:1d91 22              RET
        CODE:1d92 22              RET
                              LAB_CODE_1d93                                   XREF[1]:     CODE:1dc5(j)  
-       CODE:1d93 12 24 1b        LCALL      FUN_CODE_241b                                              undefined FUN_CODE_241b()
+       CODE:1d93 12 24 1b        LCALL      ipc_clear_outbox                                           likely also locks mutex
+                                                                                                       so CPU can't go peeking at it
        CODE:1d96 12 0d 43        LCALL      FUN_CODE_0d43                                              undefined FUN_CODE_0d43()
        CODE:1d99 40 f2           JC         LAB_CODE_1d8d
        CODE:1d9b 30 35 e5        JNB        26.5,LAB_CODE_1d83                                         = ??
@@ -4988,7 +5002,7 @@
                              LAB_CODE_1dab                                   XREF[1]:     CODE:1dc8(j)  
        CODE:1dab 20 36 da        JB         26.6,LAB_CODE_1d88                                         = ??
                              LAB_CODE_1dae                                   XREF[1]:     CODE:1da9(j)  
-       CODE:1dae 12 24 39        LCALL      FUN_CODE_2439                                              undefined FUN_CODE_2439()
+       CODE:1dae 12 24 39        LCALL      ipc_outbox_release                                         undefined ipc_outbox_release()
        CODE:1db1 c2 35           CLR        26.5                                                       = ??
        CODE:1db3 80 d8           SJMP       LAB_CODE_1d8d
                              LAB_CODE_1db5                                   XREF[1]:     CODE:1dcb(j)  
@@ -5731,9 +5745,10 @@
        CODE:2287 22              RET
        CODE:2288 22              RET
                              LAB_CODE_2289                                   XREF[1]:     CODE:22b0(j)  
-       CODE:2289 12 00 f4        LCALL      FUN_CODE_00f4                                              undefined FUN_CODE_00f4()
-       CODE:228c 50 f0           JNC        LAB_CODE_227e
-       CODE:228e 12 23 fc        LCALL      ipc_get_inbox_message_type                                 undefined ipc_get_inbox_message_typ
+       CODE:2289 12 00 f4        LCALL      ipc_inbox_get_status                                       is a message waiting?
+       CODE:228c 50 f0           JNC        LAB_CODE_227e                                              if not, keep idling
+       CODE:228e 12 23 fc        LCALL      ipc_get_inbox_message_type                                 apparently message type
+                                                                                                       should be 0x80 or above
        CODE:2291 50 08           JNC        LAB_CODE_229b
        CODE:2293 12 08 3e        LCALL      ipc_handle_messages                                        undefined ipc_handle_messages()
        CODE:2296 12 24 17        LCALL      FUN_CODE_2417                                              undefined FUN_CODE_2417()
@@ -6142,13 +6157,14 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_241b()
+                             undefined ipc_clear_outbox()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_241b                                   XREF[1]:     CODE:1d93(c)  
+                             ipc_clear_outbox                                XREF[1]:     CODE:1d93(c)  
        CODE:241b e4              CLR        A
        CODE:241c d2 e4           SETB       ACC.4                                                      = ??
-       CODE:241e f5 d6           MOV        DAT_SFR_d6,A                                               = ??
-       CODE:2420 7a 10           MOV        R2,#0x10
+       CODE:241e f5 d6           MOV        DAT_SFR_d6,A                                               set outbox pointer 0x10
+       CODE:2420 7a 10           MOV        R2,#0x10                                                   write 16 zero bytes
+                                                                                                       which clears it
                              LAB_CODE_2422                                   XREF[1]:     CODE:2427(j)  
        CODE:2422 75 d5 00        MOV        HPSC,#0x0                                                  = ??
        CODE:2425 e5 d6           MOV        A,DAT_SFR_d6                                               = ??
@@ -6225,11 +6241,12 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2439()
+                             undefined ipc_outbox_release()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2439                                   XREF[2]:     FUN_CODE_0d43:0d92(c), 
+                             ipc_outbox_release                              XREF[2]:     FUN_CODE_0d43:0d92(c), 
                                                                                           CODE:1dae(c)  
-       CODE:2439 75 d6 00        MOV        DAT_SFR_d6,#0x0                                            = ??
+       CODE:2439 75 d6 00        MOV        DAT_SFR_d6,#0x0                                            function guessed, but
+                                                                                                       bit 4 being 0 is what matters
        CODE:243c 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6707,9 +6724,9 @@
        CODE:262a 80 2c           SJMP       LAB_CODE_2658
                              LAB_CODE_262c                                   XREF[1]:     CODE:2627(j)  
        CODE:262c 30 da 09        JNB        CCF.2,LAB_CODE_2638                                        = ??
-       CODE:262f 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
+       CODE:262f 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:2632 30 da 03        JNB        CCF.2,LAB_CODE_2638                                        = ??
-       CODE:2635 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
+       CODE:2635 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
                              LAB_CODE_2638                                   XREF[2]:     CODE:262c(j), CODE:2632(j)  
        CODE:2638 30 61 21        JNB        2c.1,FUN_CODE_265c                                         = ??
                              LAB_CODE_263b                                   XREF[4]:     FUN_CODE_2666:2673(j), 
@@ -6777,16 +6794,16 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2666                                   XREF[1]:     CODE:28d9(c)  
        CODE:2666 12 02 ad        LCALL      FUN_CODE_02ad                                              undefined FUN_CODE_02ad()
-       CODE:2669 12 29 d8        LCALL      FUN_CODE_29d8                                              undefined FUN_CODE_29d8()
+       CODE:2669 12 29 d8        LCALL      i2c_read_bit                                               undefined i2c_read_bit()
        CODE:266c 50 07           JNC        LAB_CODE_2675
        CODE:266e 12 29 f2        LCALL      FUN_CODE_29f2                                              undefined FUN_CODE_29f2()
        CODE:2671 50 02           JNC        LAB_CODE_2675
        CODE:2673 80 c6           SJMP       LAB_CODE_263b
                              LAB_CODE_2675                                   XREF[2]:     CODE:266c(j), CODE:2671(j)  
        CODE:2675 c2 c9           CLR        CT2                                                        = ??
-       CODE:2677 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
+       CODE:2677 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:267a d2 c9           SETB       CT2                                                        = ??
-       CODE:267c 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
+       CODE:267c 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:267f 12 29 dc        LCALL      FUN_CODE_29dc                                              undefined FUN_CODE_29dc()
        CODE:2682 05 79           INC        DAT_INTMEM_79                                              = ??
        CODE:2684 80 d6           SJMP       FUN_CODE_265c                                              undefined FUN_CODE_265c()
@@ -7411,9 +7428,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_29c8()
+                             undefined i2c_burn_cycles()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_29c8                                   XREF[6]:     FUN_CODE_2627:262f(c), 
+                             i2c_burn_cycles                                 XREF[6]:     FUN_CODE_2627:262f(c), 
                                                                                           FUN_CODE_2627:2635(c), 
                                                                                           FUN_CODE_2666:2677(c), 
                                                                                           FUN_CODE_2666:267c(c), 
@@ -7438,9 +7455,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_29d8()
+                             undefined i2c_read_bit()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_29d8                                   XREF[2]:     FUN_CODE_2666:2669(c), 
+                             i2c_read_bit                                    XREF[2]:     FUN_CODE_2666:2669(c), 
                                                                                           FUN_CODE_29f2:29ff(c)  
        CODE:29d8 a2 c9           MOV        CY,CT2                                                     = ??
        CODE:29da b3              CPL        CY
@@ -7468,10 +7485,10 @@
        CODE:29f2 75 15 09        MOV        BANK2_R5,#0x9                                              = ??
                              LAB_CODE_29f5                                   XREF[1]:     CODE:2a06(j)  
        CODE:29f5 c2 c8           CLR        CPRL2                                                      = ??
-       CODE:29f7 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
+       CODE:29f7 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:29fa d2 c8           SETB       CPRL2                                                      = ??
-       CODE:29fc 12 29 c8        LCALL      FUN_CODE_29c8                                              undefined FUN_CODE_29c8()
-       CODE:29ff 12 29 d8        LCALL      FUN_CODE_29d8                                              undefined FUN_CODE_29d8()
+       CODE:29fc 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
+       CODE:29ff 12 29 d8        LCALL      i2c_read_bit                                               undefined i2c_read_bit()
        CODE:2a02 40 02           JC         LAB_CODE_2a06
        CODE:2a04 c3              CLR        CY
        CODE:2a05 22              RET
@@ -7495,9 +7512,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2a15()
+                             undefined argon_queue_message()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2a15                                   XREF[18]:    CODE:1755(c), CODE:1765(c), 
+                             argon_queue_message                             XREF[18]:    CODE:1755(c), CODE:1765(c), 
                                                                                           CODE:179f(c), CODE:17b0(c), 
                                                                                           CODE:17bc(c), CODE:17d1(c), 
                                                                                           CODE:17ef(c), CODE:184f(c), 
@@ -7506,7 +7523,7 @@
                                                                                           CODE:18e6(c), CODE:1916(c), 
                                                                                           CODE:1929(c), CODE:193d(c), 
                                                                                           CODE:1980(c), CODE:19e1(c)  
-       CODE:2a15 f5 6c           MOV        g_argon_serialdata_bitbuffer,A                             stash a/b somewhere
+       CODE:2a15 f5 6c           MOV        g_argon_serialdata_bitbuffer,A                             message to be written
        CODE:2a17 85 f0 6d        MOV        DAT_INTMEM_6d,B                                            = ??
        CODE:2a1a 78 e1           MOV        R0,#0xe1
        CODE:2a1c f6              MOV        @R0=>DAT_INTMEM_e1,A                                       write A places
@@ -9384,16 +9401,16 @@
        INTMEM:6b                 undefined1 ??
                              g_argon_serialdata_bitbuffer                    XREF[7]:     CODE:0545(W), CODE:054c(R), 
                                                                                           CODE:05f8(R), CODE:05fb(W), 
-                                                                                          FUN_CODE_2a15:2a15(W), 
-                                                                                          FUN_CODE_2a15:2a29(R), 
+                                                                                          argon_queue_message:2a15(W), 
+                                                                                          argon_queue_message:2a29(R), 
                                                                                           FUN_CODE_2a3e:2a54(W)  
        INTMEM:6c                 undefined1 ??
                              DAT_INTMEM_6d                                   XREF[4]:     CODE:0545(R), CODE:05b5(W), 
-                                                                                          FUN_CODE_2a15:2a17(W), 
+                                                                                          argon_queue_message:2a17(W), 
                                                                                           FUN_CODE_2a3e:2a48(R)  
        INTMEM:6d                 undefined1 ??
                              DAT_INTMEM_6e                                   XREF[4]:     CODE:052c(R), CODE:0535(RW), 
-                                                                                          FUN_CODE_2a15:2a20(W), 
+                                                                                          argon_queue_message:2a20(W), 
                                                                                           FUN_CODE_2a3e:2a56(W)  
        INTMEM:6e                 undefined1 ??
                              DAT_INTMEM_6f                                   XREF[18]:    FUN_CODE_02fe:0321(R), 
@@ -9532,7 +9549,7 @@
                                                                                           FUN_CODE_2627:263b(RW)  
        INTMEM:7a                 ??         ??
        INTMEM:7b                 ??         ??
-                             DAT_INTMEM_7c                                   XREF[2]:     FUN_CODE_2a15:2a1d(W), 
+                             DAT_INTMEM_7c                                   XREF[2]:     argon_queue_message:2a1d(W), 
                                                                                           FUN_CODE_2a3e:2a4b(RW)  
        INTMEM:7c                 ??         ??
                              DAT_INTMEM_7d                                   XREF[10]:    FUN_CODE_1dce:1dd3(R), 
@@ -9785,7 +9802,7 @@
        INTMEM:de                 ??         ??
        INTMEM:df                 ??         ??
        INTMEM:e0                 ??         ??
-                             DAT_INTMEM_e1                                   XREF[2]:     FUN_CODE_2a15:2a1c(W), 
+                             DAT_INTMEM_e1                                   XREF[2]:     argon_queue_message:2a1c(W), 
                                                                                           FUN_CODE_2a3e:2a54(R)  
        INTMEM:e1                 undefined1 ??
                              DAT_INTMEM_e2                                   XREF[2]:     smcconfig_load:2577(W), 
@@ -10077,14 +10094,14 @@
                              HPINDEX                                         XREF[1]:     FUN_CODE_22be:230c(W)  
           SFR:d4                 ??         ??
                              HPSC                                            XREF[4]:     CODE:02a8(W), 
-                                                                                          FUN_CODE_241b:2422(W), 
+                                                                                          ipc_clear_outbox:2422(W), 
                                                                                           ipc_fifo_write:242f(W), 
                                                                                           ipc_fifo_write_buffer:2433(W)  
           SFR:d5                 ??         ??
-                             DAT_SFR_d6                                      XREF[5]:     FUN_CODE_241b:241e(W), 
-                                                                                          FUN_CODE_241b:2425(R), 
+                             DAT_SFR_d6                                      XREF[5]:     ipc_clear_outbox:241e(W), 
+                                                                                          ipc_clear_outbox:2425(R), 
                                                                                           FUN_CODE_242a:242c(W), 
-                                                                                          FUN_CODE_2439:2439(W), 
+                                                                                          ipc_outbox_release:2439(W), 
                                                                                           FUN_CODE_243d:243d(R)  
           SFR:d6                 undefined1 ??
                              HPSTAT                                          XREF[6]:     FUN_CODE_0648:064d(R), 
@@ -10123,7 +10140,7 @@
                                                                                           ipc_fifo_read:240d(R), 
                                                                                           FUN_CODE_2410:2410(R)  
           SFR:e1                 undefined1 ??
-                             RXSTAT                                          XREF[4]:     FUN_CODE_00f4:00f4(R), 
+                             RXSTAT                                          XREF[4]:     ipc_inbox_get_status:00f4(R), 
                                                                                           ipc_get_inbox_message_type:2401(
                                                                                           FUN_CODE_2408:240a(W), 
                                                                                           FUN_CODE_2417:2417(W)  
@@ -10755,22 +10772,22 @@
                                                                                           CODE:05c0(W), CODE:05dc(W), 
                                                                                           CODE:0607(W), CODE:0627(W), 
                                                                                           FUN_CODE_2383:238b(W), 
-                                                                                          FUN_CODE_2a15:2a34(W), 
-                                                                                          FUN_CODE_2a15:2a3b(W), 
+                                                                                          argon_queue_message:2a34(W), 
+                                                                                          argon_queue_message:2a3b(W), 
                                                                                           FUN_CODE_2a3e:2a3f(R)  
          BITS:64                 ??         ??
                              2c.5                                            XREF[5]:     CODE:0552(W), CODE:05ba(W), 
                                                                                           CODE:0629(W), 
-                                                                                          FUN_CODE_2a15:2a27(W), 
+                                                                                          argon_queue_message:2a27(W), 
                                                                                           FUN_CODE_2a3e:2a42(R)  
          BITS:65                 ??         ??
                              2c.6                                            XREF[3]:     CODE:061d(R), 
-                                                                                          FUN_CODE_2a15:2a23(W), 
-                                                                                          FUN_CODE_2a15:2a39(W)  
+                                                                                          argon_queue_message:2a23(W), 
+                                                                                          argon_queue_message:2a39(W)  
          BITS:66                 ??         ??
                              2c.7                                            XREF[4]:     CODE:04e9(R), CODE:0539(R), 
-                                                                                          FUN_CODE_2a15:2a25(W), 
-                                                                                          FUN_CODE_2a15:2a37(W)  
+                                                                                          argon_queue_message:2a25(W), 
+                                                                                          argon_queue_message:2a37(W)  
          BITS:67                 ??         ??
                              2d.0                                            XREF[12]:    CODE:04ca(W), CODE:04e6(R), 
                                                                                           CODE:04ee(W), CODE:0529(R), 
@@ -11050,7 +11067,7 @@
                              CT2                                             XREF[4]:     FUN_CODE_02ad:02c1(W), 
                                                                                           FUN_CODE_2666:2675(W), 
                                                                                           FUN_CODE_2666:267a(W), 
-                                                                                          FUN_CODE_29d8:29d8(R)  
+                                                                                          i2c_read_bit:29d8(R)  
          BITS:c9                 ??         ??
                              TR2                                             XREF[1]:     FUN_CODE_0076:0076(R)  
          BITS:ca                 ??         ??
@@ -11213,14 +11230,14 @@
                                                                                           FUN_CODE_2ac4:2acd(*)  
          BITS:e3                 ??         ??
                              ACC.4                                           XREF[12]:    FUN_CODE_00d7:00de(*), 
-                                                                                          FUN_CODE_00f4:00f6(*), 
+                                                                                          ipc_inbox_get_status:00f6(*), 
                                                                                           FUN_CODE_0648:06ff(*), 
                                                                                           FUN_CODE_0648:0704(*), 
                                                                                           FUN_CODE_0648:0709(*), 
                                                                                           argon_sm_exec:19f7(*), 
                                                                                           ipc_get_inbox_message_type:23ff(
                                                                                           FUN_CODE_2408:2408(*), 
-                                                                                          FUN_CODE_241b:241c(*), 
+                                                                                          ipc_clear_outbox:241c(*), 
                                                                                           FUN_CODE_242a:242a(*), 
                                                                                           FUN_CODE_243d:243f(*), 
                                                                                           FUN_CODE_25b4:25bb(*)  
@@ -11230,7 +11247,7 @@
                                                                                           CODE:1469(*), CODE:1869(*), 
                                                                                           argon_sm_exec:19f4(*), 
                                                                                           CODE:1b84(*), 
-                                                                                          FUN_CODE_2a15:2a31(*)  
+                                                                                          argon_queue_message:2a31(*)  
          BITS:e5                 ??         ??
                              ACC.6                                           XREF[8]:     ipc_handle_messages:0972(*), 
                                                                                           FUN_CODE_0d43:0e60(*), 
@@ -11238,7 +11255,7 @@
                                                                                           argon_sm_exec:19f1(*), 
                                                                                           ir_update:1bd3(*), 
                                                                                           FUN_CODE_25b4:25b7(*), 
-                                                                                          FUN_CODE_2a15:2a2e(*), 
+                                                                                          argon_queue_message:2a2e(*), 
                                                                                           FUN_CODE_2ac4:2ad7(*)  
          BITS:e6                 ??         ??
                              ACC.7                                           XREF[26]:    ipc_handle_messages:09ec(*), 
@@ -11256,7 +11273,7 @@
                                                                                           argon_sm_exec:19ee(*), 
                                                                                           ir_update:1bff(*), 
                                                                                           ir_update:1c08(*), 
-                                                                                          FUN_CODE_2a15:2a2b(*), 
+                                                                                          argon_queue_message:2a2b(*), 
                                                                                           FUN_CODE_2ac4:2adb(*), 
                                                                                           FUN_CODE_2ac4:2b1e(*), 
                                                                                           FUN_CODE_2ac4:2b20(*), [more]
