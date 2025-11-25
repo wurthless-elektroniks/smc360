@@ -4,11 +4,20 @@ Work-in-progress...
 
 ## DDRs
 
-The Data Direction Registers set the GPIOs as inputs or outputs.
+The Data Direction Registers set the GPIOs as inputs or outputs. They are:
 
-TODO: document. 0A2h~0A6h DDRs probably, 0A5h is definitely port 3 DDR, 1=set as input, 0=set as output
+- 0A2h: Port 0
+- 0A3h: Port 1
+- 0A4h: Port 2
+- 0A5h: Port 3
+- 0A6h: Port 4
 
-Also TODO: find proper pullup setting registers, as the default pullups are most pathetic thing ever
+Each is a bitfield corresponding to the I/Os of each port. Writing a 0 bit sets that GPIO to an
+output; writing a 1 bit sets it to an input.
+
+## Pin mode configuration
+
+TODO: document them. 09Dh, 09Eh, 09Fh, 0A1h, 0A7h are registers; can be set as open drain or pullup
 
 ## 080h - Port 0
 

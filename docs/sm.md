@@ -41,5 +41,6 @@ Every 20 ms:
 - If powering down, run the power-down sequence
 
 In a loop as fast as possible:
+- Handle SMC-to-HANA communication over I2C (convoluted and not fun to disassemble)
 - Handle CPU-to-SMC IPC communication (split into different tasks)
 - Update Argon state
