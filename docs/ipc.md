@@ -105,17 +105,18 @@ Input bytes:
 1. Command `0x04`
 
 Output bytes:
-1. RTC flags???
-2. RTC byte 1
-3. RTC byte 2
-4. RTC byte 3
-5. RTC byte 4
-6. RTC wakeup value byte 4
-7. RTC wakeup value byte 3
-8. RTC wakeup value byte 2
-9. RTC wakeup value byte 1
 
-TODO
+0. Command `0x04` 
+1. RTC value in milliseconds, bits 0-7
+2. RTC value in milliseconds, bits 8-15
+3. RTC value in milliseconds, bits 16-23
+4. RTC value in milliseconds, bits 24-31
+5. RTC value in milliseconds, bits 32-40
+6. Flags: bit 0 = has time been set yet?, bit 1 = is RTC wake feature enabled?
+6. RTC wakeup value in milliseconds, bits 32-40
+7. RTC wakeup value in milliseconds, bits 24-31
+8. RTC wakeup value in milliseconds, bits 16-23
+9. RTC wakeup value in milliseconds, bits 8-15
 
 ### 0x07 - Get temperatures
 

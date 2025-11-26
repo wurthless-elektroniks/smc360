@@ -46,12 +46,12 @@ Most undocumented, many unused...
 | 0A7h | Pinmode port 4
 | 0A8h |
 | 0A9h |
-| 0AAh | RTC (TODO)
-| 0ABh | RTC (TODO)
-| 0ACh | RTC (TODO)
-| 0ADh | RTC (TODO)
-| 0AEh | RTC (TODO)
-| 0AFh | RTC (TODO)
+| 0AAh | RTC timestamp in milliseconds, bits 0-7
+| 0ABh | RTC timestamp in milliseconds, bits 8-15
+| 0ACh | RTC timestamp in milliseconds, bits 16-23
+| 0ADh | RTC timestamp in milliseconds, bits 24-31
+| 0AEh | RTC timestamp in milliseconds, bits 32-39
+| 0AFh | RTC command (1 = read current time into 0AAh-0AEh, 2 = set RTC using those values)
 | 0B0h |
 | 0B1h |
 | 0B2h |
