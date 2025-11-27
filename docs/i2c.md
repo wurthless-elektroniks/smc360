@@ -2,7 +2,7 @@
 
 The SMC is connected to several other devices over I2C (also SMBus or PMBus).
 
-TODO: everything. I2C appears to be bitbanged by the SMC, yadda yadda yadda.
+TODO: everything. I2C appears to be bitbanged by the SMC (TODO: it's not, describe it later), yadda yadda yadda.
 
 I2C devices themselves shouldn't be documented here, that's a whole other barrel of monkeys.
 

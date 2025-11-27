@@ -232,9 +232,11 @@ Input bytes:
 
 TODO
 
-### 0x88 - TODO
+### 0x88 - Set fans
 
-TODO
+Inputs:
+1. Command `0x88`
+2. Bit field. bit 0 = TODO, bit 1 = force fans to run at full speed
 
 ### 0x89 - TODO
 
@@ -324,9 +326,98 @@ Same as command 0x9D but writes to a different address.
 
 Not present on Xenon
 
+## Asynchronous operations
+
+The SMC can also send statuses back to the CPU whenever it feels like it. When that happens,
+the outbox will contain the command code 0x83. Byte 1 contains the event type.
+
+### 0x11 - Power switch pushed
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x11`
+2. Fixed byte `0x01` (there's no "pushed" or "unpushed" state)
+
+### 0x13 - Bind switch (controller sync button) pushed
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x13`
+
+### 0x14 - Tilt switch changed
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x14`
+2. One bit; bit 0 = new tilt switch state
+
+### 0x20 - IR remote power button pushed
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x20`
+2. Fixed byte `0x01` (there's no "pushed" or "unpushed" state)
+
+### 0x23 - IR remote event??
+
+TODO
+
+### 0x31 - TODO
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x31`
+2. Fixed byte `0x04`
+
+### 0x40 - AV pack changed
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x40`
+2. New AV pack value
+
+### 0x42 - TODO
+
+TODO
+
+### 0x44 - TODO
+
+TODO
+
+Appears to be Argon-related
+
+### 0x60 - TODO (SMC_TRAY_OPEN)
+
+TODO
+
+### 0x61 - TODO (SMC_TRAY_OPEN_REQUEST)
+
+TODO
+
+### 0x62 - TODO (SMC_TRAY_CLOSED)
+
+TODO
+
+### 0x63 - TODO (SMC_TRAY_OPENING)
+
+TODO
+
+### 0x64 - TODO (SMC_TRAY_CLOSING)
+
+TODO
+
+### 0x65 - TODO (SMC_TRAY_UNKNOWN)
+
+TODO
+
 ## See also
 
 xenon-emu SMC code (some of these are wrong)
 - [source](https://github.com/xenon-emu/xenon/blob/main/Xenon/Core/PCI/Devices/SMC/SMC.cpp)
 - [header](https://github.com/xenon-emu/xenon/blob/main/Xenon/Core/PCI/Devices/SMC/SMC.h)
-

@@ -31,7 +31,7 @@ Every 20 ms:
 - Update AUD_CLAMP to mute/unmute audio outputs
 - Read IR receiver
 - Check if temperature sensor is returning values via I2C and RRoD if it isn't
-- Check temperature sensors and go into overheat protection if thermal protection trips
+- Check temperature sensors and go into overheat protection if thermal protection trips; otherwise, update fan speeds
 - Update debug LED logic
 - Check various power-on events and act on them
 - If powering up, run the power-up sequence

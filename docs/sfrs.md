@@ -5,28 +5,28 @@ Most undocumented, many unused...
 | SFR  | Purpose 
 |------|--------------------------------------------------|
 | 080h | GPIO port 0
-| 081h |
+| 081h | Stack pointer
 | 082h |
 | 083h |
 | 084h |
 | 085h |
 | 086h |
 | 087h |
-| 088h |
+| 088h | Mystery bitfield
 | 089h |
 | 08Ah |
 | 08Bh |
 | 08Ch |
 | 08Dh |
 | 08Eh |
-| 08Fh |
+| 08Fh | PCIe status (also interrupt mask? bit 1 set during IRQs, cleared after)
 | 090h | GPIO port 1
-| 091h |
-| 092h |
-| 093h |
-| 094h |
-| 095h |
-| 096h |
+| 091h | PWM channel 1 pulse width?
+| 092h | PWM channel 1 frequency?
+| 093h | PWM channel 2 pulse width?
+| 094h | PWM channel 2 frequency?
+| 095h | Set to 0x88 constantly
+| 096h | Set to 0x00
 | 097h |
 | 098h |
 | 099h |
@@ -92,16 +92,16 @@ Most undocumented, many unused...
 | 0D5h |
 | 0D6h |
 | 0D7h |
-| 0D8h |
+| 0D8h | I2C control registers?
 | 0D9h |
-| 0DAh |
+| 0DAh | I2C rx/tx byte
 | 0DBh |
 | 0DCh |
 | 0DDh |
 | 0DEh |
 | 0DFh |
 | 0E0h |
-| 0E1h |
+| 0E1h | 
 | 0E2h |
 | 0E3h |
 | 0E4h |
@@ -116,7 +116,7 @@ Most undocumented, many unused...
 | 0EDh | Flash controller? (TODO)
 | 0EEh | Flash controller? (TODO)
 | 0EFh | Flash controller? (TODO)
-| 0F0h | Flash controller? (TODO)
+| 0F0h | 
 | 0F1h | Flash controller? (TODO)
 | 0F2h | Flash controller? (TODO)
 | 0F3h | Flash controller? (TODO)
