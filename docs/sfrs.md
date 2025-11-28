@@ -21,10 +21,10 @@ Most undocumented, many unused...
 | 08Eh |
 | 08Fh | PCIe status (also interrupt mask? bit 1 set during IRQs, cleared after)
 | 090h | GPIO port 1
-| 091h | PWM channel 1 pulse width?
-| 092h | PWM channel 1 frequency?
-| 093h | PWM channel 2 pulse width?
-| 094h | PWM channel 2 frequency?
+| 091h | PWM channel 1 duty cycle
+| 092h | PWM channel 1 frequency
+| 093h | PWM channel 2 duty cycle
+| 094h | PWM channel 2 frequency
 | 095h | Set to 0x88 constantly
 | 096h | Set to 0x00
 | 097h |
@@ -52,7 +52,7 @@ Most undocumented, many unused...
 | 0ADh | RTC timestamp in milliseconds, bits 24-31
 | 0AEh | RTC timestamp in milliseconds, bits 32-39
 | 0AFh | RTC command (1 = read current time into 0AAh-0AEh, 2 = set RTC using those values)
-| 0B0h |
+| 0B0h | Mystery status control register (certain IRQs set it to 0x01 or 0x04; could be Argon and IR related)
 | 0B1h |
 | 0B2h |
 | 0B3h |
@@ -91,7 +91,7 @@ Most undocumented, many unused...
 | 0D4h |
 | 0D5h |
 | 0D6h |
-| 0D7h |
+| 0D7h | USB gamepad status(?), channel 1
 | 0D8h | I2C control registers?
 | 0D9h |
 | 0DAh | I2C rx/tx byte
@@ -129,6 +129,6 @@ Most undocumented, many unused...
 | 0FAh |
 | 0FBh |
 | 0FCh |
-| 0FDh |
+| 0FDh | USB gamepad status(?), channel 2
 | 0FEh | ??? 
 | 0FFh | Watchdog? (write 0 to kick)

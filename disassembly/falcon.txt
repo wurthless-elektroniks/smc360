@@ -6,11 +6,14 @@
        CODE:0002 21 3a           AJMP       timer_1ms_irq
        CODE:0004 21 2d           AJMP       FUN_CODE_012d                                              undefined FUN_CODE_012d()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-       CODE:0006 41 fe           AJMP       FUN_CODE_02fe                                              undefined FUN_CODE_02fe()
+       CODE:0006 41 fe           AJMP       FUN_CODE_02fe                                              seems to be IR/Argon triggered,
+                                                                                                       but for the most part looks like
+                                                                                                       a general purpose handler that acts
+                                                                                                       off an IRQ cause register...
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
        CODE:0008 21 2d           AJMP       FUN_CODE_012d                                              undefined FUN_CODE_012d()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-       CODE:000a 21 63           AJMP       FUN_CODE_0163                                              undefined FUN_CODE_0163()
+       CODE:000a 21 63           AJMP       i2c_irq                                                    undefined i2c_irq()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
        CODE:000c 21 2d           AJMP       FUN_CODE_012d                                              undefined FUN_CODE_012d()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
@@ -18,7 +21,7 @@
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
        CODE:0010 21 2d           AJMP       FUN_CODE_012d                                              undefined FUN_CODE_012d()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-       CODE:0012 21 63           AJMP       FUN_CODE_0163                                              undefined FUN_CODE_0163()
+       CODE:0012 21 63           AJMP       i2c_irq                                                    undefined i2c_irq()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
        CODE:0014 21 2d           AJMP       FUN_CODE_012d                                              undefined FUN_CODE_012d()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
@@ -511,7 +514,7 @@
        CODE:0146 05 76           INC        g_milliseconds_counter                                     = ??
        CODE:0148 c2 bf           CLR        IP.7                                                       = ??
        CODE:014a 30 5b 09        JNB        g_argon_statemachines_enabled,LAB_CODE_0156                skip this if argon is off
-       CODE:014d d1 48           ACALL      FUN_CODE_0648                                              undefined FUN_CODE_0648()
+       CODE:014d d1 48           ACALL      usb_powerevent_check                                       undefined usb_powerevent_check()
        CODE:014f d1 2f           ACALL      argon_serialout_sm                                         undefined argon_serialout_sm()
        CODE:0151 20 cd 02        JB         RCLK,LAB_CODE_0156                                         = ??
        CODE:0154 05 77           INC        g_ext_pwr_on_debounce_counter                              = ??
@@ -525,9 +528,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_0163()
+                             undefined i2c_irq()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_0163                                   XREF[2]:     CODE:000a(c), CODE:0012(c)  
+                             i2c_irq                                         XREF[2]:     CODE:000a(c), CODE:0012(c)  
        CODE:0163 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            = ??
        CODE:0166 c0 e0           PUSH       A
        CODE:0168 c0 d0           PUSH       PSW
@@ -538,7 +541,7 @@
        CODE:0174 23              RL         A
        CODE:0175 90 01 79        MOV        DPTR,#LAB_CODE_0179
        CODE:0178 73              JMP        @A+DPTR
-                             LAB_CODE_0179                                   XREF[1]:     FUN_CODE_0163:0175(*)  
+                             LAB_CODE_0179                                   XREF[1]:     i2c_irq:0175(*)  
        CODE:0179 21 9f           AJMP       LAB_CODE_019f                                              state 0
        CODE:017b 21 bb           AJMP       LAB_CODE_01bb
        CODE:017d 21 d2           AJMP       LAB_CODE_01d2
@@ -750,7 +753,8 @@
        CODE:02e7 63 75 ff        XRL        DAT_INTMEM_75,#0xff                                        = ??
        CODE:02ea 61 1b           AJMP       LAB_CODE_031b
                              LAB_CODE_02ec                                   XREF[2]:     CODE:02e2(j), CODE:0318(j)  
-       CODE:02ec 91 96           ACALL      FUN_CODE_0496                                              undefined FUN_CODE_0496()
+       CODE:02ec 91 96           ACALL      FUN_CODE_0496                                              seems the default case is
+                                                                                                       "do lots of convoluted argon shit"
                              LAB_CODE_02ee                                   XREF[11]:    CODE:03a7(j), CODE:03b6(j), 
                                                                                           CODE:03c5(j), CODE:03e1(j), 
                                                                                           CODE:03ef(j), CODE:03fd(j), 
@@ -775,14 +779,13 @@
        CODE:0303 c0 d0           PUSH       PSW
        CODE:0305 d2 d3           SETB       RS0                                                        = ??
        CODE:0307 43 8f 02        ORL        FADDR,#0x2                                                 = ??
-                             LAB_CODE_030a                                   XREF[1]:     CODE:035e(j)  
        CODE:030a e5 b0           MOV        A,P3                                                       = ??
-       CODE:030c b4 01 d3        CJNE       A,#0x1,LAB_CODE_02e2
+       CODE:030c b4 01 d3        CJNE       A,#0x1,LAB_CODE_02e2                                       if not 1, jump up
        CODE:030f aa b5           MOV        R2,DAT_SFR_b5                                              = ??
-       CODE:0311 85 b6 75        MOV        DAT_INTMEM_75,DAT_SFR_b6                                   = ??
+       CODE:0311 85 b6 75        MOV        DAT_INTMEM_75,DAT_SFR_b6                                   cache this SFR register's value
        CODE:0314 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
        CODE:0316 54 f0           ANL        A,#0xf0
-       CODE:0318 b4 10 d1        CJNE       A,#0x10,LAB_CODE_02ec
+       CODE:0318 b4 10 d1        CJNE       A,#0x10,LAB_CODE_02ec                                      if high bits not %0001, exit
                              LAB_CODE_031b                                   XREF[4]:     CODE:02ea(j), CODE:0429(j), 
                                                                                           CODE:0463(j), CODE:0494(j)  
        CODE:031b 30 62 02        JNB        2c.2,LAB_CODE_0320                                         = ??
@@ -797,52 +800,84 @@
                              LAB_CODE_0328                                   XREF[1]:     CODE:0325(j)  
        CODE:0328 54 0f           ANL        A,#0xf
        CODE:032a 23              RL         A
-       CODE:032b 90 03 78        MOV        DPTR,#0x378
+       CODE:032b 90 03 78        MOV        DPTR,#switchD_CODE:032e::caseD_0
                              switchD_CODE:032e::switchD
        CODE:032e 73              JMP        @A+DPTR
-       CODE:032f 10 33 33        JBC        26.3,LAB_CODE_0365                                         = ??
-       CODE:0332 43 43 45        ORL        g_edram_current_temp_frac,#0x45                            = ??
-       CODE:0335 33              RLC        A
-       CODE:0336 33              RLC        A
-       CODE:0337 33              RLC        A
-       CODE:0338 33              RLC        A
-       CODE:0339 33              RLC        A
-       CODE:033a 33              RLC        A
-       CODE:033b 33              RLC        A
-       CODE:033c 33              RLC        A
-       CODE:033d 33              RLC        A
-       CODE:033e 33              RLC        A
-       CODE:033f 34 33           ADDC       A,#0x33
-       CODE:0341 33              RLC        A
-       CODE:0342 73              JMP        @A+DPTR
-       CODE:0343 76 76           MOV        @R0,#0x76
-       CODE:0345 76 76           MOV        @R0,#0x76
-       CODE:0347 43 34 73        ORL        DAT_INTMEM_34,#0x73                                        = ??
-       CODE:034a 76 76           MOV        @R0,#0x76
-       CODE:034c 76 76           MOV        @R0,#0x76
-       CODE:034e 76 76           MOV        @R0,#0x76
-       CODE:0350 76 76           MOV        @R0,#0x76
-       CODE:0352 82 a8           ANL        CY,EX0                                                     = ??
-       CODE:0354 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0356 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0358 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:035a a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:035c a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:035e b9 a9 a9        CJNE       R1,#0xa9,LAB_CODE_030a
-       CODE:0361 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0363 a9 a9           MOV        R1,SADDR                                                   = ??
-                             LAB_CODE_0365                                   XREF[1]:     CODE:032f(j)  
-       CODE:0365 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0367 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0369 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:036b a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:036d a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:036f a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0371 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0373 a9 a9           MOV        R1,SADDR                                                   = ??
-       CODE:0375 a9 a9           MOV        R1,SADDR                                                   = ??
+       CODE:032f 10              ??         10h                                                        This Ain't Executable
+                                                                                                       Code: An XXX Parody
+       CODE:0330 33              ??         33h    3
+       CODE:0331 33              ??         33h    3
+       CODE:0332 43              ??         43h    C
+       CODE:0333 43              ??         43h    C
+       CODE:0334 45              ??         45h    E
+       CODE:0335 33              ??         33h    3
+       CODE:0336 33              ??         33h    3
+       CODE:0337 33              ??         33h    3
+       CODE:0338 33              ??         33h    3
+       CODE:0339 33              ??         33h    3
+       CODE:033a 33              ??         33h    3
+       CODE:033b 33              ??         33h    3
+       CODE:033c 33              ??         33h    3
+       CODE:033d 33              ??         33h    3
+       CODE:033e 33              ??         33h    3
+       CODE:033f 34              ??         34h    4
+       CODE:0340 33              ??         33h    3
+       CODE:0341 33              ??         33h    3
+       CODE:0342 73              ??         73h    s
+       CODE:0343 76              ??         76h    v
+       CODE:0344 76              ??         76h    v
+       CODE:0345 76              ??         76h    v
+       CODE:0346 76              ??         76h    v
+       CODE:0347 43              ??         43h    C
+       CODE:0348 34              ??         34h    4
+       CODE:0349 73              ??         73h    s
+       CODE:034a 76              ??         76h    v
+       CODE:034b 76              ??         76h    v
+       CODE:034c 76              ??         76h    v
+       CODE:034d 76              ??         76h    v
+       CODE:034e 76              ??         76h    v
+       CODE:034f 76              ??         76h    v
+       CODE:0350 76              ??         76h    v
+       CODE:0351 76              ??         76h    v
+       CODE:0352 82              ??         82h
+       CODE:0353 a8              ??         A8h
+       CODE:0354 a9              ??         A9h
+       CODE:0355 a9              ??         A9h
+       CODE:0356 a9              ??         A9h
+       CODE:0357 a9              ??         A9h
+       CODE:0358 a9              ??         A9h
+       CODE:0359 a9              ??         A9h
+       CODE:035a a9              ??         A9h
+       CODE:035b a9              ??         A9h
+       CODE:035c a9              ??         A9h
+       CODE:035d a9              ??         A9h
+       CODE:035e b9              ??         B9h
+       CODE:035f a9              ??         A9h
+       CODE:0360 a9              ??         A9h
+       CODE:0361 a9              ??         A9h
+       CODE:0362 a9              ??         A9h
+       CODE:0363 a9              ??         A9h
+       CODE:0364 a9              ??         A9h
+       CODE:0365 a9              ??         A9h
+       CODE:0366 a9              ??         A9h
+       CODE:0367 a9              ??         A9h
+       CODE:0368 a9              ??         A9h
+       CODE:0369 a9              ??         A9h
+       CODE:036a a9              ??         A9h
+       CODE:036b a9              ??         A9h
+       CODE:036c a9              ??         A9h
+       CODE:036d a9              ??         A9h
+       CODE:036e a9              ??         A9h
+       CODE:036f a9              ??         A9h
+       CODE:0370 a9              ??         A9h
+       CODE:0371 a9              ??         A9h
+       CODE:0372 a9              ??         A9h
+       CODE:0373 a9              ??         A9h
+       CODE:0374 a9              ??         A9h
+       CODE:0375 a9              ??         A9h
+       CODE:0376 a9              ??         A9h
        CODE:0377 02              ??         02h
-                             switchD_CODE:032e::caseD_0                      XREF[1]:     CODE:032e(j)  
+                             switchD_CODE:032e::caseD_0                      XREF[2]:     CODE:032b(*), CODE:032e(j)  
        CODE:0378 61 90           AJMP       switchD_CODE:032e::caseD_c
                              switchD_CODE:032e::caseD_1                      XREF[1]:     CODE:032e(j)  
        CODE:037a 61 a9           AJMP       LAB_CODE_03a9
@@ -1294,11 +1329,12 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_0648()
+                             undefined usb_powerevent_check()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_0648                                   XREF[1]:     CODE:014d(c)  
+                             usb_powerevent_check                            XREF[1]:     CODE:014d(c)  
        CODE:0648 e5 1f           MOV        A,BANK3_R7                                                 = ??
-       CODE:064a 60 01           JZ         LAB_CODE_064d
+       CODE:064a 60 01           JZ         LAB_CODE_064d                                              do nothing if we already detected
+                                                                                                       a USB event
        CODE:064c 22              RET
                              LAB_CODE_064d                                   XREF[1]:     CODE:064a(j)  
        CODE:064d e5 d7           MOV        A,HPSTAT                                                   = ??
@@ -1339,7 +1375,7 @@
                              LAB_CODE_0696                                   XREF[1]:     CODE:0687(j)  
        CODE:0696 20 d0 f7        JB         P,LAB_CODE_0690                                            = ??
        CODE:0699 d5 1c 09        DJNZ       BANK3_R4,LAB_CODE_06a5                                     = ??
-       CODE:069c 75 1f 56        MOV        BANK3_R7,#0x56                                             = ??
+       CODE:069c 75 1f 56        MOV        BANK3_R7,#0x56                                             powering up from front-top USB
        CODE:069f 22              RET
                              LAB_CODE_06a0                                   XREF[1]:     CODE:068a(j)  
        CODE:06a0 d2 74           SETB       2e.4                                                       = ??
@@ -1387,7 +1423,7 @@
                              LAB_CODE_06ee                                   XREF[1]:     CODE:06df(j)  
        CODE:06ee 20 d0 f7        JB         P,LAB_CODE_06e8                                            = ??
        CODE:06f1 d5 1d 09        DJNZ       BANK3_R5,LAB_CODE_06fd                                     = ??
-       CODE:06f4 75 1f 57        MOV        BANK3_R7,#0x57                                             = ??
+       CODE:06f4 75 1f 57        MOV        BANK3_R7,#0x57                                             powering up from front-bottom USB
        CODE:06f7 22              RET
                              LAB_CODE_06f8                                   XREF[1]:     CODE:06e2(j)  
        CODE:06f8 d2 75           SETB       2e.5                                                       = ??
@@ -1625,7 +1661,7 @@
        CODE:0894 b4 20 03        CJNE       A,#0x20,LAB_CODE_089a
        CODE:0897 02 0a bd        LJMP       LAB_CODE_0abd
                              LAB_CODE_089a                                   XREF[1]:     CODE:0894(j)  
-       CODE:089a c2 35           CLR        26.5                                                       = ??
+       CODE:089a c2 35           CLR        g_ipc_getter_command_blocking                              = ??
        CODE:089c 22              RET
                              ipc_handle_getpowerupcause                      XREF[1]:     CODE:0857(j)  
        CODE:089d 75 f0 00        MOV        B,#0x0
@@ -1749,10 +1785,10 @@
        CODE:0995 fe              MOV        R6,A
        CODE:0996 ea              MOV        A,R2
        CODE:0997 30 e0 37        JNB        ACC.0,LAB_CODE_09d1                                        if bit 0 not set, jump down
-       CODE:099a 30 d5 65        JNB        F0,LAB_CODE_0a02                                           if F0 is cleared, reject the message
+       CODE:099a 30 d5 65        JNB        F0,ipc_handle_i2c_fail_error_1                             if F0 is cleared, reject the message
        CODE:099d 75 60 fa        MOV        DAT_INTMEM_60,#0xfa                                        = ??
        CODE:09a0 30 e1 10        JNB        ACC.1,LAB_CODE_09b3                                        = ??
-       CODE:09a3 d2 34           SETB       26.4                                                       = ??
+       CODE:09a3 d2 34           SETB       26.4                                                       specific kind of I2C request
        CODE:09a5 75 60 02        MOV        DAT_INTMEM_60,#0x2                                         = ??
        CODE:09a8 74 01           MOV        A,#0x1
        CODE:09aa 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
@@ -1786,18 +1822,18 @@
        CODE:09dc 54 0f           ANL        A,#0xf
        CODE:09de 25 f0           ADD        A,B
        CODE:09e0 24 f5           ADD        A,#0xf5
-       CODE:09e2 40 13           JC         LAB_CODE_09f7
+       CODE:09e2 40 13           JC         ipc_handle_i2c_fail_error_2
        CODE:09e4 eb              MOV        A,R3
        CODE:09e5 54 0f           ANL        A,#0xf
        CODE:09e7 24 f2           ADD        A,#0xf2
-       CODE:09e9 40 0c           JC         LAB_CODE_09f7
+       CODE:09e9 40 0c           JC         ipc_handle_i2c_fail_error_2
        CODE:09eb ec              MOV        A,R4
        CODE:09ec 20 e7 1e        JB         ACC.7,LAB_CODE_0a0d                                        = ??
        CODE:09ef ed              MOV        A,R5
        CODE:09f0 20 e7 1a        JB         ACC.7,LAB_CODE_0a0d                                        = ??
        CODE:09f3 ee              MOV        A,R6
        CODE:09f4 20 e7 16        JB         ACC.7,LAB_CODE_0a0d                                        = ??
-                             LAB_CODE_09f7                                   XREF[7]:     CODE:09e2(j), CODE:09e9(j), 
+                             ipc_handle_i2c_fail_error_2                     XREF[7]:     CODE:09e2(j), CODE:09e9(j), 
                                                                                           CODE:0a37(j), CODE:0a39(j), 
                                                                                           CODE:0a64(j), CODE:0a66(j), 
                                                                                           CODE:0a74(j)  
@@ -1806,7 +1842,7 @@
        CODE:09fc 74 02           MOV        A,#0x2
        CODE:09fe 12 24 2f        LCALL      ipc_fifo_write                                             undefined ipc_fifo_write()
        CODE:0a01 22              RET
-                             LAB_CODE_0a02                                   XREF[1]:     CODE:099a(j)  
+                             ipc_handle_i2c_fail_error_1                     XREF[1]:     CODE:099a(j)  
        CODE:0a02 74 01           MOV        A,#0x1
        CODE:0a04 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0a07 74 01           MOV        A,#0x1                                                     nonzero response here, according
@@ -1839,10 +1875,10 @@
        CODE:0a30 24 0a           ADD        A,#0xa
        CODE:0a32 40 05           JC         LAB_CODE_0a39
        CODE:0a34 20 d5 05        JB         F0,LAB_CODE_0a3c                                           = ??
-       CODE:0a37 80 be           SJMP       LAB_CODE_09f7
+       CODE:0a37 80 be           SJMP       ipc_handle_i2c_fail_error_2
                              LAB_CODE_0a39                                   XREF[3]:     CODE:0a1e(j), CODE:0a2d(j), 
                                                                                           CODE:0a32(j)  
-       CODE:0a39 20 d5 bb        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a39 20 d5 bb        JB         F0,ipc_handle_i2c_fail_error_2                             = ??
                              LAB_CODE_0a3c                                   XREF[3]:     CODE:0a12(j), CODE:0a1a(j), 
                                                                                           CODE:0a34(j)  
        CODE:0a3c eb              MOV        A,R3
@@ -1867,22 +1903,23 @@
        CODE:0a5d 24 2f           ADD        A,#0x2f
        CODE:0a5f 40 05           JC         LAB_CODE_0a66
        CODE:0a61 20 d5 05        JB         F0,LAB_CODE_0a69                                           = ??
-       CODE:0a64 80 91           SJMP       LAB_CODE_09f7
+       CODE:0a64 80 91           SJMP       ipc_handle_i2c_fail_error_2
                              LAB_CODE_0a66                                   XREF[3]:     CODE:0a48(j), CODE:0a5a(j), 
                                                                                           CODE:0a5f(j)  
-       CODE:0a66 20 d5 8e        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a66 20 d5 8e        JB         F0,ipc_handle_i2c_fail_error_2                             = ??
                              LAB_CODE_0a69                                   XREF[3]:     CODE:0a40(j), CODE:0a43(j), 
                                                                                           CODE:0a61(j)  
-       CODE:0a69 ee              MOV        A,R6
+       CODE:0a69 ee              MOV        A,R6                                                       think execution ends up here
+                                                                                                       if we're writing something
        CODE:0a6a 30 e7 0a        JNB        ACC.7,LAB_CODE_0a77                                        = ??
        CODE:0a6d 54 7f           ANL        A,#0x7f
        CODE:0a6f b4 39 02        CJNE       A,#0x39,LAB_CODE_0a74
        CODE:0a72 80 03           SJMP       LAB_CODE_0a77
                              LAB_CODE_0a74                                   XREF[1]:     CODE:0a6f(j)  
-       CODE:0a74 20 d5 80        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a74 20 d5 80        JB         F0,ipc_handle_i2c_fail_error_2                             = ??
                              LAB_CODE_0a77                                   XREF[2]:     CODE:0a6a(j), CODE:0a72(j)  
        CODE:0a77 d2 2c           SETB       25.4                                                       = ??
-       CODE:0a79 d2 36           SETB       26.6                                                       = ??
+       CODE:0a79 d2 36           SETB       g_ipc_setter_command_blocking                              = ??
        CODE:0a7b 22              RET
                              LAB_CODE_0a7c                                   XREF[1]:     CODE:0885(j)  
        CODE:0a7c 74 01           MOV        A,#0x1
@@ -2054,9 +2091,9 @@
        CODE:0ba7 fd              MOV        R5,A
        CODE:0ba8 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:0bab fe              MOV        R6,A
-       CODE:0bac 12 25 e6        LCALL      FUN_CODE_25e6                                              undefined FUN_CODE_25e6()
+       CODE:0bac 12 25 e6        LCALL      rtc_set                                                    undefined rtc_set()
        CODE:0baf d2 07           SETB       g_was_rtc_time_set                                         = ??
-       CODE:0bb1 c2 57           CLR        2a.7                                                       = ??
+       CODE:0bb1 c2 57           CLR        g_rtc_wake_set                                             = ??
        CODE:0bb3 d2 45           SETB       28.5                                                       = ??
        CODE:0bb5 22              RET
                              ipc_handle_rtc_set_wake                         XREF[1]:     CODE:0ad8(j)  
@@ -2078,7 +2115,7 @@
        CODE:0bd6 8b 33           MOV        DAT_INTMEM_33,R3                                           = ??
        CODE:0bd8 a2 f0           MOV        CY,B.0                                                     = ??
        CODE:0bda 92 58           MOV        2b.0,CY                                                    = ??
-       CODE:0bdc d2 57           SETB       2a.7                                                       = ??
+       CODE:0bdc d2 57           SETB       g_rtc_wake_set                                             = ??
        CODE:0bde ee              MOV        A,R6
        CODE:0bdf 70 0b           JNZ        LAB_CODE_0bec
        CODE:0be1 ed              MOV        A,R5
@@ -2087,7 +2124,7 @@
        CODE:0be5 70 05           JNZ        LAB_CODE_0bec
        CODE:0be7 eb              MOV        A,R3
        CODE:0be8 70 02           JNZ        LAB_CODE_0bec
-       CODE:0bea c2 57           CLR        2a.7                                                       = ??
+       CODE:0bea c2 57           CLR        g_rtc_wake_set                                             = ??
                              LAB_CODE_0bec                                   XREF[4]:     CODE:0bdf(j), CODE:0be2(j), 
                                                                                           CODE:0be5(j), CODE:0be8(j)  
        CODE:0bec d2 45           SETB       28.5                                                       = ??
@@ -4069,7 +4106,7 @@
        CODE:17c4 78 7f           MOV        R0,#0x7f
        CODE:17c6 86 f0           MOV        B,@R0=>DAT_INTMEM_7f                                       = ??
        CODE:17c8 c3              CLR        CY
-       CODE:17c9 30 57 03        JNB        2a.7,LAB_CODE_17cf                                         = ??
+       CODE:17c9 30 57 03        JNB        g_rtc_wake_set,LAB_CODE_17cf                               = ??
        CODE:17cc a2 58           MOV        CY,2b.0                                                    = ??
        CODE:17ce b3              CPL        CY
                              LAB_CODE_17cf                                   XREF[1]:     CODE:17c9(j)  
@@ -4383,7 +4420,7 @@
        CODE:19a2 c2 44           CLR        28.4                                                       = ??
        CODE:19a4 20 d5 9b        JB         F0,argon_sm_go_state_0                                     = ??
        CODE:19a7 a2 e7           MOV        CY,ACC.7                                                   = ??
-       CODE:19a9 92 57           MOV        2a.7,CY                                                    = ??
+       CODE:19a9 92 57           MOV        g_rtc_wake_set,CY                                          = ??
        CODE:19ab 54 0f           ANL        A,#0xf
        CODE:19ad 78 7f           MOV        R0,#0x7f
        CODE:19af f6              MOV        @R0=>DAT_INTMEM_7f,A                                       = ??
@@ -4560,12 +4597,13 @@
        CODE:1ade 50 7a           JNC        LAB_CODE_1b5a
                              LAB_CODE_1ae0                                   XREF[1]:     CODE:1a65(j)  
        CODE:1ae0 c2 2c           CLR        25.4                                                       = ??
-       CODE:1ae2 c2 36           CLR        26.6                                                       = ??
+       CODE:1ae2 c2 36           CLR        g_ipc_setter_command_blocking                              = ??
        CODE:1ae4 74 01           MOV        A,#0x1
        CODE:1ae6 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
-       CODE:1ae9 74 03           MOV        A,#0x3
+       CODE:1ae9 74 03           MOV        A,#0x3                                                     default = error
        CODE:1aeb 12 24 2f        LCALL      ipc_fifo_write                                             undefined ipc_fifo_write()
-       CODE:1aee 20 d5 3c        JB         F0,hana_sm_go_state_0                                      = ??
+       CODE:1aee 20 d5 3c        JB         F0,hana_sm_go_state_0                                      guess F0 has to be clear
+                                                                                                       for the command to have succeeded
        CODE:1af1 74 01           MOV        A,#0x1
        CODE:1af3 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:1af6 74 00           MOV        A,#0x0
@@ -4999,24 +5037,24 @@
        CODE:1d8f 76 02           MOV        @R0=>DAT_INTMEM_a7,#0x2                                    = ??
        CODE:1d91 22              RET
        CODE:1d92 22              RET
-                             LAB_CODE_1d93                                   XREF[1]:     CODE:1dc5(j)  
+                             ipc_outbox_sm_exec_state_0                      XREF[1]:     CODE:1dc5(j)  
        CODE:1d93 12 24 1b        LCALL      ipc_clear_outbox                                           likely also locks mutex
                                                                                                        so CPU can't go peeking at it
        CODE:1d96 12 0d 43        LCALL      ipc_handle_async_events                                    undefined ipc_handle_async_events()
        CODE:1d99 40 f2           JC         LAB_CODE_1d8d
-       CODE:1d9b 30 35 e5        JNB        26.5,LAB_CODE_1d83                                         = ??
-       CODE:1d9e c2 36           CLR        26.6                                                       = ??
+       CODE:1d9b 30 35 e5        JNB        g_ipc_getter_command_blocking,LAB_CODE_1d83                = ??
+       CODE:1d9e c2 36           CLR        g_ipc_setter_command_blocking                              = ??
        CODE:1da0 12 08 3e        LCALL      ipc_handle_messages                                        undefined ipc_handle_messages()
-       CODE:1da3 30 35 dd        JNB        26.5,LAB_CODE_1d83                                         = ??
-       CODE:1da6 20 36 df        JB         26.6,LAB_CODE_1d88                                         = ??
+       CODE:1da3 30 35 dd        JNB        g_ipc_getter_command_blocking,LAB_CODE_1d83                = ??
+       CODE:1da6 20 36 df        JB         g_ipc_setter_command_blocking,LAB_CODE_1d88                = ??
        CODE:1da9 80 03           SJMP       LAB_CODE_1dae
-                             LAB_CODE_1dab                                   XREF[1]:     CODE:1dc8(j)  
-       CODE:1dab 20 36 da        JB         26.6,LAB_CODE_1d88                                         = ??
+                             ipc_outbox_sm_exec_state_1                      XREF[1]:     CODE:1dc8(j)  
+       CODE:1dab 20 36 da        JB         g_ipc_setter_command_blocking,LAB_CODE_1d88                = ??
                              LAB_CODE_1dae                                   XREF[1]:     CODE:1da9(j)  
        CODE:1dae 12 24 39        LCALL      ipc_outbox_release                                         undefined ipc_outbox_release()
-       CODE:1db1 c2 35           CLR        26.5                                                       = ??
+       CODE:1db1 c2 35           CLR        g_ipc_getter_command_blocking                              = ??
        CODE:1db3 80 d8           SJMP       LAB_CODE_1d8d
-                             LAB_CODE_1db5                                   XREF[1]:     CODE:1dcb(j)  
+                             ipc_outbox_sm_exec_state_2                      XREF[1]:     CODE:1dcb(j)  
        CODE:1db5 12 24 3d        LCALL      ipc_outbox_is_locked                                       undefined ipc_outbox_is_locked()
        CODE:1db8 50 d3           JNC        LAB_CODE_1d8d
        CODE:1dba 80 c7           SJMP       LAB_CODE_1d83
@@ -5030,11 +5068,15 @@
        CODE:1dbe e6              MOV        A,@R0=>DAT_INTMEM_a7                                       = ??
        CODE:1dbf 26              ADD        A,@R0=>DAT_INTMEM_a7                                       = ??
        CODE:1dc0 26              ADD        A,@R0=>DAT_INTMEM_a7                                       = ??
-       CODE:1dc1 90 1d c5        MOV        DPTR,#0x1dc5
+       CODE:1dc1 90 1d c5        MOV        DPTR,#LAB_CODE_1dc5
        CODE:1dc4 73              JMP        @A+DPTR
-       CODE:1dc5 02 1d 93        LJMP       LAB_CODE_1d93
-       CODE:1dc8 02 1d ab        LJMP       LAB_CODE_1dab
-       CODE:1dcb 02 1d b5        LJMP       LAB_CODE_1db5
+                             LAB_CODE_1dc5                                   XREF[1]:     ipc_outbox_sm_exec:1dc1(*)  
+       CODE:1dc5 02 1d 93        LJMP       ipc_outbox_sm_exec_state_0                                 normal state - just handle events
+       CODE:1dc8 02 1d ab        LJMP       ipc_outbox_sm_exec_state_1                                 idle until setter command
+                                                                                                       is no longer blocking
+       CODE:1dcb 02 1d b5        LJMP       ipc_outbox_sm_exec_state_2                                 wait for outbox mutex to unlock
+                                                                                                       (probably it got locked by the
+                                                                                                        CPU or something else)
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
@@ -5078,7 +5120,7 @@
        CODE:1e09 20 22 3a        JB         24.2,LAB_CODE_1e46                                         = ??
        CODE:1e0c 20 0a 3c        JB         g_ext_pwr_on_active,LAB_CODE_1e4b                          = ??
        CODE:1e0f 20 4c 3e        JB         g_wireless_controller_powered_system_on,LAB_CODE_1e50      = ??
-       CODE:1e12 12 2c b4        LCALL      FUN_CODE_2cb4                                              check USB powerup cause
+       CODE:1e12 12 2c b4        LCALL      usb_powerevent_get_cause                                   check USB powerup cause
        CODE:1e15 70 3e           JNZ        LAB_CODE_1e55                                              if present jump down
        CODE:1e17 20 58 05        JB         2b.0,LAB_CODE_1e1f                                         = ??
        CODE:1e1a 12 2c b7        LCALL      rtc_has_wakeup_passed                                      check all this shit
@@ -5118,7 +5160,7 @@
        CODE:1e55 f5 62           MOV        g_power_up_cause,A                                         great, more spaghetti code
        CODE:1e57 80 09           SJMP       LAB_CODE_1e62
                              LAB_CODE_1e59                                   XREF[1]:     CODE:1e1d(j)  
-       CODE:1e59 c2 57           CLR        2a.7                                                       = ??
+       CODE:1e59 c2 57           CLR        g_rtc_wake_set                                             = ??
        CODE:1e5b d2 45           SETB       28.5                                                       = ??
        CODE:1e5d 75 62 15        MOV        g_power_up_cause,#0x15                                     RTC wakeup
        CODE:1e60 c2 25           CLR        24.5                                                       = ??
@@ -5348,7 +5390,7 @@
                                                                                                        just stopped??????
        CODE:1fd0 02 1f 2c        LJMP       LAB_CODE_1f2c
                              LAB_CODE_1fd3                                   XREF[1]:     CODE:1f6f(j)  
-       CODE:1fd3 c2 57           CLR        2a.7                                                       = ??
+       CODE:1fd3 c2 57           CLR        g_rtc_wake_set                                             = ??
        CODE:1fd5 75 66 00        MOV        DAT_INTMEM_66,#0x0                                         = ??
        CODE:1fd8 75 67 00        MOV        DAT_INTMEM_67,#0x0                                         = ??
        CODE:1fdb 75 62 16        MOV        g_power_up_cause,#0x16                                     undocumented
@@ -5765,10 +5807,10 @@
        CODE:2296 12 24 17        LCALL      ipc_inbox_release                                          undefined ipc_inbox_release()
        CODE:2299 80 e3           SJMP       LAB_CODE_227e
                              LAB_CODE_229b                                   XREF[1]:     CODE:2291(j)  
-       CODE:229b d2 35           SETB       26.5                                                       = ??
+       CODE:229b d2 35           SETB       g_ipc_getter_command_blocking                              = ??
        CODE:229d 80 e4           SJMP       LAB_CODE_2283
                              LAB_CODE_229f                                   XREF[1]:     CODE:22b3(j)  
-       CODE:229f 20 35 e1        JB         26.5,LAB_CODE_2283                                         = ??
+       CODE:229f 20 35 e1        JB         g_ipc_getter_command_blocking,LAB_CODE_2283                = ??
        CODE:22a2 12 24 17        LCALL      ipc_inbox_release                                          undefined ipc_inbox_release()
        CODE:22a5 80 d7           SJMP       LAB_CODE_227e
                              **************************************************************
@@ -5781,8 +5823,9 @@
        CODE:22a9 e6              MOV        A,@R0=>DAT_INTMEM_a9                                       = ??
        CODE:22aa 26              ADD        A,@R0=>DAT_INTMEM_a9                                       = ??
        CODE:22ab 26              ADD        A,@R0=>DAT_INTMEM_a9                                       = ??
-       CODE:22ac 90 22 b0        MOV        DPTR,#0x22b0
+       CODE:22ac 90 22 b0        MOV        DPTR,#LAB_CODE_22b0
        CODE:22af 73              JMP        @A+DPTR
+                             LAB_CODE_22b0                                   XREF[1]:     ipc_inbox_sm_exec:22ac(*)  
        CODE:22b0 02 22 89        LJMP       LAB_CODE_2289
        CODE:22b3 02 22 9f        LJMP       LAB_CODE_229f
                              **************************************************************
@@ -6607,9 +6650,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_25e6()
+                             undefined rtc_set()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_25e6                                   XREF[1]:     ipc_handle_messages:0bac(c)  
+                             rtc_set                                         XREF[1]:     ipc_handle_messages:0bac(c)  
        CODE:25e6 8e ae           MOV        HSTAT,R6                                                   = ??
        CODE:25e8 8d ad           MOV        DAT_SFR_ad,R5                                              = ??
        CODE:25ea 8c ac           MOV        DAT_SFR_ac,R4                                              = ??
@@ -8025,9 +8068,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2cb4()
+                             undefined usb_powerevent_get_cause()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2cb4                                   XREF[1]:     CODE:1e12(c)  
+                             usb_powerevent_get_cause                        XREF[1]:     CODE:1e12(c)  
        CODE:2cb4 e5 1f           MOV        A,BANK3_R7                                                 = ??
        CODE:2cb6 22              RET
                              **************************************************************
@@ -8038,7 +8081,7 @@
                              rtc_has_wakeup_passed                           XREF[2]:     CODE:1e1a(c), CODE:1f6c(c)  
        CODE:2cb7 12 25 d8        LCALL      rtc_read                                                   undefined rtc_read()
        CODE:2cba c3              CLR        CY
-       CODE:2cbb 20 57 01        JB         2a.7,LAB_CODE_2cbf                                         = ??
+       CODE:2cbb 20 57 01        JB         g_rtc_wake_set,LAB_CODE_2cbf                               = ??
        CODE:2cbe 22              RET
                              LAB_CODE_2cbf                                   XREF[1]:     CODE:2cbb(j)  
        CODE:2cbf ee              MOV        A,R6
@@ -8926,11 +8969,11 @@
                              // REG_BANK_3 
                              // INTMEM:10-INTMEM:17
                              //
-                             BANK2_R0                                        XREF[10]:    FUN_CODE_0163:0172(R), 
-                                                                                          CODE:01ac(W), CODE:01b1(W), 
-                                                                                          CODE:01b6(W), CODE:01cd(W), 
-                                                                                          CODE:020a(W), CODE:0218(W), 
-                                                                                          CODE:023b(W), CODE:0273(W), 
+                             BANK2_R0                                        XREF[10]:    i2c_irq:0172(R), CODE:01ac(W), 
+                                                                                          CODE:01b1(W), CODE:01b6(W), 
+                                                                                          CODE:01cd(W), CODE:020a(W), 
+                                                                                          CODE:0218(W), CODE:023b(W), 
+                                                                                          CODE:0273(W), 
                                                                                           i2c_yield_to_async_operation:265
        INTMEM:10                 undefined1 ??
                              BANK2_R1                                        XREF[7]:     CODE:01c5(R), 
@@ -9024,33 +9067,33 @@
                                                                                           CODE:0270(W), CODE:027b(R), 
                                                                                           CODE:028d(W), CODE:0295(W)  
        INTMEM:1b                 undefined1 ??
-                             BANK3_R4                                        XREF[6]:     FUN_CODE_0648:065e(W), 
-                                                                                          FUN_CODE_0648:0666(RW), 
-                                                                                          FUN_CODE_0648:0682(W), 
-                                                                                          FUN_CODE_0648:068d(RW), 
-                                                                                          FUN_CODE_0648:0699(RW), 
-                                                                                          FUN_CODE_0648:06a2(W)  
+                             BANK3_R4                                        XREF[6]:     usb_powerevent_check:065e(W), 
+                                                                                          usb_powerevent_check:0666(RW), 
+                                                                                          usb_powerevent_check:0682(W), 
+                                                                                          usb_powerevent_check:068d(RW), 
+                                                                                          usb_powerevent_check:0699(RW), 
+                                                                                          usb_powerevent_check:06a2(W)  
        INTMEM:1c                 ??         ??
-                             BANK3_R5                                        XREF[6]:     FUN_CODE_0648:06b6(W), 
-                                                                                          FUN_CODE_0648:06be(RW), 
-                                                                                          FUN_CODE_0648:06da(W), 
-                                                                                          FUN_CODE_0648:06e5(RW), 
-                                                                                          FUN_CODE_0648:06f1(RW), 
-                                                                                          FUN_CODE_0648:06fa(W)  
+                             BANK3_R5                                        XREF[6]:     usb_powerevent_check:06b6(W), 
+                                                                                          usb_powerevent_check:06be(RW), 
+                                                                                          usb_powerevent_check:06da(W), 
+                                                                                          usb_powerevent_check:06e5(RW), 
+                                                                                          usb_powerevent_check:06f1(RW), 
+                                                                                          usb_powerevent_check:06fa(W)  
        INTMEM:1d                 ??         ??
-                             BANK3_R6                                        XREF[6]:     FUN_CODE_0648:070e(W), 
-                                                                                          FUN_CODE_0648:0716(RW), 
-                                                                                          FUN_CODE_0648:0732(W), 
-                                                                                          FUN_CODE_0648:073d(RW), 
-                                                                                          FUN_CODE_0648:0749(RW), 
-                                                                                          FUN_CODE_0648:0752(W)  
+                             BANK3_R6                                        XREF[6]:     usb_powerevent_check:070e(W), 
+                                                                                          usb_powerevent_check:0716(RW), 
+                                                                                          usb_powerevent_check:0732(W), 
+                                                                                          usb_powerevent_check:073d(RW), 
+                                                                                          usb_powerevent_check:0749(RW), 
+                                                                                          usb_powerevent_check:0752(W)  
        INTMEM:1e                 ??         ??
-                             BANK3_R7                                        XREF[6]:     FUN_CODE_0648:0648(R), 
-                                                                                          FUN_CODE_0648:069c(W), 
-                                                                                          FUN_CODE_0648:06f4(W), 
-                                                                                          FUN_CODE_0648:074c(W), 
+                             BANK3_R7                                        XREF[6]:     usb_powerevent_check:0648(R), 
+                                                                                          usb_powerevent_check:069c(W), 
+                                                                                          usb_powerevent_check:06f4(W), 
+                                                                                          usb_powerevent_check:074c(W), 
                                                                                           FUN_CODE_2383:23aa(W), 
-                                                                                          FUN_CODE_2cb4:2cb4(R)  
+                                                                                          usb_powerevent_get_cause:2cb4(R)  
        INTMEM:1f                 undefined1 ??
                              //
                              // INTMEM 
@@ -9097,7 +9140,7 @@
                                                                                           ipc_handle_messages:0bd6(W), 
                                                                                           rtc_has_wakeup_passed:2cd8(R)  
        INTMEM:33                 undefined1 ??
-                             DAT_INTMEM_34                                   XREF[8]:     CODE:0347(RW), mainloop:078e(RW), 
+                             DAT_INTMEM_34                                   XREF[7]:     mainloop:078e(RW), 
                                                                                           mainloop:0793(RW), CODE:0fdb(RW), 
                                                                                           CODE:17df(R), CODE:17ea(RW), 
                                                                                           CODE:182f(R), CODE:19d4(RW)  
@@ -9191,8 +9234,7 @@
                                                                                           FUN_CODE_279d:27c9(R), 
                                                                                           FUN_CODE_279d:27df(W)  
        INTMEM:42                 undefined1 ??
-                             g_edram_current_temp_frac                       XREF[4]:     CODE:0332(RW), 
-                                                                                          ipc_handle_messages:091a(R), 
+                             g_edram_current_temp_frac                       XREF[3]:     ipc_handle_messages:091a(R), 
                                                                                           FUN_CODE_279d:27a8(R), 
                                                                                           FUN_CODE_279d:27be(W)  
        INTMEM:43                 undefined1 ??
@@ -9905,8 +9947,7 @@
                              FADDR                                           XREF[9]:     pcie_read_status:006f(R), 
                                                                                           FUN_CODE_00d7:00d7(R), 
                                                                                           CODE:0143(RW), CODE:0156(RW), 
-                                                                                          FUN_CODE_0163:016c(RW), 
-                                                                                          CODE:0192(RW), 
+                                                                                          i2c_irq:016c(RW), CODE:0192(RW), 
                                                                                           FUN_CODE_02fe:02f1(RW), 
                                                                                           FUN_CODE_02fe:0307(RW), 
                                                                                           FUN_CODE_22b6:22ba(RW)  
@@ -9984,32 +10025,25 @@
           SFR:a7                 ??         ??
                              IE                                              XREF[1]:     FUN_CODE_22be:22d3(W)  
           SFR:a8                 ??         ??
-                             SADDR                                           XREF[16]:    CODE:0354(R), CODE:0356(R), 
-                                                                                          CODE:0358(R), CODE:035a(R), 
-                                                                                          CODE:035c(R), CODE:0361(R), 
-                                                                                          CODE:0363(R), CODE:0365(R), 
-                                                                                          CODE:0367(R), CODE:0369(R), 
-                                                                                          CODE:036b(R), CODE:036d(R), 
-                                                                                          CODE:036f(R), CODE:0371(R), 
-                                                                                          CODE:0373(R), CODE:0375(R)  
+                             SADDR
           SFR:a9                 undefined1 ??
                              DAT_SFR_aa                                      XREF[2]:     rtc_read:25e3(R), 
-                                                                                          FUN_CODE_25e6:25ee(W)  
+                                                                                          rtc_set:25ee(W)  
           SFR:aa                 undefined1 ??
                              DAT_SFR_ab                                      XREF[2]:     rtc_read:25e1(R), 
-                                                                                          FUN_CODE_25e6:25ec(W)  
+                                                                                          rtc_set:25ec(W)  
           SFR:ab                 undefined1 ??
                              DAT_SFR_ac                                      XREF[2]:     rtc_read:25df(R), 
-                                                                                          FUN_CODE_25e6:25ea(W)  
+                                                                                          rtc_set:25ea(W)  
           SFR:ac                 undefined1 ??
                              DAT_SFR_ad                                      XREF[2]:     rtc_read:25dd(R), 
-                                                                                          FUN_CODE_25e6:25e8(W)  
+                                                                                          rtc_set:25e8(W)  
           SFR:ad                 undefined1 ??
                              HSTAT                                           XREF[2]:     rtc_read:25db(R), 
-                                                                                          FUN_CODE_25e6:25e6(W)  
+                                                                                          rtc_set:25e6(W)  
           SFR:ae                 undefined1 ??
                              DAT_SFR_af                                      XREF[2]:     rtc_read:25d8(RW), 
-                                                                                          FUN_CODE_25e6:25f0(RW)  
+                                                                                          rtc_set:25f0(RW)  
           SFR:af                 ??         ??
                              P3                                              XREF[3]:     FUN_CODE_02fe:02ee(W), 
                                                                                           FUN_CODE_02fe:030a(R), 
@@ -10043,8 +10077,8 @@
                              DAT_SFR_bb                                      XREF[1]:     FUN_CODE_22be:22d0(W)  
           SFR:bb                 ??         ??
                              DAT_SFR_bc                                      XREF[8]:     FUN_CODE_012d:012d(RW), 
-                                                                                          FUN_CODE_0163:016f(RW), 
-                                                                                          CODE:018f(RW), CODE:0213(RW), 
+                                                                                          i2c_irq:016f(RW), CODE:018f(RW), 
+                                                                                          CODE:0213(RW), 
                                                                                           FUN_CODE_0496:04ba(RW), 
                                                                                           FUN_CODE_22be:22c1(W), 
                                                                                           FUN_CODE_2310:2313(RW), 
@@ -10057,8 +10091,7 @@
                              SPH                                             XREF[1]:     FUN_CODE_22be:22c7(W)  
           SFR:be                 undefined1 ??
                              DAT_SFR_bf                                      XREF[11]:    CODE:013a(RW), CODE:015f(RW), 
-                                                                                          FUN_CODE_0163:0163(RW), 
-                                                                                          CODE:019b(RW), 
+                                                                                          i2c_irq:0163(RW), CODE:019b(RW), 
                                                                                           FUN_CODE_02fe:02fa(RW), 
                                                                                           FUN_CODE_02fe:02fe(RW), 
                                                                                           FUN_CODE_22be:22be(W), 
@@ -10121,12 +10154,12 @@
                                                                                           ipc_outbox_release:2439(W), 
                                                                                           ipc_outbox_is_locked:243d(R)  
           SFR:d6                 undefined1 ??
-                             HPSTAT                                          XREF[6]:     FUN_CODE_0648:064d(R), 
-                                                                                          FUN_CODE_0648:0652(R), 
-                                                                                          FUN_CODE_0648:0657(R), 
-                                                                                          FUN_CODE_0648:06a5(R), 
-                                                                                          FUN_CODE_0648:06aa(R), 
-                                                                                          FUN_CODE_0648:06af(R)  
+                             HPSTAT                                          XREF[6]:     usb_powerevent_check:064d(R), 
+                                                                                          usb_powerevent_check:0652(R), 
+                                                                                          usb_powerevent_check:0657(R), 
+                                                                                          usb_powerevent_check:06a5(R), 
+                                                                                          usb_powerevent_check:06aa(R), 
+                                                                                          usb_powerevent_check:06af(R)  
           SFR:d7                 undefined1 ??
                              CCON                                            XREF[1]:     FUN_CODE_29dc:29e8(W)  
           SFR:d8                 ??         ??
@@ -10271,9 +10304,9 @@
           SFR:fb                 ??         ??
                              CCAP2H                                          XREF[1]:     FUN_CODE_0082:0084(W)  
           SFR:fc                 ??         ??
-                             CCAP3H                                          XREF[3]:     FUN_CODE_0648:06fd(R), 
-                                                                                          FUN_CODE_0648:0702(R), 
-                                                                                          FUN_CODE_0648:0707(R)  
+                             CCAP3H                                          XREF[3]:     usb_powerevent_check:06fd(R), 
+                                                                                          usb_powerevent_check:0702(R), 
+                                                                                          usb_powerevent_check:0707(R)  
           SFR:fd                 undefined1 ??
                              CCAP4H                                          XREF[3]:     watchdog_kick:2334(W), 
                                                                                           watchdog_kick:233a(W), 
@@ -10523,8 +10556,7 @@
                              26.2                                            XREF[3]:     CODE:1ab5(R), CODE:1b60(W), 
                                                                                           thermal_monitor_check_if_temps_a
          BITS:32                 ??         ??
-                             26.3                                            XREF[19]:    CODE:032f(RW), 
-                                                                                          ipc_handle_messages:0cf9(W), 
+                             26.3                                            XREF[18]:    ipc_handle_messages:0cf9(W), 
                                                                                           CODE:0ff8(W), CODE:101c(W), 
                                                                                           CODE:1062(W), CODE:11e4(W), 
                                                                                           CODE:1212(W), CODE:126b(W), 
@@ -10544,12 +10576,12 @@
                                                                                           ipc_handle_messages:09c3(R), 
                                                                                           CODE:1a94(R), CODE:1ac4(R)  
          BITS:34                 ??         ??
-                             26.5                                            XREF[6]:     ipc_handle_messages:089a(W), 
+                             g_ipc_getter_command_blocking                   XREF[6]:     ipc_handle_messages:089a(W), 
                                                                                           CODE:1d9b(R), CODE:1da3(R), 
                                                                                           CODE:1db1(W), CODE:229b(W), 
                                                                                           CODE:229f(R)  
          BITS:35                 ??         ??
-                             26.6                                            XREF[5]:     ipc_handle_messages:0a79(W), 
+                             g_ipc_setter_command_blocking                   XREF[5]:     ipc_handle_messages:0a79(W), 
                                                                                           CODE:1ae2(W), CODE:1d9e(W), 
                                                                                           CODE:1da6(R), CODE:1dab(R)  
          BITS:36                 ??         ??
@@ -10707,7 +10739,7 @@
                              2a.6                                            XREF[2]:     CODE:1b9b(R), 
                                                                                           FUN_CODE_285d:2881(W)  
          BITS:56                 ??         ??
-                             2a.7                                            XREF[8]:     ipc_handle_messages:0bb1(W), 
+                             g_rtc_wake_set                                  XREF[8]:     ipc_handle_messages:0bb1(W), 
                                                                                           ipc_handle_messages:0bdc(W), 
                                                                                           ipc_handle_messages:0bea(W), 
                                                                                           CODE:17c9(R), CODE:19a9(W), 
@@ -10824,59 +10856,59 @@
                              g_argon_serialdata_last_bit                     XREF[4]:     CODE:055e(W), CODE:05ea(W), 
                                                                                           CODE:05f6(W), CODE:060b(R)  
          BITS:6a                 ??         ??
-                             2d.3                                            XREF[4]:     FUN_CODE_0648:065c(W), 
-                                                                                          FUN_CODE_0648:0663(R), 
-                                                                                          FUN_CODE_0648:0669(W), 
+                             2d.3                                            XREF[4]:     usb_powerevent_check:065c(W), 
+                                                                                          usb_powerevent_check:0663(R), 
+                                                                                          usb_powerevent_check:0669(W), 
                                                                                           FUN_CODE_2383:23a4(W)  
          BITS:6b                 ??         ??
-                             2d.4                                            XREF[4]:     FUN_CODE_0648:06b4(W), 
-                                                                                          FUN_CODE_0648:06bb(R), 
-                                                                                          FUN_CODE_0648:06c1(W), 
+                             2d.4                                            XREF[4]:     usb_powerevent_check:06b4(W), 
+                                                                                          usb_powerevent_check:06bb(R), 
+                                                                                          usb_powerevent_check:06c1(W), 
                                                                                           FUN_CODE_2383:23a6(W)  
          BITS:6c                 ??         ??
-                             2d.5                                            XREF[4]:     FUN_CODE_0648:070c(W), 
-                                                                                          FUN_CODE_0648:0713(R), 
-                                                                                          FUN_CODE_0648:0719(W), 
+                             2d.5                                            XREF[4]:     usb_powerevent_check:070c(W), 
+                                                                                          usb_powerevent_check:0713(R), 
+                                                                                          usb_powerevent_check:0719(W), 
                                                                                           FUN_CODE_2383:23a8(W)  
          BITS:6d                 ??         ??
-                             2d.6                                            XREF[3]:     FUN_CODE_0648:066f(W), 
-                                                                                          FUN_CODE_0648:0675(R), 
-                                                                                          FUN_CODE_0648:0690(RW)  
+                             2d.6                                            XREF[3]:     usb_powerevent_check:066f(W), 
+                                                                                          usb_powerevent_check:0675(R), 
+                                                                                          usb_powerevent_check:0690(RW)  
          BITS:6e                 ??         ??
-                             2d.7                                            XREF[3]:     FUN_CODE_0648:06c7(W), 
-                                                                                          FUN_CODE_0648:06cd(R), 
-                                                                                          FUN_CODE_0648:06e8(RW)  
+                             2d.7                                            XREF[3]:     usb_powerevent_check:06c7(W), 
+                                                                                          usb_powerevent_check:06cd(R), 
+                                                                                          usb_powerevent_check:06e8(RW)  
          BITS:6f                 ??         ??
-                             2e.0                                            XREF[3]:     FUN_CODE_0648:071f(W), 
-                                                                                          FUN_CODE_0648:0725(R), 
-                                                                                          FUN_CODE_0648:0740(RW)  
+                             2e.0                                            XREF[3]:     usb_powerevent_check:071f(W), 
+                                                                                          usb_powerevent_check:0725(R), 
+                                                                                          usb_powerevent_check:0740(RW)  
          BITS:70                 ??         ??
-                             2e.1                                            XREF[4]:     FUN_CODE_0648:066b(W), 
-                                                                                          FUN_CODE_0648:0678(R), 
-                                                                                          FUN_CODE_0648:067e(W), 
-                                                                                          FUN_CODE_0648:0692(W)  
+                             2e.1                                            XREF[4]:     usb_powerevent_check:066b(W), 
+                                                                                          usb_powerevent_check:0678(R), 
+                                                                                          usb_powerevent_check:067e(W), 
+                                                                                          usb_powerevent_check:0692(W)  
          BITS:71                 ??         ??
-                             2e.2                                            XREF[4]:     FUN_CODE_0648:06c3(W), 
-                                                                                          FUN_CODE_0648:06d0(R), 
-                                                                                          FUN_CODE_0648:06d6(W), 
-                                                                                          FUN_CODE_0648:06ea(W)  
+                             2e.2                                            XREF[4]:     usb_powerevent_check:06c3(W), 
+                                                                                          usb_powerevent_check:06d0(R), 
+                                                                                          usb_powerevent_check:06d6(W), 
+                                                                                          usb_powerevent_check:06ea(W)  
          BITS:72                 ??         ??
-                             2e.3                                            XREF[4]:     FUN_CODE_0648:071b(W), 
-                                                                                          FUN_CODE_0648:0728(R), 
-                                                                                          FUN_CODE_0648:072e(W), 
-                                                                                          FUN_CODE_0648:0742(W)  
+                             2e.3                                            XREF[4]:     usb_powerevent_check:071b(W), 
+                                                                                          usb_powerevent_check:0728(R), 
+                                                                                          usb_powerevent_check:072e(W), 
+                                                                                          usb_powerevent_check:0742(W)  
          BITS:73                 ??         ??
-                             2e.4                                            XREF[3]:     FUN_CODE_0648:0680(W), 
-                                                                                          FUN_CODE_0648:0687(R), 
-                                                                                          FUN_CODE_0648:06a0(W)  
+                             2e.4                                            XREF[3]:     usb_powerevent_check:0680(W), 
+                                                                                          usb_powerevent_check:0687(R), 
+                                                                                          usb_powerevent_check:06a0(W)  
          BITS:74                 ??         ??
-                             2e.5                                            XREF[3]:     FUN_CODE_0648:06d8(W), 
-                                                                                          FUN_CODE_0648:06df(R), 
-                                                                                          FUN_CODE_0648:06f8(W)  
+                             2e.5                                            XREF[3]:     usb_powerevent_check:06d8(W), 
+                                                                                          usb_powerevent_check:06df(R), 
+                                                                                          usb_powerevent_check:06f8(W)  
          BITS:75                 ??         ??
-                             2e.6                                            XREF[3]:     FUN_CODE_0648:0730(W), 
-                                                                                          FUN_CODE_0648:0737(R), 
-                                                                                          FUN_CODE_0648:0750(W)  
+                             2e.6                                            XREF[3]:     usb_powerevent_check:0730(W), 
+                                                                                          usb_powerevent_check:0737(R), 
+                                                                                          usb_powerevent_check:0750(W)  
          BITS:76                 ??         ??
                              2e.7                                            XREF[4]:     FUN_CODE_26f9:271e(W), 
                                                                                           FUN_CODE_272c:274c(W), 
@@ -11004,8 +11036,7 @@
          BITS:a6                 ??         ??
                              P2.7                                            XREF[1]:     powersw_read:259e(R)  
          BITS:a7                 ??         ??
-                             EX0                                             XREF[3]:     CODE:0352(R), 
-                                                                                          tiltsw_read:25aa(R), 
+                             EX0                                             XREF[2]:     tiltsw_read:25aa(R), 
                                                                                           tiltsw_read:25ac(W)  
          BITS:a8                 ??         ??
                              ET0                                             XREF[2]:     ana_12v_pwrgd_check:23d3(W), 
@@ -11109,15 +11140,15 @@
                              P                                               XREF[13]:    pcie_read_status:0073(R), 
                                                                                           FUN_CODE_00d7:00db(R), 
                                                                                           FUN_CODE_02fe:0472(R), 
-                                                                                          FUN_CODE_0648:067b(R), 
-                                                                                          FUN_CODE_0648:068a(R), 
-                                                                                          FUN_CODE_0648:0696(R), 
-                                                                                          FUN_CODE_0648:06d3(R), 
-                                                                                          FUN_CODE_0648:06e2(R), 
-                                                                                          FUN_CODE_0648:06ee(R), 
-                                                                                          FUN_CODE_0648:072b(R), 
-                                                                                          FUN_CODE_0648:073a(R), 
-                                                                                          FUN_CODE_0648:0746(R), 
+                                                                                          usb_powerevent_check:067b(R), 
+                                                                                          usb_powerevent_check:068a(R), 
+                                                                                          usb_powerevent_check:0696(R), 
+                                                                                          usb_powerevent_check:06d3(R), 
+                                                                                          usb_powerevent_check:06e2(R), 
+                                                                                          usb_powerevent_check:06ee(R), 
+                                                                                          usb_powerevent_check:072b(R), 
+                                                                                          usb_powerevent_check:073a(R), 
+                                                                                          usb_powerevent_check:0746(R), 
                                                                                           CODE:1cc2(R)  
          BITS:d0                 ??         ??
                              UD                                              XREF[20]:    CODE:1430(W), CODE:1439(W), 
@@ -11137,8 +11168,7 @@
                                                                                           FUN_CODE_1726:172d(R)  
          BITS:d2                 ??         ??
                              RS0                                             XREF[7]:     CODE:0141(W), CODE:0159(W), 
-                                                                                          FUN_CODE_0163:016a(W), 
-                                                                                          CODE:0195(W), 
+                                                                                          i2c_irq:016a(W), CODE:0195(W), 
                                                                                           FUN_CODE_02fe:02f4(W), 
                                                                                           FUN_CODE_02fe:0305(W), 
                                                                                           FUN_CODE_22b6:22b6(W)  
@@ -11199,9 +11229,9 @@
                              CF                                              XREF[1]:     FUN_CODE_02ad:02cc(W)  
          BITS:df                 ??         ??
                              ACC.0                                           XREF[26]:    FUN_CODE_00c6:00c9(*), 
-                                                                                          FUN_CODE_0648:064f(*), 
-                                                                                          FUN_CODE_0648:0654(*), 
-                                                                                          FUN_CODE_0648:0659(*), 
+                                                                                          usb_powerevent_check:064f(*), 
+                                                                                          usb_powerevent_check:0654(*), 
+                                                                                          usb_powerevent_check:0659(*), 
                                                                                           ipc_handle_messages:0997(*), 
                                                                                           ipc_handle_messages:09d1(*), 
                                                                                           ipc_handle_messages:0b66(*), 
@@ -11216,7 +11246,7 @@
                                                                                           CODE:1cc5(*), CODE:1cfa(*), 
                                                                                           smcconfig_load:24a9(*), [more]
          BITS:e0                 ??         ??
-                             ACC.1                                           XREF[13]:    FUN_CODE_0648:066d(*), 
+                             ACC.1                                           XREF[13]:    usb_powerevent_check:066d(*), 
                                                                                           ipc_handle_messages:09a0(*), 
                                                                                           ipc_handle_messages:0b6a(*), 
                                                                                           ipc_handle_messages:0bfd(*), 
@@ -11230,9 +11260,9 @@
                                                                                           smcconfig_load:2514(*), 
                                                                                           avpack_read:25c7(*)  
          BITS:e1                 ??         ??
-                             ACC.2                                           XREF[9]:     FUN_CODE_0648:06a7(*), 
-                                                                                          FUN_CODE_0648:06ac(*), 
-                                                                                          FUN_CODE_0648:06b1(*), 
+                             ACC.2                                           XREF[9]:     usb_powerevent_check:06a7(*), 
+                                                                                          usb_powerevent_check:06ac(*), 
+                                                                                          usb_powerevent_check:06b1(*), 
                                                                                           mainloop:0784(*), 
                                                                                           ipc_handle_messages:09b3(*), 
                                                                                           CODE:178f(*), CODE:1799(*), 
@@ -11243,7 +11273,7 @@
                                                                                           FUN_CODE_02fe:03c9(*), 
                                                                                           FUN_CODE_02fe:0406(*), 
                                                                                           FUN_CODE_02fe:043b(*), 
-                                                                                          FUN_CODE_0648:06c5(*), 
+                                                                                          usb_powerevent_check:06c5(*), 
                                                                                           CODE:1793(*), CODE:179d(*), 
                                                                                           CODE:1bb7(*), 
                                                                                           avpack_read:25bf(*), 
@@ -11251,9 +11281,9 @@
          BITS:e3                 ??         ??
                              ACC.4                                           XREF[12]:    FUN_CODE_00d7:00de(*), 
                                                                                           ipc_inbox_get_status:00f6(*), 
-                                                                                          FUN_CODE_0648:06ff(*), 
-                                                                                          FUN_CODE_0648:0704(*), 
-                                                                                          FUN_CODE_0648:0709(*), 
+                                                                                          usb_powerevent_check:06ff(*), 
+                                                                                          usb_powerevent_check:0704(*), 
+                                                                                          usb_powerevent_check:0709(*), 
                                                                                           argon_sm_exec:19f7(*), 
                                                                                           ipc_inbox_get_message_type:23ff(
                                                                                           ipc_inbox_set_read_pointer:2408(
@@ -11262,7 +11292,7 @@
                                                                                           ipc_outbox_is_locked:243f(*), 
                                                                                           avpack_read:25bb(*)  
          BITS:e4                 ??         ??
-                             ACC.5                                           XREF[7]:     FUN_CODE_0648:071d(*), 
+                             ACC.5                                           XREF[7]:     usb_powerevent_check:071d(*), 
                                                                                           ipc_handle_messages:096f(*), 
                                                                                           CODE:1469(*), CODE:1869(*), 
                                                                                           argon_sm_exec:19f4(*), 

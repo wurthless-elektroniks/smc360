@@ -134,9 +134,12 @@ Output bytes:
 6. eDRAM temperature, degrees
 7. Chassis temperature, fraction of degrees
 8. Chassis temperature, degrees
-9. Not sure yet
+9. Fan target speed (maximum = 100)
 
 All temperatures returned are in degrees Celsius.
+
+The fan target speed is the one computed by the SMC; it doesn't reflect if a fan speed override
+has been set.
 
 ### 0x0A - Get DVD tray state
 
@@ -223,14 +226,18 @@ TODO
 ### 0x85 - Set RTC
 
 Input bytes:
-1. Command `0x85`
-2. RTC value byte 1
-3. RTC value byte 2
-4. RTC value byte 3
-5. RTC value byte 4
-6. RTC flags???
 
-TODO
+1. Command `0x85`
+2. RTC value in milliseconds, bits 0-7
+3. RTC value in milliseconds, bits 8-15
+4. RTC value in milliseconds, bits 16-23
+5. RTC value in milliseconds, bits 24-31
+6. RTC value in milliseconds, bits 32-40
+
+Notes:
+- The SMC program will set the "has RTC been set?" flag when this command runs.
+- If the RTC wakeup alarm was set before calling this command, it will be disabled, and
+  you will need to set the alarm again to re-enable it.
 
 ### 0x88 - Set fans
 
@@ -238,9 +245,12 @@ Inputs:
 1. Command `0x88`
 2. Bit field. bit 0 = TODO, bit 1 = force fans to run at full speed
 
-### 0x89 - TODO
+### 0x89 - Set fan 1 target speed override
 
-TODO
+Inputs:
+
+0. Command `0x89`
+1. Target fan speed (bit 7 must be set to enable the override)
 
 ### 0x8B - Open/close DVD tray
 
@@ -264,9 +274,16 @@ The flag that sets AUD_CLAMP defaults to 0 on reboot, which mutes audio until th
 
 TODO
 
-### 0x94 - TODO
+### 0x94 - Set fan 2 target speed override
 
-TODO
+Inputs:
+
+0. Command `0x94`
+1. Target fan speed (bit 7 must be set to enable the override)
+
+This is only really useful on Xenon, where both fans can be controlled independently. Starting on Zephyr, the fans are
+driven by a single MOSFET, which in turn is controlled by the HANA. This command was removed from Winchester, and
+probably the other slims, because slims only have one fan (the CGPU fan).
 
 ### 0x95 - TODO
 
