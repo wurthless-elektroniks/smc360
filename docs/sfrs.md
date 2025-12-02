@@ -19,7 +19,7 @@ Most undocumented, many unused...
 | 08Ch |
 | 08Dh |
 | 08Eh |
-| 08Fh | PCIe status (also interrupt mask? bit 1 set during IRQs, cleared after)
+| 08Fh | PCIe status (bits 4/5), IRQ mask? (bit 0 = I2C/Argon IRQ handler running, bit 1 = 1 ms IRQ handler running)
 | 090h | GPIO port 1
 | 091h | PWM channel 1 duty cycle
 | 092h | PWM channel 1 frequency
@@ -64,7 +64,7 @@ Most undocumented, many unused...
 | 0B9h | Initialized to 0
 | 0BAh | Initialized to 0
 | 0BBh | Initialized to 0
-| 0BCh | IRQ mask?
+| 0BCh | IRQ mask? 
 | 0BDh | Set to 0xFF
 | 0BEh | Set to 0xFF
 | 0BFh | IRQ control (0 = enable all, 1 = disable all)
