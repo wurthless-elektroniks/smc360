@@ -181,7 +181,7 @@
              undefined         ACC:1          <RETURN>
                              pcie_read_status                                XREF[1]:     CODE:1258(c)  
        CODE:006f e5 8f           MOV        A,FADDR                                                    = ??
-       CODE:0071 54 30           ANL        A,#0x30
+       CODE:0071 54 30           ANL        A,#00110000b
        CODE:0073 a2 d0           MOV        CY,P                                                       = ??
        CODE:0075 22              RET
                              **************************************************************
@@ -360,7 +360,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_00d7                                   XREF[1]:     mainloop:077b(c)  
        CODE:00d7 e5 8f           MOV        A,FADDR                                                    = ??
-       CODE:00d9 54 30           ANL        A,#0x30
+       CODE:00d9 54 30           ANL        A,#00110000b
        CODE:00db 30 d0 06        JNB        P,LAB_CODE_00e4                                            = ??
        CODE:00de 20 e4 06        JB         ACC.4,LAB_CODE_00e7                                        = ??
        CODE:00e1 74 ff           MOV        A,#0xff
@@ -559,7 +559,7 @@
        CODE:018d d2 8a           SETB       IT1                                                        = ??
        CODE:018f 53 bc fe        ANL        DAT_SFR_bc,#0xfe                                           = ??
                              LAB_CODE_0192                                   XREF[1]:     CODE:021b(j)  
-       CODE:0192 53 8f fd        ANL        FADDR,#0xfd                                                = ??
+       CODE:0192 53 8f fd        ANL        FADDR,#11111101b                                           = ??
        CODE:0195 c2 d3           CLR        RS0                                                        = ??
        CODE:0197 d0 d0           POP        PSW
        CODE:0199 d0 e0           POP        A
@@ -1506,7 +1506,7 @@
        CODE:0775 75 81 b8        MOV        SP,#0xb8                                                   = ??
        CODE:0778 12 22 b6        LCALL      FUN_CODE_22b6                                              undefined FUN_CODE_22b6()
        CODE:077b 12 00 d7        LCALL      FUN_CODE_00d7                                              undefined FUN_CODE_00d7()
-       CODE:077e f5 39           MOV        DAT_INTMEM_39,A                                            = ??
+       CODE:077e f5 39           MOV        g_pcie_status_blink_pattern,A                              = ??
        CODE:0780 12 25 d8        LCALL      rtc_read                                                   undefined rtc_read()
        CODE:0783 ec              MOV        A,R4
        CODE:0784 a2 e2           MOV        CY,ACC.2                                                   = ??
@@ -1599,7 +1599,7 @@
        CODE:0822 75 53 10        MOV        DAT_INTMEM_53,#0x10                                        = ??
        CODE:0825 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
        CODE:0828 75 46 19        MOV        DAT_INTMEM_46,#0x19                                        = ??
-       CODE:082b 75 3c 80        MOV        DAT_INTMEM_3c,#0x80                                        = ??
+       CODE:082b 75 3c 80        MOV        g_dbgled_blinkpattern_andmask,#0x80                        = ??
        CODE:082e 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
        CODE:0831 d2 25           SETB       24.5                                                       = ??
        CODE:0833 d2 1f           SETB       23.7                                                       = ??
@@ -3373,34 +3373,38 @@
        CODE:13c1 22              RET
        CODE:13c2 22              RET
                              LAB_CODE_13c3                                   XREF[1]:     CODE:1405(j)  
-       CODE:13c3 e5 3b           MOV        A,DAT_INTMEM_3b                                            = ??
-       CODE:13c5 55 3c           ANL        A,DAT_INTMEM_3c                                            = ??
+       CODE:13c3 e5 3b           MOV        A,g_boot_status_blink_pattern                              = ??
+       CODE:13c5 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13c7 70 05           JNZ        LAB_CODE_13ce
        CODE:13c9 12 00 f1        LCALL      dbg_led_off                                                undefined dbg_led_off()
        CODE:13cc 80 03           SJMP       LAB_CODE_13d1
                              LAB_CODE_13ce                                   XREF[1]:     CODE:13c7(j)  
        CODE:13ce 12 00 ee        LCALL      dbg_led_on                                                 undefined dbg_led_on()
                              LAB_CODE_13d1                                   XREF[1]:     CODE:13cc(j)  
-       CODE:13d1 e5 3a           MOV        A,DAT_INTMEM_3a                                            = ??
-       CODE:13d3 55 3c           ANL        A,DAT_INTMEM_3c                                            = ??
+       CODE:13d1 e5 3a           MOV        A,g_boot_attempt_blink_pattern                             = ??
+       CODE:13d3 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13d5 70 05           JNZ        LAB_CODE_13dc
-       CODE:13d7 12 00 ed        LCALL      FUN_CODE_00ed                                              undefined FUN_CODE_00ed()
+       CODE:13d7 12 00 ed        LCALL      FUN_CODE_00ed                                              cleared DBG_LED1 on xenon,
+                                                                                                       now a stubbed-out function
        CODE:13da 80 03           SJMP       LAB_CODE_13df
                              LAB_CODE_13dc                                   XREF[1]:     CODE:13d5(j)  
-       CODE:13dc 12 00 ec        LCALL      FUN_CODE_00ec                                              undefined FUN_CODE_00ec()
+       CODE:13dc 12 00 ec        LCALL      FUN_CODE_00ec                                              set DBG_LED1 on xenon,
+                                                                                                       now a stubbed-out function
                              LAB_CODE_13df                                   XREF[1]:     CODE:13da(j)  
-       CODE:13df e5 39           MOV        A,DAT_INTMEM_39                                            = ??
-       CODE:13e1 55 3c           ANL        A,DAT_INTMEM_3c                                            = ??
+       CODE:13df e5 39           MOV        A,g_pcie_status_blink_pattern                              = ??
+       CODE:13e1 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13e3 70 05           JNZ        LAB_CODE_13ea
-       CODE:13e5 12 00 eb        LCALL      FUN_CODE_00eb                                              undefined FUN_CODE_00eb()
+       CODE:13e5 12 00 eb        LCALL      FUN_CODE_00eb                                              cleared DBG_LED0 on xenon,
+                                                                                                       now a stubbed-out function
        CODE:13e8 80 03           SJMP       LAB_CODE_13ed
                              LAB_CODE_13ea                                   XREF[1]:     CODE:13e3(j)  
-       CODE:13ea 12 00 ea        LCALL      FUN_CODE_00ea                                              undefined FUN_CODE_00ea()
+       CODE:13ea 12 00 ea        LCALL      FUN_CODE_00ea                                              set DBG_LED0 on xenon,
+                                                                                                       now a stubbed-out function
                              LAB_CODE_13ed                                   XREF[1]:     CODE:13e8(j)  
-       CODE:13ed e5 3c           MOV        A,DAT_INTMEM_3c                                            = ??
+       CODE:13ed e5 3c           MOV        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13ef 03              RR         A
-       CODE:13f0 f5 3c           MOV        DAT_INTMEM_3c,A                                            = ??
-       CODE:13f2 75 38 05        MOV        DAT_INTMEM_38,#0x5                                         = ??
+       CODE:13f0 f5 3c           MOV        g_dbgled_blinkpattern_andmask,A                            = ??
+       CODE:13f2 75 38 05        MOV        DAT_INTMEM_38,#0x5                                         5 * 20 = 100 ms delay
        CODE:13f5 80 c6           SJMP       LAB_CODE_13bd
                              LAB_CODE_13f7                                   XREF[1]:     CODE:1408(j)  
        CODE:13f7 d5 38 c3        DJNZ       DAT_INTMEM_38,LAB_CODE_13bd                                = ??
@@ -3417,8 +3421,8 @@
        CODE:1400 26              ADD        A,@R0=>DAT_INTMEM_a1                                       = ??
        CODE:1401 90 14 05        MOV        DPTR,#0x1405
        CODE:1404 73              JMP        @A+DPTR
-       CODE:1405 02 13 c3        LJMP       LAB_CODE_13c3
-       CODE:1408 02 13 f7        LJMP       LAB_CODE_13f7
+       CODE:1405 02 13 c3        LJMP       LAB_CODE_13c3                                              state 0: update LEDs
+       CODE:1408 02 13 f7        LJMP       LAB_CODE_13f7                                              state 1: wait 100 ms
                              LAB_CODE_140b                                   XREF[1]:     CODE:14ae(j)  
        CODE:140b 12 25 d2        LCALL      ext_pwr_on_read                                            undefined ext_pwr_on_read()
        CODE:140e 40 05           JC         LAB_CODE_1415
@@ -5109,7 +5113,7 @@
                                                                                                        to complete, reset things, then
                                                                                                        go back to state 0
                              sm1dce_exec_state_1                             XREF[1]:     CODE:1ddd(j)  
-       CODE:1def 75 3b 80        MOV        DAT_INTMEM_3b,#0x80                                        = ??
+       CODE:1def 75 3b 80        MOV        g_boot_status_blink_pattern,#0x80                          = ??
        CODE:1df2 d2 1f           SETB       23.7                                                       = ??
        CODE:1df4 75 37 62        MOV        DAT_INTMEM_37,#0x62                                        = ??
        CODE:1df7 20 03 28        JB         20.3,LAB_CODE_1e22                                         = ??
@@ -5202,8 +5206,8 @@
                                                                                                        statemachine's logic
        CODE:1e98 80 7e           SJMP       LAB_CODE_1f18                                              else go state 1
                              sm1dce_exec_state_3                             XREF[1]:     CODE:1de3(j)  
-       CODE:1e9a 75 3b aa        MOV        DAT_INTMEM_3b,#0xaa                                        = ??
-       CODE:1e9d 75 3a 00        MOV        DAT_INTMEM_3a,#0x0                                         = ??
+       CODE:1e9a 75 3b aa        MOV        g_boot_status_blink_pattern,#0xaa                          = ??
+       CODE:1e9d 75 3a 00        MOV        g_boot_attempt_blink_pattern,#0x0                          = ??
        CODE:1ea0 20 1c 6d        JB         g_rrod_power_problem,LAB_CODE_1f10                         abort if either of
                                                                                                        these bits are set
        CODE:1ea3 20 1d 6a        JB         g_rrod_thermal_tripped,LAB_CODE_1f10                       = ??
@@ -5256,7 +5260,7 @@
        CODE:1efc e5 3e           MOV        A,g_num_boot_tries                                         additional wait delay
                                                                                                        on failed boots
        CODE:1efe 93              MOVC       A,@A+DPTR=>DAT_CODE_1f0a
-       CODE:1eff f5 3a           MOV        DAT_INTMEM_3a,A                                            = ??
+       CODE:1eff f5 3a           MOV        g_boot_attempt_blink_pattern,A                             = ??
        CODE:1f01 d2 37           SETB       26.7                                                       = ??
        CODE:1f03 d2 3e           SETB       27.6                                                       = ??
        CODE:1f05 75 3d 00        MOV        g_shared_timer_cell,#0x0                                   = ??
@@ -5308,7 +5312,7 @@
                                                                                           CODE:1f40(j), CODE:200f(j)  
        CODE:1f36 22              RET
                              sm1dce_exec_state_2                             XREF[1]:     CODE:1de0(j)  
-       CODE:1f37 75 3b aa        MOV        DAT_INTMEM_3b,#0xaa                                        = ??
+       CODE:1f37 75 3b aa        MOV        g_boot_status_blink_pattern,#0xaa                          = ??
        CODE:1f3a 20 1c d3        JB         g_rrod_power_problem,LAB_CODE_1f10                         if whatever this bit is set,
                                                                                                        abandon the reset
        CODE:1f3d 20 1d d0        JB         g_rrod_thermal_tripped,LAB_CODE_1f10                       same goes with this guy
@@ -5318,7 +5322,7 @@
        CODE:1f45 75 3e 00        MOV        g_num_boot_tries,#0x0                                      = ??
        CODE:1f48 80 d8           SJMP       LAB_CODE_1f22                                              go to state 3
                              sm1dce_exec_state_4                             XREF[1]:     CODE:1de6(j)  
-       CODE:1f4a 75 3b fe        MOV        DAT_INTMEM_3b,#0xfe                                        = ??
+       CODE:1f4a 75 3b fe        MOV        g_boot_status_blink_pattern,#0xfe                          = ??
        CODE:1f4d 20 1c c0        JB         g_rrod_power_problem,LAB_CODE_1f10                         = ??
        CODE:1f50 20 1d bd        JB         g_rrod_thermal_tripped,LAB_CODE_1f10                       = ??
        CODE:1f53 e5 3d           MOV        A,g_shared_timer_cell                                      = ??
@@ -5418,7 +5422,7 @@
        CODE:1ffe 75 3e 00        MOV        g_num_boot_tries,#0x0                                      = ??
        CODE:2001 02 1f 22        LJMP       LAB_CODE_1f22
                              LAB_CODE_2004                                   XREF[1]:     CODE:1de9(j)  
-       CODE:2004 75 3b aa        MOV        DAT_INTMEM_3b,#0xaa                                        = ??
+       CODE:2004 75 3b aa        MOV        g_boot_status_blink_pattern,#0xaa                          = ??
        CODE:2007 20 0f 05        JB         g_hwreset_sm_enable,LAB_CODE_200f                          if reset statemachine still doing
                                                                                                        its thing, keep waiting
        CODE:200a d2 10           SETB       g_powerdown_sm_should_run                                  otherwise, start the
@@ -9184,16 +9188,16 @@
        INTMEM:37                 undefined1 ??
                              DAT_INTMEM_38                                   XREF[2]:     CODE:13f2(W), CODE:13f7(RW)  
        INTMEM:38                 ??         ??
-                             DAT_INTMEM_39                                   XREF[2]:     mainloop:077e(W), CODE:13df(R)  
+                             g_pcie_status_blink_pattern                     XREF[2]:     mainloop:077e(W), CODE:13df(R)  
        INTMEM:39                 undefined1 ??
-                             DAT_INTMEM_3a                                   XREF[3]:     CODE:13d1(R), CODE:1e9d(W), 
+                             g_boot_attempt_blink_pattern                    XREF[3]:     CODE:13d1(R), CODE:1e9d(W), 
                                                                                           CODE:1eff(W)  
        INTMEM:3a                 undefined1 ??
-                             DAT_INTMEM_3b                                   XREF[6]:     CODE:13c3(R), CODE:1def(W), 
+                             g_boot_status_blink_pattern                     XREF[6]:     CODE:13c3(R), CODE:1def(W), 
                                                                                           CODE:1e9a(W), CODE:1f37(W), 
                                                                                           CODE:1f4a(W), CODE:2004(W)  
        INTMEM:3b                 undefined1 ??
-                             DAT_INTMEM_3c                                   XREF[6]:     FUN_CODE_080d:082b(W), 
+                             g_dbgled_blinkpattern_andmask                   XREF[6]:     FUN_CODE_080d:082b(W), 
                                                                                           CODE:13c5(R), CODE:13d3(R), 
                                                                                           CODE:13e1(R), CODE:13ed(R), 
                                                                                           CODE:13f0(W)  

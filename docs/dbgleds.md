@@ -10,15 +10,15 @@ update them, the actual functions that turn those LEDs on or off are stubbed out
 
 | Xenon LED | Normal LED | What sets it
 |-----------|------------|------------------------------------------------------------------------------
-| DBG_LED0  | n/a        | Boot failed; trying again
-| DBG_LED1  | n/a        | PCIe link problem
+| DBG_LED0  | n/a        | PCIe link problem
+| DBG_LED1  | n/a        | Boot failed; trying again
 | DBG_LED2  | DBG_LED0   | Power-up state machine events
 | DBG_LED3  | n/a        | Rapidly pulsed when GPU is released from reset, not normally visible
 
 Two quick notes about DBG_LED3:
 - This is actually strobed in the reset watchdog statemachine; the debug LED statemachine never
   accesses this.
-- Some SMCs (Falcon for sure) have buggy behavior that assumes the LED still exists there and
+- Some SMC versions (Falcon for sure) have buggy behavior that assumes the LED still exists there and
   attempts to strobe it upon releasing GPU reset. This is fixed on Jasper.
 
 ## Blink patterns
@@ -41,3 +41,9 @@ Two quick notes about DBG_LED3:
 - 10101000 (three blinks): Boot attempt 3 failed
 - 10101010 (four blinks): Boot attempt 4 failed
 - 11111111 (stays lit): Boot attempt 5 failed (RRoD should be displayed on front)
+
+## Hacked SMCs kill this statemachine
+
+Hacked SMCs like JTAG, CR4 and RGH3 abuse the DBG_LED0 pin for various and very naughty purposes,
+so this state machine is usually disabled on those to prevent conflicts. In addition to the obvious GPIO-related
+patches, the call to the debug LED statemachine in the mainloop is typically NOPed out.
