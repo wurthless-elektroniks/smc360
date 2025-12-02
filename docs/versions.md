@@ -136,6 +136,9 @@ If you have a hex editor, you can be an elite modder, too. Here's how to make yo
 | Trinity v1  | 0x1380, 0x1396    | `82`/`82` (130 * 2 * 20 = 5200 ms) | `60`/`60` (90 * 2 * 20 = 3600 ms)  | `41`/`41` (65 * 2 * 20 = 2600 ms)  |
 | Corona v2   | 0x1381, 0x1397    | `82`/`82` (130 * 2 * 20 = 5200 ms) | `50`/`50` (80 * 2 * 20 = 3200 ms)  | `41`/`41` (65 * 2 * 20 = 2600 ms)  |
 
+Or you can search `75 3x AF` or `75 3x 82` (the memory cell is 03Bh, 03Ch or 03Dh depending on the SMC version) and change the last byte of that
+for all instances you find.
+
 Just keep in mind that the actual timings here depend on the size of CB_B and how long it takes for hwinit to run. GetPowerUpCause is sent in
 CD on Glitch2 (either by CDxell or Freeboot), so you can get the base times by counting how long it takes from CPU reset release until the
 POST 0x40 -> 0x10 transistion (on Freeboot).
