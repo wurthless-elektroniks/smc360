@@ -1600,7 +1600,7 @@
        CODE:0825 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
        CODE:0828 75 46 19        MOV        DAT_INTMEM_46,#0x19                                        = ??
        CODE:082b 75 3c 80        MOV        DAT_INTMEM_3c,#0x80                                        = ??
-       CODE:082e 75 61 00        MOV        DAT_INTMEM_61,#0x0                                         = ??
+       CODE:082e 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
        CODE:0831 d2 25           SETB       24.5                                                       = ??
        CODE:0833 d2 1f           SETB       23.7                                                       = ??
        CODE:0835 e5 2f           MOV        A,DAT_INTMEM_2f                                            = ??
@@ -2004,13 +2004,13 @@
        CODE:0b1a 02 0c da        LJMP       ipc_handle_display_error
                              LAB_CODE_0b1d                                   XREF[1]:     CODE:0b17(j)  
        CODE:0b1d b4 9c 03        CJNE       A,#0x9c,LAB_CODE_0b23
-       CODE:0b20 02 0d 17        LJMP       LAB_CODE_0d17
+       CODE:0b20 02 0d 17        LJMP       ipc_handle_persistent_memcell_write
                              LAB_CODE_0b23                                   XREF[1]:     CODE:0b1d(j)  
        CODE:0b23 b4 9d 03        CJNE       A,#0x9d,LAB_CODE_0b29
-       CODE:0b26 02 0d 29        LJMP       LAB_CODE_0d29
+       CODE:0b26 02 0d 29        LJMP       ipc_handle_debugram_82_write
                              LAB_CODE_0b29                                   XREF[1]:     CODE:0b23(j)  
        CODE:0b29 b4 9f 03        CJNE       A,#0x9f,LAB_CODE_0b2f
-       CODE:0b2c 02 0d 36        LJMP       LAB_CODE_0d36
+       CODE:0b2c 02 0d 36        LJMP       ipc_handle_debugram_8e_write
                              LAB_CODE_0b2f                                   XREF[1]:     CODE:0b29(j)  
        CODE:0b2f 22              RET
                              ipc_handle_poweroff_or_restart                  XREF[1]:     CODE:0acd(j)  
@@ -2186,7 +2186,7 @@
        CODE:0c4d d2 29           SETB       25.1                                                       = ??
        CODE:0c4f 22              RET
                              ipc_handle_setpowerled                          XREF[1]:     CODE:0afc(j)  
-       CODE:0c50 85 61 f0        MOV        B,DAT_INTMEM_61                                            = ??
+       CODE:0c50 85 61 f0        MOV        B,g_rol_led_flags                                          = ??
        CODE:0c53 74 01           MOV        A,#0x1
        CODE:0c55 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0c58 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
@@ -2207,11 +2207,11 @@
        CODE:0c6b a2 e0           MOV        CY,ACC.0                                                   = ??
        CODE:0c6d 92 f4           MOV        B.4,CY                                                     set bit 4 of this thing for
                                                                                                        RoL boot anim
-       CODE:0c6f 85 f0 61        MOV        DAT_INTMEM_61,B                                            = ??
+       CODE:0c6f 85 f0 61        MOV        g_rol_led_flags,B                                          = ??
        CODE:0c72 d2 47           SETB       28.7                                                       = ??
        CODE:0c74 22              RET
                              ipc_handle_setleds                              XREF[1]:     CODE:0b02(j)  
-       CODE:0c75 85 61 f0        MOV        B,DAT_INTMEM_61                                            read this
+       CODE:0c75 85 61 f0        MOV        B,g_rol_led_flags                                          read this
        CODE:0c78 74 01           MOV        A,#0x1
        CODE:0c7a 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0c7d 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
@@ -2222,7 +2222,7 @@
        CODE:0c86 a2 e0           MOV        CY,ACC.0                                                   = ??
        CODE:0c88 92 f5           MOV        B.5,CY                                                     set B bit 5 to whatever we read
                                                                                                        (0 or 1)
-       CODE:0c8a 85 f0 61        MOV        DAT_INTMEM_61,B                                            and store it
+       CODE:0c8a 85 f0 61        MOV        g_rol_led_flags,B                                          and store it
        CODE:0c8d eb              MOV        A,R3
        CODE:0c8e 78 ae           MOV        R0,#0xae                                                   write updated LED state somewhere
        CODE:0c90 f6              MOV        @R0=>DAT_INTMEM_ae,A                                       = ??
@@ -2302,7 +2302,7 @@
        CODE:0d14 d2 48           SETB       29.0                                                       = ??
                              LAB_CODE_0d16                                   XREF[2]:     CODE:0cee(j), CODE:0d0d(j)  
        CODE:0d16 22              RET
-                             LAB_CODE_0d17                                   XREF[1]:     CODE:0b20(j)  
+                             ipc_handle_persistent_memcell_write             XREF[1]:     CODE:0b20(j)  
        CODE:0d17 74 01           MOV        A,#0x1
        CODE:0d19 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d1c 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
@@ -2312,14 +2312,14 @@
        CODE:0d24 8a 66           MOV        DAT_INTMEM_66,R2                                           = ??
        CODE:0d26 8b 67           MOV        DAT_INTMEM_67,R3                                           = ??
        CODE:0d28 22              RET
-                             LAB_CODE_0d29                                   XREF[1]:     CODE:0b26(j)  
+                             ipc_handle_debugram_82_write                    XREF[1]:     CODE:0b26(j)  
        CODE:0d29 74 01           MOV        A,#0x1
        CODE:0d2b 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d2e 78 82           MOV        R0,#0x82
        CODE:0d30 7a 0c           MOV        R2,#0xc
        CODE:0d32 12 24 10        LCALL      ipc_fifo_read_to_buffer                                    undefined ipc_fifo_read_to_buffer()
        CODE:0d35 22              RET
-                             LAB_CODE_0d36                                   XREF[1]:     CODE:0b2c(j)  
+                             ipc_handle_debugram_8e_write                    XREF[1]:     CODE:0b2c(j)  
        CODE:0d36 74 01           MOV        A,#0x1
        CODE:0d38 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d3b 78 8e           MOV        R0,#0x8e
@@ -3543,7 +3543,8 @@
        CODE:14ba 20 17 0d        JB         g_powerbrick_is_on,LAB_CODE_14ca                           = ??
        CODE:14bd 75 56 42        MOV        g_fan1_target_speed,#0x42                                  = ??
        CODE:14c0 75 55 0f        MOV        DAT_INTMEM_55,#0xf                                         = ??
-       CODE:14c3 7a 00           MOV        R2,#0x0
+       CODE:14c3 7a 00           MOV        R2,#0x0                                                    set pulse width on both PWM channels
+                                                                                                       to 0, turning the fans off
        CODE:14c5 7b 00           MOV        R3,#0x0
        CODE:14c7 02 15 ac        LJMP       LAB_CODE_15ac
                              LAB_CODE_14ca                                   XREF[1]:     CODE:14ba(j)  
@@ -3635,7 +3636,7 @@
        CODE:1571 12 17 3d        LCALL      FUN_CODE_173d                                              undefined FUN_CODE_173d()
        CODE:1574 08              INC        R0
        CODE:1575 e5 56           MOV        A,g_fan1_target_speed                                      = ??
-       CODE:1577 26              ADD        A,@R0=>DAT_INTMEM_b3                                       wrong - points somewhere else
+       CODE:1577 26              ADD        A,@R0=>DAT_INTMEM_b3                                       wrong - r0 points somewhere else
        CODE:1578 f5 56           MOV        g_fan1_target_speed,A                                      = ??
                              LAB_CODE_157a                                   XREF[6]:     CODE:14b7(j), CODE:150b(j), 
                                                                                           CODE:151e(j), CODE:1525(j), 
@@ -3667,9 +3668,9 @@
                                                                                           CODE:1581(j), CODE:159d(j), 
                                                                                           CODE:15a8(j)  
        CODE:15ac ea              MOV        A,R2
-       CODE:15ad 12 25 9b        LCALL      FUN_CODE_259b                                              undefined FUN_CODE_259b()
+       CODE:15ad 12 25 9b        LCALL      pwm1_set_pulse_width                                       undefined pwm1_set_pulse_width()
        CODE:15b0 eb              MOV        A,R3
-       CODE:15b1 12 25 98        LCALL      FUN_CODE_2598                                              undefined FUN_CODE_2598()
+       CODE:15b1 12 25 98        LCALL      pwm2_set_pulse_width                                       undefined pwm2_set_pulse_width()
        CODE:15b4 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -4058,7 +4059,7 @@
        CODE:1768 c2 43           CLR        28.3                                                       = ??
        CODE:176a 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_176d                                   XREF[1]:     CODE:1813(j)  
-       CODE:176d 85 61 f0        MOV        B,DAT_INTMEM_61                                            = ??
+       CODE:176d 85 61 f0        MOV        B,g_rol_led_flags                                          = ??
        CODE:1770 c3              CLR        CY
        CODE:1771 78 af           MOV        R0,#0xaf
        CODE:1773 e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
@@ -4070,7 +4071,7 @@
        CODE:177d 30 f7 1f        JNB        B.7,LAB_CODE_179f                                          = ??
        CODE:1780 92 e0           MOV        ACC.0,CY                                                   = ??
        CODE:1782 c2 f4           CLR        B.4                                                        = ??
-       CODE:1784 85 f0 61        MOV        DAT_INTMEM_61,B                                            = ??
+       CODE:1784 85 f0 61        MOV        g_rol_led_flags,B                                          = ??
        CODE:1787 20 f2 0d        JB         B.2,LAB_CODE_1797                                          = ??
        CODE:178a 20 f3 0a        JB         B.3,LAB_CODE_1797                                          = ??
        CODE:178d a2 f0           MOV        CY,B.0                                                     = ??
@@ -4196,7 +4197,7 @@
        CODE:185f 02 19 6f        LJMP       LAB_CODE_196f
                              LAB_CODE_1862                                   XREF[1]:     CODE:1828(j)  
        CODE:1862 c2 41           CLR        g_bindsw_pushed                                            = ??
-       CODE:1864 e5 61           MOV        A,DAT_INTMEM_61                                            = ??
+       CODE:1864 e5 61           MOV        A,g_rol_led_flags                                          = ??
        CODE:1866 30 e7 f6        JNB        ACC.7,LAB_CODE_185f                                        = ??
        CODE:1869 20 e5 f3        JB         ACC.5,LAB_CODE_185f                                        = ??
        CODE:186c 78 af           MOV        R0,#0xaf
@@ -4228,13 +4229,13 @@
        CODE:1899 02 19 8d        LJMP       LAB_CODE_198d
                              LAB_CODE_189c                                   XREF[1]:     CODE:1823(j)  
        CODE:189c 74 80           MOV        A,#0x80
-       CODE:189e 85 61 f0        MOV        B,DAT_INTMEM_61                                            bit 7 of this not set
+       CODE:189e 85 61 f0        MOV        B,g_rol_led_flags                                          bit 7 of this not set
                                                                                                        means we go back to state 1
        CODE:18a1 30 f7 39        JNB        B.7,LAB_CODE_18dd                                          = ??
        CODE:18a4 78 af           MOV        R0,#0xaf                                                   read error flash state
        CODE:18a6 e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
        CODE:18a7 70 0a           JNZ        LAB_CODE_18b3                                              if error code present, jump down
-       CODE:18a9 85 61 f0        MOV        B,DAT_INTMEM_61                                            otherwise, bit 5 of this
+       CODE:18a9 85 61 f0        MOV        B,g_rol_led_flags                                          otherwise, bit 5 of this
                                                                                                        must be set
        CODE:18ac 20 f5 35        JB         B.5,LAB_CODE_18e4                                          if it is, go to state 4,
                                                                                                        which updates LEDs
@@ -5180,7 +5181,7 @@
        CODE:1e72 c2 4c           CLR        g_wireless_controller_powered_system_on                    = ??
        CODE:1e74 c2 1f           CLR        23.7                                                       = ??
        CODE:1e76 d2 02           SETB       20.2                                                       = ??
-       CODE:1e78 75 61 81        MOV        DAT_INTMEM_61,#0x81                                        = ??
+       CODE:1e78 75 61 81        MOV        g_rol_led_flags,#0x81                                      = ??
        CODE:1e7b d2 47           SETB       28.7                                                       = ??
        CODE:1e7d d2 48           SETB       29.0                                                       = ??
        CODE:1e7f 20 1c 05        JB         g_rrod_power_problem,LAB_CODE_1e87                         if this bit is set,
@@ -5381,7 +5382,7 @@
        CODE:1fc2 80 00           SJMP       LAB_CODE_1fc4
                              LAB_CODE_1fc4                                   XREF[4]:     CODE:1ef6(j), CODE:1f57(j), 
                                                                                           CODE:1f5a(j), CODE:1fc2(j)  
-       CODE:1fc4 75 61 00        MOV        DAT_INTMEM_61,#0x0                                         = ??
+       CODE:1fc4 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
        CODE:1fc7 d2 47           SETB       28.7                                                       = ??
        CODE:1fc9 75 37 62        MOV        DAT_INTMEM_37,#0x62                                        = ??
                              LAB_CODE_1fcc                                   XREF[1]:     CODE:2027(j)  
@@ -5401,7 +5402,7 @@
                              LAB_CODE_1fe5                                   XREF[1]:     CODE:1fe0(j)  
        CODE:1fe5 c2 4e           CLR        29.6                                                       = ??
        CODE:1fe7 20 16 03        JB         22.6,LAB_CODE_1fed                                         = ??
-       CODE:1fea 53 61 c3        ANL        DAT_INTMEM_61,#0xc3                                        = ??
+       CODE:1fea 53 61 c3        ANL        g_rol_led_flags,#0xc3                                      = ??
                              LAB_CODE_1fed                                   XREF[1]:     CODE:1fe7(j)  
        CODE:1fed c2 16           CLR        22.6                                                       = ??
        CODE:1fef 78 af           MOV        R0,#0xaf                                                   setup invisible ring of light
@@ -5774,17 +5775,17 @@
                              LAB_CODE_2265                                   XREF[1]:     CODE:2260(j)  
        CODE:2265 b4 62 0b        CJNE       A,#0x62,LAB_CODE_2273
                              LAB_CODE_2268                                   XREF[1]:     CODE:2263(j)  
-       CODE:2268 e5 61           MOV        A,DAT_INTMEM_61                                            = ??
+       CODE:2268 e5 61           MOV        A,g_rol_led_flags                                          = ??
        CODE:226a d2 e0           SETB       ACC.0                                                      = ??
        CODE:226c c2 e1           CLR        ACC.1                                                      = ??
-       CODE:226e f5 61           MOV        DAT_INTMEM_61,A                                            = ??
+       CODE:226e f5 61           MOV        g_rol_led_flags,A                                          = ??
        CODE:2270 d2 47           SETB       28.7                                                       = ??
        CODE:2272 22              RET
                              LAB_CODE_2273                                   XREF[1]:     CODE:2265(j)  
-       CODE:2273 e5 61           MOV        A,DAT_INTMEM_61                                            = ??
+       CODE:2273 e5 61           MOV        A,g_rol_led_flags                                          = ??
        CODE:2275 d2 e0           SETB       ACC.0                                                      = ??
        CODE:2277 d2 e1           SETB       ACC.1                                                      = ??
-       CODE:2279 f5 61           MOV        DAT_INTMEM_61,A                                            = ??
+       CODE:2279 f5 61           MOV        g_rol_led_flags,A                                          = ??
        CODE:227b d2 47           SETB       28.7                                                       = ??
        CODE:227d 22              RET
                              LAB_CODE_227e                                   XREF[3]:     CODE:228c(j), CODE:2299(j), 
@@ -6531,17 +6532,17 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2598()
+                             undefined pwm2_set_pulse_width()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2598                                   XREF[1]:     thermal_monitor_do_checks:15b1(c
+                             pwm2_set_pulse_width                            XREF[1]:     thermal_monitor_do_checks:15b1(c
        CODE:2598 f5 91           MOV        DAT_SFR_91,A                                               = ??
        CODE:259a 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_259b()
+                             undefined pwm1_set_pulse_width()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_259b                                   XREF[1]:     thermal_monitor_do_checks:15ad(c
+                             pwm1_set_pulse_width                            XREF[1]:     thermal_monitor_do_checks:15ad(c
        CODE:259b f5 93           MOV        DPX,A                                                      = ??
        CODE:259d 22              RET
                              **************************************************************
@@ -9388,7 +9389,7 @@
                                                                                           ipc_handle_messages:099d(W), 
                                                                                           ipc_handle_messages:09a5(W)  
        INTMEM:60                 undefined1 ??
-                             DAT_INTMEM_61                                   XREF[17]:    FUN_CODE_080d:082e(W), 
+                             g_rol_led_flags                                 XREF[17]:    FUN_CODE_080d:082e(W), 
                                                                                           ipc_handle_messages:0c50(R), 
                                                                                           ipc_handle_messages:0c6f(W), 
                                                                                           ipc_handle_messages:0c75(R), 
@@ -9954,11 +9955,11 @@
           SFR:8f                 undefined1 ??
                              P1                                              XREF[1]:     gpios_reset:2367(W)  
           SFR:90                 ??         ??
-                             DAT_SFR_91                                      XREF[1]:     FUN_CODE_2598:2598(W)  
+                             DAT_SFR_91                                      XREF[1]:     pwm2_set_pulse_width:2598(W)  
           SFR:91                 ??         ??
                              DAT_SFR_92                                      XREF[1]:     FUN_CODE_2383:2395(W)  
           SFR:92                 ??         ??
-                             DPX                                             XREF[1]:     FUN_CODE_259b:259b(W)  
+                             DPX                                             XREF[1]:     pwm1_set_pulse_width:259b(W)  
           SFR:93                 ??         ??
                              DAT_SFR_94                                      XREF[1]:     FUN_CODE_2383:2398(W)  
           SFR:94                 ??         ??
