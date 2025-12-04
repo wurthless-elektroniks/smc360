@@ -4,6 +4,15 @@
 
 This is provided for people who want to get started on SMC hacking. However it will probably never be thorough, complete, or correct.
 
+## Intended audiences
+
+Everything here is written from a programmer's perspective, so the documentation is intended for the following people:
+
+- libxenon users who want to program more stuff so we can finally make something on par with the OG Xbox BIOSes
+- Emulator authors
+- People who want to launch hardware attacks from or with the SMC (Winchester delenda est)
+- Curious hackers
+
 ## Muchas gracias
 
 Free60Project members, xenon-emu devs, 15432, and everyone else who did reverse engineering of this silly microcontroller

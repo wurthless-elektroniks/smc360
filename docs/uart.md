@@ -13,3 +13,9 @@ TODO: find proper way to configure stop bit, also document busy registers (not r
 - 0E8h: Enable/disable UART (write 0xC0 to enable)
 - 0E9h: UART speed (0xFF = 1.5 mbps)
 
+### The disabled UART RX pin
+
+The southbridge does expose a RX pin for the SMC UART, but it is always tied to 3v3 and is useless without hacking up the board.
+
+On Falcon, the RX pin is brought out to an unmarked test point under the southbridge, but, again, it's tied to 3v3, so it can't
+be used.

@@ -2,6 +2,10 @@
 
 Most undocumented, many unused...
 
+Remember: Most of these are Falcon-specific (XSB), other revisions are to be done later...
+
+Anything marked as "???" below is accessed by the SMC program, but its purpose is unclear.
+
 | SFR  | Purpose 
 |------|--------------------------------------------------|
 | 080h | GPIO port 0
@@ -11,15 +15,15 @@ Most undocumented, many unused...
 | 084h |
 | 085h |
 | 086h |
-| 087h |
+| 087h | ???
 | 088h | Mystery bitfield
 | 089h |
 | 08Ah |
-| 08Bh |
-| 08Ch |
+| 08Bh | ???
+| 08Ch | ???
 | 08Dh |
 | 08Eh |
-| 08Fh | PCIe status (bits 4/5), IRQ mask? (bit 0 = I2C/Argon IRQ handler running, bit 1 = 1 ms IRQ handler running)
+| 08Fh | PCIe status (bits 4/5), IRQ mask?
 | 090h | GPIO port 1
 | 091h | PWM channel 1 duty cycle
 | 092h | PWM channel 1 frequency
@@ -28,11 +32,11 @@ Most undocumented, many unused...
 | 095h | Set to 0x88 constantly
 | 096h | Set to 0x00
 | 097h |
-| 098h |
+| 098h | ???
 | 099h |
 | 09Ah |
-| 09Bh |
-| 09Ch |
+| 09Bh | ???
+| 09Ch | ???
 | 09Dh | Pinmode port 0
 | 09Eh | Pinmode port 1
 | 09Fh | Pinmode port 2
@@ -44,7 +48,7 @@ Most undocumented, many unused...
 | 0A5h | DDR port 3
 | 0A6h | DDR port 4
 | 0A7h | Pinmode port 4
-| 0A8h |
+| 0A8h | ??? (some bitfield modified by certain GPIO polls)
 | 0A9h |
 | 0AAh | RTC timestamp in milliseconds, bits 0-7
 | 0ABh | RTC timestamp in milliseconds, bits 8-15
@@ -69,41 +73,41 @@ Most undocumented, many unused...
 | 0BEh | Set to 0xFF
 | 0BFh | IRQ control (0 = enable all, 1 = disable all)
 | 0C0h | GPIO port 3
-| 0C1h |
-| 0C2h |
-| 0C3h |
-| 0C4h |
-| 0C5h |
-| 0C6h |
-| 0C7h |
+| 0C1h | ???
+| 0C2h | ???
+| 0C3h | ???
+| 0C4h | ???
+| 0C5h | ???
+| 0C6h | ???
+| 0C7h | ???
 | 0C8h | GPIO port 4
-| 0C9h |
-| 0CAh |
-| 0CBh |
-| 0CCh |
-| 0CDh |
-| 0CEh |
-| 0CFh |
-| 0D0h |
-| 0D1h |
-| 0D2h |
-| 0D3h |
-| 0D4h |
-| 0D5h |
-| 0D6h |
+| 0C9h | ???
+| 0CAh | ???
+| 0CBh | ???
+| 0CCh | ???
+| 0CDh | ???
+| 0CEh | ???
+| 0CFh | ???
+| 0D0h | ???
+| 0D1h | ???
+| 0D2h | ???
+| 0D3h | ???
+| 0D4h | ???
+| 0D5h | CPU-to-SMC IPC outbox, data
+| 0D6h | CPU-to-SMC IPC outbox, control
 | 0D7h | USB gamepad status(?), channel 1
 | 0D8h | I2C control registers?
-| 0D9h |
+| 0D9h | I2C ???
 | 0DAh | I2C rx/tx byte
-| 0DBh |
-| 0DCh |
-| 0DDh |
-| 0DEh |
+| 0DBh | I2C ???
+| 0DCh | I2C related (set to either 3 or 0)
+| 0DDh | I2C ???
+| 0DEh | I2C ???
 | 0DFh |
 | 0E0h |
-| 0E1h | 
-| 0E2h |
-| 0E3h |
+| 0E1h | CPU-to-SMC IPC inbox, data
+| 0E2h | CPU-to-SMC IPC inbox, control
+| 0E3h | ??? (Flash-related?)
 | 0E4h |
 | 0E5h |
 | 0E6h |
@@ -128,7 +132,7 @@ Most undocumented, many unused...
 | 0F9h |
 | 0FAh |
 | 0FBh |
-| 0FCh |
+| 0FCh | ???
 | 0FDh | USB gamepad status(?), channel 2
 | 0FEh | ??? 
 | 0FFh | Watchdog? (write 0 to kick)

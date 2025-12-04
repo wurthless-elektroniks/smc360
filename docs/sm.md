@@ -30,6 +30,7 @@ Every 20 ms:
 - Read tilt switch
 - Update AUD_CLAMP to mute/unmute audio outputs
 - Read IR receiver
+- Update DVD tray status
 - Check if temperature sensor is returning values via I2C and RRoD if it isn't
 - Check temperature sensors and go into overheat protection if thermal protection trips; otherwise, update fan speeds
 - Update debug LED logic

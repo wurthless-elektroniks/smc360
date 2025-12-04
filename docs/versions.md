@@ -107,19 +107,19 @@ SMC+ is a two-byte hexedit of CR4 that shortens SMC handshake timeouts. As usual
 that was touted as the second coming of Jesus by 360 scene hype men.
 
 When glitch attempts fail on RGH1 and RGH2, the system sits there drooling like an idiot until the SMC finally
-times out and resets the system. Naturally, the scene picked the path of least resistance, which was just to
-lower the timeouts so the SMC starts the next boot attempt sooner.
+times out and reboots. Naturally, the scene picked the path of least resistance, which was just to lower the
+timeouts so the SMC starts the next boot attempt sooner.
 
 However, there were two better solutions that were not considered or investigated:
-- hwinit sends command 0x12 before SDRAM training begins. This was actually documented by Free60, although in
+- hwinit sends SMC command 0x12 before SDRAM training begins. This was actually documented by Free60, although in
   a vague and incorrect manner, saying that some sort of handshake happens during hwinit.
   Had this been used, SMC+ could have been maybe twice as fast as it was.
 
 - The SMC isn't actually monitoring the boot process at all, despite any claim that SMC+ provides some sort of
   acceleration. If, however, the SMC is connected to POST lines, or can somehow monitor boot progress via IPC,
-  then timeouts can be set at different points during the boot, allowing reboots to happen sooner. RGH3 was the
-  first to implement this, and that means that the slow and unreliable glitch method that all the RGH1.2 purists
-  sneered at had a massive possible improvement that they chose to ignore.
+  then timeouts can be set at different points during the boot, allowing reboots to happen sooner. RGH3 ended
+  up being the first to implement this, and that means that the slow and unreliable glitch method that all
+  the RGH1.2 purists sneered at had a massive possible improvement that they chose to ignore.
 
 Of course, the CR4 base patches eat up a bit of space in the SMC program, so coding these improvements would involve
 some sizecoding trickery. But who cares? It's the 360 scene, and egoboosting and console mod shop promotion is

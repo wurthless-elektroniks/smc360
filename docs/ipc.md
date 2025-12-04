@@ -25,7 +25,6 @@ but the basics are:
   then clear it. The SMC will then pick up the message, set the flag, process the message (even to discard it),
   then clear it. The same goes for 0xEA001094, which belongs to the SMC's outbox.
 
-
 ## Talking to the CPU from the SMC
 
 Much TODO.
@@ -138,12 +137,29 @@ Output bytes:
 
 All temperatures returned are in degrees Celsius.
 
-The fan target speed is the one computed by the SMC; it doesn't reflect if a fan speed override
-has been set.
+The fan target speed will always be the one computed by the SMC; it doesn't reflect if a fan speed override has been set.
 
 ### 0x0A - Get DVD tray state
 
-TODO
+Input bytes:
+0. Command `0x0A`
+
+Output bytes:
+
+0. Command `0x0A`
+1. Tray state
+
+The tray states returned here are as follows:
+
+| State | Meaning                |
+|-------|------------------------|
+| 0x60  | Tray is fully open     |
+| 0x62  | Tray is fully closed   |
+| 0x63  | Tray is opening        |
+| 0x64  | Tray is closing        |
+| 0x65  | Tray state error       |
+
+These states will also be signalled asynchronously by the SMC (see documentation later in this doc). 
 
 ### 0x0F - Get A/V pack status
 
@@ -254,7 +270,12 @@ Inputs:
 
 ### 0x8B - Open/close DVD tray
 
-TODO
+Inputs:
+0. Command `0x8B`
+1. Intended tray state
+
+Allowed intended tray states are: 0x60 = open, 0x62 = close, 0x66 = toggle (open if closed, close if open).
+All others will be rejected.
 
 ### 0x8C - Set power LED/do Ring of Light boot animation
 
@@ -312,11 +333,12 @@ Error code from IPC cannot be less than 0100 (reserved for SMC errors); if it is
 ### 0x9B - Set RTC wake time
 
 Input bytes:
-1. Command `0x9B`
-2. RTC wakeup timestamp byte 1
-3. RTC wakeup timestamp byte 2
-4. RTC wakeup timestamp byte 3
-5. RTC wakeup timestamp byte 4
+0. Command `0x9B`
+1. RTC wakeup timestamp byte 1
+2. RTC wakeup timestamp byte 2
+3. RTC wakeup timestamp byte 3
+4. RTC wakeup timestamp byte 4
+5. Single bit (bit 0 must be set to 1 to automatically power on system when wake time arrives)
 
 Setting all bytes to 0 disables the alarm.
 
@@ -409,27 +431,30 @@ TODO
 
 Appears to be Argon-related
 
-### 0x60 - TODO (SMC_TRAY_OPEN)
+### 0x60 - DVD tray is now fully open
 
 TODO
 
-### 0x61 - TODO (SMC_TRAY_OPEN_REQUEST)
+### 0x61 - Eject switch pushed while DVD tray closed
 
 TODO
 
-### 0x62 - TODO (SMC_TRAY_CLOSED)
+This is a signal that the DVD tray is about to be ejected and whatever is accessing the
+DVD drive should stop accessing it immediately.
+
+### 0x62 - DVD tray is now fully closed
 
 TODO
 
-### 0x63 - TODO (SMC_TRAY_OPENING)
+### 0x63 - DVD tray is opening
 
 TODO
 
-### 0x64 - TODO (SMC_TRAY_CLOSING)
+### 0x64 - DVD tray is closing
 
 TODO
 
-### 0x65 - TODO (SMC_TRAY_UNKNOWN)
+### 0x65 - DVD tray problem detected
 
 TODO
 
