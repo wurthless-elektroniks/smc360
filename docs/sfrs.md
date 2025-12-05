@@ -57,14 +57,14 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0AEh | RTC timestamp in milliseconds, bits 32-39
 | 0AFh | RTC command (1 = read current time into 0AAh-0AEh, 2 = set RTC using those values)
 | 0B0h | Mystery status control register (certain IRQs set it to 0x01 or 0x04; could be Argon and IR related)
-| 0B1h |
-| 0B2h |
-| 0B3h |
-| 0B4h |
-| 0B5h |
-| 0B6h |
-| 0B7h |
-| 0B8h |
+| 0B1h | ???
+| 0B2h | ???
+| 0B3h | ???
+| 0B4h | ???
+| 0B5h | Infrared receiver (purpose unclear)
+| 0B6h | Infrared receiver (purpose unclear)
+| 0B7h | ???
+| 0B8h | ???
 | 0B9h | Initialized to 0
 | 0BAh | Initialized to 0
 | 0BBh | Initialized to 0

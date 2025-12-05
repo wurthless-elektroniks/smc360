@@ -173,17 +173,23 @@ I hope you can understand this TODO item.
 
 ### 0x12 - Get SMC version and two persistent memory cells
 
-Input: `0x12`
+Input bytes:
 
-Returns the following bytes:
+0. Command `0x12`
+
+Output bytes:
+
+0. Command `0x12`
 1. SMC program type (should be the same as the byte at 0x100)
 2. SMC major version (should be the same as the byte at 0x101)
 3. SMC minor version (should be the same as the byte at 0x102)
 4. Persistent memory cell A
 5. Persistent memory cell B
 
+See versions.md for list of bytes expected to be returned here.
+
 This is actually the first command the CPU sends to the SMC, although it's in hwinit so it's understandable that
-a lot of people missed it.
+a lot of people missed it. The Free60 Wiki actually [documented this](https://github.com/Free60Project/wiki/blob/75eedd404016907900722d577fb97e28c2ea71d8/Boot_Process.md), although in an incorrect way (it says that hwinit performs the SMC handshake).
 
 For whatever reason, the program doesn't actually read the header bytes at 0x100~0x102; instead it
 hardcodes those values right into the command handler. Here's how it looks in the Falcon SMC:
@@ -212,7 +218,7 @@ power-up cause is 0x16.
 This does exactly what it does on the tin: it copies the entire inbox to the outbox. It doesn't care how many bytes the CPU
 has written to the inbox; it will always read and write 16 bytes.
 
-### 0x16 - TODO
+### 0x16 - Get infrared address
 
 TODO
 
@@ -243,12 +249,12 @@ TODO
 
 Input bytes:
 
-1. Command `0x85`
-2. RTC value in milliseconds, bits 0-7
-3. RTC value in milliseconds, bits 8-15
-4. RTC value in milliseconds, bits 16-23
-5. RTC value in milliseconds, bits 24-31
-6. RTC value in milliseconds, bits 32-40
+0. Command `0x85`
+1. RTC value in milliseconds, bits 0-7
+2. RTC value in milliseconds, bits 8-15
+3. RTC value in milliseconds, bits 16-23
+4. RTC value in milliseconds, bits 24-31
+5. RTC value in milliseconds, bits 32-40
 
 Notes:
 - The SMC program will set the "has RTC been set?" flag when this command runs.
@@ -258,8 +264,9 @@ Notes:
 ### 0x88 - Set fans
 
 Inputs:
-1. Command `0x88`
-2. Bit field. bit 0 = TODO, bit 1 = force fans to run at full speed
+
+0. Command `0x88`
+1. Bit field. bit 0 = TODO, bit 1 = force fans to run at full speed
 
 ### 0x89 - Set fan 1 target speed override
 
@@ -271,27 +278,46 @@ Inputs:
 ### 0x8B - Open/close DVD tray
 
 Inputs:
+
 0. Command `0x8B`
 1. Intended tray state
 
 Allowed intended tray states are: 0x60 = open, 0x62 = close, 0x66 = toggle (open if closed, close if open).
 All others will be rejected.
 
-### 0x8C - Set power LED/do Ring of Light boot animation
+### 0x8C - Set power LED overrides, do Ring of Light boot animation
 
-TODO
+Inputs:
+
+0. Command `0x8C`
+1. Power LED blink overrides (see below)
+2. Single bit (bit 0 = start Ring of Light boot animation)
+
+The override byte is immediately subtracted by 1, and the resulting bits are used to set RoL flags:
+- Bit 0: whether to fast-blink the power LED (1) or slow-blink it (0)
+- Bit 1: whether to blink the power LED at all
+
+Note that setting the blink overrides will prevent the SMC from displaying the current tray status.
 
 ### 0x8D - Assert/de-assert AUD_CLAMP
 
 Inputs:
-1. Command `0x8D`
-2. One bit (bit 0): if 0, assert AUD_CLAMP (mutes audio), else de-assert it (unmutes audio)
 
-No outputs.
+0. Command `0x8D`
+1. One bit (bit 0): if 0, assert AUD_CLAMP (mutes audio), else de-assert it (unmutes audio)
 
 The flag that sets AUD_CLAMP defaults to 0 on reboot, which mutes audio until the CPU requests it to be unmuted.
 
-### 0x90 - TODO
+### 0x90 - Send Argon command
+
+Inputs:
+
+0. Command `0x90`
+1. Argon command, byte 1 (purpose TODO)
+2. Argon command, byte 2 (purpose TODO)
+
+This command will be rejected if there is already Argon data waiting on the IPC, either
+through this command or an asynchronous Argon event.
 
 TODO
 
@@ -314,42 +340,68 @@ TODO
 
 TODO
 
-### 0x99 - Set RoL LEDs
+Sets a flag that will stay set until the system powers off or reboots.
 
-TODO
+### 0x99 - Override Ring of Light LEDs
+
+Inputs:
+
+0. Command `0x99`
+1. Single bit (bit 0 = enable override)
+2. New Ring of Light LED state
+
+The Ring of Light LEDs are set as a 4x2 bitfield, where the upper 4 bits are the green LEDs and the
+lower 4 bits are the red LEDs. The SMC will automatically re-orientate the LED pattern depending on
+the tilt switch.
+
+The LED positions are:
+- Bit 0/4 - top left
+- Bit 1/5 - top right
+- Bit 2/6 - bottom left
+- Bit 3/7 - bottom right
+
+Note that while this override is active, nothing else will display on the Ring of Light. You must clear
+the override when you're done displaying whatever it is you want to display.
 
 ### 0x9A - System error (RRoD)
 
 Input bytes:
-1. Command `0x9A`
-2. Error code as 4x2-bit packed values
-3. Error code as 4x2-bit packed values (always sent twice)
-4. Flags (bit 0 = hardware failure, bit 1 = one green/two red?, both bits 0/1 clear = RRoD classic)
 
-Outputs: Nothing
+0. Command `0x9A`
+1. Error code as 4x2-bit packed values
+2. Error code as 4x2-bit packed values (same as previous byte; it's always sent twice)
+3. Flags (bit 0 = hardware failure, bit 1 = overheat (one green/two red?), both bits 0/1 clear = RRoD classic)
 
-Error code from IPC cannot be less than 0100 (reserved for SMC errors); if it is, it'll be ignored.
+This raises the Red Ring of Death we all know and love, but it can also be used to signal a hardware
+failure error, or to send the system into a manual overheat protection mode. (The kernel can't detect
+when the SMC goes to overheat protection mode because the SMC will power everything down.)
+
+The error codes are 4 digits long and are packed into a single byte in 4x2 bit format, so
+0x1B decodes to binary `00 01 10 11`, or error code 0123.
+
+The error code specified here cannot be less than 0100 (hex 0x10) because any error code below that
+is reserved for SMC errors. If the error code is less than 0100, then the command will be ignored.
 
 ### 0x9B - Set RTC wake time
 
 Input bytes:
+
 0. Command `0x9B`
-1. RTC wakeup timestamp byte 1
-2. RTC wakeup timestamp byte 2
-3. RTC wakeup timestamp byte 3
-4. RTC wakeup timestamp byte 4
+1. RTC wakeup value in milliseconds, bits 32-40
+2. RTC wakeup value in milliseconds, bits 24-31
+3. RTC wakeup value in milliseconds, bits 16-23
+4. RTC wakeup value in milliseconds, bits 8-15
 5. Single bit (bit 0 must be set to 1 to automatically power on system when wake time arrives)
 
-Setting all bytes to 0 disables the alarm.
-
-TODO
+Setting all timestamp bytes to 0 disables the alarm.
 
 ### 0x9C - Set persistent memory cell values
 
 Inputs:
-1. Command `0x9C`
-2. Persistent memory cell value 1 (e.g., in Falcon at DAT_INTMEM_66)
-3. Persistent memory cell value 2 (e.g., in Falcon at DAT_INTMEM_67)
+
+0. Command `0x9C`
+1. Persistent memory cell value 1 (e.g., in Falcon at DAT_INTMEM_66)
+2. Persistent memory cell value 2 (e.g., in Falcon at DAT_INTMEM_67)
 
 Outputs: Nothing
 
@@ -425,11 +477,16 @@ Outputs:
 
 TODO
 
-### 0x44 - TODO
+### 0x44 - Argon event
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x44`
+2. Argon data, byte 1 (TODO)
+3. Argon data, byte 2 (TODO)
 
 TODO
-
-Appears to be Argon-related
 
 ### 0x60 - DVD tray is now fully open
 

@@ -788,18 +788,20 @@
        CODE:0307 43 8f 02        ORL        FADDR,#0x2                                                 = ??
        CODE:030a e5 b0           MOV        A,P3                                                       = ??
        CODE:030c b4 01 d3        CJNE       A,#0x1,LAB_CODE_02e2                                       if not 1, jump up
-       CODE:030f aa b5           MOV        R2,DAT_SFR_b5                                              = ??
+       CODE:030f aa b5           MOV        R2,DAT_SFR_b5                                              IR number of bits?
+                                                                                                       has to be in expected ranges below
        CODE:0311 85 b6 75        MOV        DAT_INTMEM_75,DAT_SFR_b6                                   cache this SFR register's value
+                                                                                                       (could be IR data)
        CODE:0314 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
        CODE:0316 54 f0           ANL        A,#0xf0
        CODE:0318 b4 10 d1        CJNE       A,#0x10,LAB_CODE_02ec                                      if high bits not %0001, exit
                              LAB_CODE_031b                                   XREF[4]:     CODE:02ea(j), CODE:0429(j), 
                                                                                           CODE:0463(j), CODE:0494(j)  
-       CODE:031b 30 62 02        JNB        2c.2,LAB_CODE_0320                                         = ??
-       CODE:031e 61 ff           AJMP       LAB_CODE_03ff
+       CODE:031b 30 62 02        JNB        g_ir_command_waiting,LAB_CODE_0320                         = ??
+       CODE:031e 61 ff           AJMP       ir_irq_force_state_20_and_exit
                              LAB_CODE_0320                                   XREF[1]:     CODE:031b(j)  
        CODE:0320 c3              CLR        CY
-       CODE:0321 e5 6f           MOV        A,DAT_INTMEM_6f                                            = ??
+       CODE:0321 e5 6f           MOV        A,g_ir_irq_state                                           = ??
        CODE:0323 13              RRC        A
        CODE:0324 83              MOVC       A,@A+PC
        CODE:0325 50 01           JNC        LAB_CODE_0328
@@ -915,14 +917,14 @@
        CODE:0393 75 70 00        MOV        DAT_INTMEM_70,#0x0                                         = ??
                              switchD_CODE:032e::caseD_f                      XREF[1]:     CODE:032e(j)  
        CODE:0396 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
-       CODE:0398 20 e3 64        JB         ACC.3,LAB_CODE_03ff                                        = ??
+       CODE:0398 20 e3 64        JB         ACC.3,ir_irq_force_state_20_and_exit                       = ??
        CODE:039b ea              MOV        A,R2
        CODE:039c 24 4a           ADD        A,#0x4a
-       CODE:039e 50 5f           JNC        LAB_CODE_03ff
+       CODE:039e 50 5f           JNC        ir_irq_force_state_20_and_exit                             jump if less than 0xB6
        CODE:03a0 ea              MOV        A,R2
        CODE:03a1 24 2f           ADD        A,#0x2f
-       CODE:03a3 40 5a           JC         LAB_CODE_03ff
-       CODE:03a5 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:03a3 40 5a           JC         ir_irq_force_state_20_and_exit                             jump if greater than 0xD1
+       CODE:03a5 05 6f           INC        g_ir_irq_state                                             if condition met, advance IRQ state
        CODE:03a7 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_03a9                                   XREF[1]:     CODE:037a(j)  
        CODE:03a9 ea              MOV        A,R2
@@ -931,53 +933,53 @@
        CODE:03ae ea              MOV        A,R2
        CODE:03af 24 b5           ADD        A,#0xb5
        CODE:03b1 40 05           JC         LAB_CODE_03b8
-       CODE:03b3 75 6f 16        MOV        DAT_INTMEM_6f,#0x16                                        = ??
+       CODE:03b3 75 6f 16        MOV        g_ir_irq_state,#0x16                                       = ??
        CODE:03b6 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_03b8                                   XREF[2]:     CODE:03ac(j), CODE:03b1(j)  
        CODE:03b8 ea              MOV        A,R2
        CODE:03b9 24 f4           ADD        A,#0xf4
-       CODE:03bb 50 42           JNC        LAB_CODE_03ff
+       CODE:03bb 50 42           JNC        ir_irq_force_state_20_and_exit
        CODE:03bd ea              MOV        A,R2
        CODE:03be 24 df           ADD        A,#0xdf
-       CODE:03c0 40 3d           JC         LAB_CODE_03ff
-       CODE:03c2 75 6f 5b        MOV        DAT_INTMEM_6f,#0x5b                                        = ??
+       CODE:03c0 40 3d           JC         ir_irq_force_state_20_and_exit
+       CODE:03c2 75 6f 5b        MOV        g_ir_irq_state,#0x5b                                       = ??
        CODE:03c5 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_03c7                                   XREF[1]:     CODE:037c(j)  
        CODE:03c7 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
-       CODE:03c9 30 e3 33        JNB        ACC.3,LAB_CODE_03ff                                        = ??
+       CODE:03c9 30 e3 33        JNB        ACC.3,ir_irq_force_state_20_and_exit                       = ??
        CODE:03cc ea              MOV        A,R2
        CODE:03cd 24 4a           ADD        A,#0x4a
-       CODE:03cf 50 2e           JNC        LAB_CODE_03ff
-       CODE:03d1 d2 62           SETB       2c.2                                                       = ??
-       CODE:03d3 61 ff           AJMP       LAB_CODE_03ff
+       CODE:03cf 50 2e           JNC        ir_irq_force_state_20_and_exit                             jump if less than 0xB5
+       CODE:03d1 d2 62           SETB       g_ir_command_waiting                                       = ??
+       CODE:03d3 61 ff           AJMP       ir_irq_force_state_20_and_exit
                              LAB_CODE_03d5                                   XREF[2]:     CODE:037e(j), CODE:0413(j)  
        CODE:03d5 ea              MOV        A,R2
        CODE:03d6 24 ea           ADD        A,#0xea
-       CODE:03d8 50 25           JNC        LAB_CODE_03ff
+       CODE:03d8 50 25           JNC        ir_irq_force_state_20_and_exit
        CODE:03da ea              MOV        A,R2
        CODE:03db 24 d5           ADD        A,#0xd5
-       CODE:03dd 40 20           JC         LAB_CODE_03ff
-       CODE:03df 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:03dd 40 20           JC         ir_irq_force_state_20_and_exit
+       CODE:03df 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:03e1 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_03e3                                   XREF[1]:     CODE:0380(j)  
        CODE:03e3 ea              MOV        A,R2
        CODE:03e4 24 ca           ADD        A,#0xca
-       CODE:03e6 50 17           JNC        LAB_CODE_03ff
+       CODE:03e6 50 17           JNC        ir_irq_force_state_20_and_exit
        CODE:03e8 ea              MOV        A,R2
        CODE:03e9 24 b5           ADD        A,#0xb5
-       CODE:03eb 40 12           JC         LAB_CODE_03ff
-       CODE:03ed 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:03eb 40 12           JC         ir_irq_force_state_20_and_exit
+       CODE:03ed 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:03ef 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_03f1                                   XREF[1]:     CODE:0382(j)  
        CODE:03f1 ea              MOV        A,R2
        CODE:03f2 24 aa           ADD        A,#0xaa
-       CODE:03f4 50 09           JNC        LAB_CODE_03ff
+       CODE:03f4 50 09           JNC        ir_irq_force_state_20_and_exit
        CODE:03f6 ea              MOV        A,R2
        CODE:03f7 24 95           ADD        A,#0x95
-       CODE:03f9 40 04           JC         LAB_CODE_03ff
-       CODE:03fb 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:03f9 40 04           JC         ir_irq_force_state_20_and_exit
+       CODE:03fb 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:03fd 41 ee           AJMP       LAB_CODE_02ee
-                             LAB_CODE_03ff                                   XREF[21]:    CODE:031e(j), CODE:0398(j), 
+                             ir_irq_force_state_20_and_exit                  XREF[21]:    CODE:031e(j), CODE:0398(j), 
                                                                                           CODE:039e(j), CODE:03a3(j), 
                                                                                           CODE:03bb(j), CODE:03c0(j), 
                                                                                           CODE:03c9(j), CODE:03cf(j), 
@@ -987,7 +989,7 @@
                                                                                           CODE:03f9(j), CODE:0418(j), 
                                                                                           CODE:042e(j), CODE:0433(j), 
                                                                                           CODE:0452(j), CODE:0468(j), [more]
-       CODE:03ff 75 6f 14        MOV        DAT_INTMEM_6f,#0x14                                        = ??
+       CODE:03ff 75 6f 14        MOV        g_ir_irq_state,#0x14                                       = ??
        CODE:0402 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_0404                                   XREF[1]:     CODE:0384(j)  
        CODE:0404 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
@@ -1003,26 +1005,26 @@
                              LAB_CODE_0415                                   XREF[1]:     CODE:0386(j)  
        CODE:0415 ea              MOV        A,R2
        CODE:0416 24 ea           ADD        A,#0xea
-       CODE:0418 50 e5           JNC        LAB_CODE_03ff
+       CODE:0418 50 e5           JNC        ir_irq_force_state_20_and_exit
        CODE:041a ea              MOV        A,R2
        CODE:041b 24 d5           ADD        A,#0xd5
        CODE:041d 40 04           JC         LAB_CODE_0423
-       CODE:041f 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:041f 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:0421 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_0423                                   XREF[1]:     CODE:041d(j)  
        CODE:0423 ea              MOV        A,R2
        CODE:0424 94 20           SUBB       A,#0x20
        CODE:0426 fa              MOV        R2,A
-       CODE:0427 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:0427 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:0429 61 1b           AJMP       LAB_CODE_031b
                              LAB_CODE_042b                                   XREF[2]:     CODE:0388(j), CODE:044d(j)  
        CODE:042b ea              MOV        A,R2
        CODE:042c 24 f4           ADD        A,#0xf4
-       CODE:042e 50 cf           JNC        LAB_CODE_03ff
+       CODE:042e 50 cf           JNC        ir_irq_force_state_20_and_exit
        CODE:0430 ea              MOV        A,R2
        CODE:0431 24 df           ADD        A,#0xdf
-       CODE:0433 40 ca           JC         LAB_CODE_03ff
-       CODE:0435 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:0433 40 ca           JC         ir_irq_force_state_20_and_exit
+       CODE:0435 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:0437 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_0439                                   XREF[1]:     CODE:038a(j)  
        CODE:0439 e5 75           MOV        A,DAT_INTMEM_75                                            = ??
@@ -1041,44 +1043,46 @@
                              LAB_CODE_044f                                   XREF[1]:     CODE:038c(j)  
        CODE:044f ea              MOV        A,R2
        CODE:0450 24 f4           ADD        A,#0xf4
-       CODE:0452 50 ab           JNC        LAB_CODE_03ff
+       CODE:0452 50 ab           JNC        ir_irq_force_state_20_and_exit
        CODE:0454 ea              MOV        A,R2
        CODE:0455 24 df           ADD        A,#0xdf
        CODE:0457 40 04           JC         LAB_CODE_045d
-       CODE:0459 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:0459 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:045b 41 ee           AJMP       LAB_CODE_02ee
                              LAB_CODE_045d                                   XREF[2]:     CODE:0457(j), CODE:0488(j)  
        CODE:045d ea              MOV        A,R2
        CODE:045e 94 16           SUBB       A,#0x16
        CODE:0460 fa              MOV        R2,A
-       CODE:0461 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:0461 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:0463 61 1b           AJMP       LAB_CODE_031b
                              LAB_CODE_0465                                   XREF[1]:     CODE:038e(j)  
        CODE:0465 ea              MOV        A,R2
        CODE:0466 24 f4           ADD        A,#0xf4
-       CODE:0468 50 95           JNC        LAB_CODE_03ff
-       CODE:046a 85 73 70        MOV        DAT_INTMEM_70,DAT_INTMEM_73                                = ??
+       CODE:0468 50 95           JNC        ir_irq_force_state_20_and_exit                             if r2 is less than 12, get out
+       CODE:046a 85 73 70        MOV        DAT_INTMEM_70,DAT_INTMEM_73                                happiest of happy paths:
+                                                                                                       data is released to other
+                                                                                                       IR code handlers
        CODE:046d 85 74 71        MOV        DAT_INTMEM_71,DAT_INTMEM_74                                = ??
        CODE:0470 e5 70           MOV        A,DAT_INTMEM_70                                            = ??
-       CODE:0472 30 d0 8a        JNB        P,LAB_CODE_03ff                                            = ??
+       CODE:0472 30 d0 8a        JNB        P,ir_irq_force_state_20_and_exit                           = ??
        CODE:0475 b4 07 05        CJNE       A,#0x7,LAB_CODE_047d
-       CODE:0478 75 6f 93        MOV        DAT_INTMEM_6f,#0x93                                        = ??
+       CODE:0478 75 6f 93        MOV        g_ir_irq_state,#0x93                                       = ??
        CODE:047b 81 85           AJMP       LAB_CODE_0485
                              LAB_CODE_047d                                   XREF[1]:     CODE:0475(j)  
        CODE:047d b4 01 05        CJNE       A,#0x1,LAB_CODE_0485
-       CODE:0480 75 6f 79        MOV        DAT_INTMEM_6f,#0x79                                        = ??
+       CODE:0480 75 6f 79        MOV        g_ir_irq_state,#0x79                                       = ??
        CODE:0483 81 85           AJMP       LAB_CODE_0485
                              LAB_CODE_0485                                   XREF[3]:     CODE:047b(j), CODE:047d(j), 
                                                                                           CODE:0483(j)  
        CODE:0485 ea              MOV        A,R2
        CODE:0486 24 df           ADD        A,#0xdf
        CODE:0488 40 d3           JC         LAB_CODE_045d
-       CODE:048a 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:048a 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:048c 41 ee           AJMP       LAB_CODE_02ee
        CODE:048e ea              MOV        A,R2
        CODE:048f 94 16           SUBB       A,#0x16
        CODE:0491 fa              MOV        R2,A
-       CODE:0492 05 6f           INC        DAT_INTMEM_6f                                              = ??
+       CODE:0492 05 6f           INC        g_ir_irq_state                                             = ??
        CODE:0494 61 1b           AJMP       LAB_CODE_031b
                              **************************************************************
                              *                          FUNCTION                          *
@@ -1096,7 +1100,7 @@
        CODE:04a8 75 b4 3f        MOV        DAT_SFR_b4,#0x3f                                           = ??
        CODE:04ab 75 b0 87        MOV        P3,#0x87                                                   = ??
        CODE:04ae 75 b1 07        MOV        IEN1,#0x7                                                  = ??
-       CODE:04b1 75 6f 14        MOV        DAT_INTMEM_6f,#0x14                                        = ??
+       CODE:04b1 75 6f 14        MOV        g_ir_irq_state,#0x14                                       = ??
        CODE:04b4 43 b7 01        ORL        IPH0,#0x1                                                  = ??
        CODE:04b7 43 b9 40        ORL        SADEN,#0x40                                                = ??
        CODE:04ba 53 bc bf        ANL        DAT_SFR_bc,#0xbf                                           = ??
@@ -1588,7 +1592,7 @@
        CODE:07fa 7a 08           MOV        R2,#0x8
        CODE:07fc 12 2c ed        LCALL      FUN_CODE_2ced                                              undefined FUN_CODE_2ced()
        CODE:07ff 78 7f           MOV        R0,#0x7f
-       CODE:0801 76 0f           MOV        @R0=>DAT_INTMEM_7f,#0xf                                    = ??
+       CODE:0801 76 0f           MOV        @R0=>g_ir_address,#0xf                                     = ??
        CODE:0803 78 81           MOV        R0,#0x81
        CODE:0805 76 0d           MOV        @R0=>DAT_INTMEM_81,#0xd                                    = ??
        CODE:0807 75 2f 5c        MOV        DAT_INTMEM_2f,#0x5c                                        = ??
@@ -1758,7 +1762,7 @@
        CODE:0949 22              RET
                              LAB_CODE_094a                                   XREF[1]:     CODE:0873(j)  
        CODE:094a 78 7f           MOV        R0,#0x7f
-       CODE:094c 86 f0           MOV        B,@R0=>DAT_INTMEM_7f                                       = ??
+       CODE:094c 86 f0           MOV        B,@R0=>g_ir_address                                        = ??
        CODE:094e 74 01           MOV        A,#0x1
        CODE:0950 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0953 e5 f0           MOV        A,B
@@ -2239,7 +2243,7 @@
        CODE:0c8a 85 f0 61        MOV        g_rol_led_flags,B                                          and store it
        CODE:0c8d eb              MOV        A,R3
        CODE:0c8e 78 ae           MOV        R0,#0xae                                                   write updated LED state somewhere
-       CODE:0c90 f6              MOV        @R0=>DAT_INTMEM_ae,A                                       = ??
+       CODE:0c90 f6              MOV        @R0=>g_rol_ipc_led_overrides,A                             = ??
        CODE:0c91 d2 48           SETB       29.0                                                       ???
        CODE:0c93 22              RET
                              ipc_set_audclamp_deassert                       XREF[1]:     CODE:0b08(j)  
@@ -2260,12 +2264,12 @@
        CODE:0caf f5 f0           MOV        B,A
        CODE:0cb1 53 f0 0f        ANL        B,#0xf
        CODE:0cb4 78 7f           MOV        R0,#0x7f
-       CODE:0cb6 a6 f0           MOV        @R0=>DAT_INTMEM_7f,B                                       = ??
+       CODE:0cb6 a6 f0           MOV        @R0=>g_ir_address,B                                        = ??
        CODE:0cb8 d2 45           SETB       28.5                                                       = ??
        CODE:0cba 22              RET
                              LAB_CODE_0cbb                                   XREF[1]:     CODE:0b14(j)  
-       CODE:0cbb 20 4b 1b        JB         29.3,return_0cd9                                           = ??
-       CODE:0cbe 20 3b 18        JB         27.3,return_0cd9                                           = ??
+       CODE:0cbb 20 4b 1b        JB         g_argon_ipc_write_pending,return_0cd9                      = ??
+       CODE:0cbe 20 3b 18        JB         g_argon_ipc_event_waiting,return_0cd9                      = ??
        CODE:0cc1 74 01           MOV        A,#0x1
        CODE:0cc3 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0cc6 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
@@ -2273,11 +2277,11 @@
        CODE:0ccb 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:0cce fb              MOV        R3,A
        CODE:0ccf 78 b0           MOV        R0,#0xb0
-       CODE:0cd1 a6 f0           MOV        @R0=>DAT_INTMEM_b0,B                                       = ??
+       CODE:0cd1 a6 f0           MOV        @R0=>g_argon_ipc_data_byte_1,B                             = ??
        CODE:0cd3 eb              MOV        A,R3
        CODE:0cd4 78 b1           MOV        R0,#0xb1
-       CODE:0cd6 f6              MOV        @R0=>DAT_INTMEM_b1,A                                       = ??
-       CODE:0cd7 d2 4b           SETB       29.3                                                       = ??
+       CODE:0cd6 f6              MOV        @R0=>g_argon_ipc_data_byte_2,A                             = ??
+       CODE:0cd7 d2 4b           SETB       g_argon_ipc_write_pending                                  = ??
                              return_0cd9                                     XREF[2]:     CODE:0cbb(j), CODE:0cbe(j)  
        CODE:0cd9 22              RET
                              ipc_handle_display_error                        XREF[1]:     CODE:0b1a(j)  
@@ -2312,7 +2316,7 @@
                              LAB_CODE_0d0d                                   XREF[2]:     CODE:0d01(j), CODE:0d07(j)  
        CODE:0d0d 30 13 06        JNB        g_has_getpoweroncause_arrived,return_0d16                  = ??
        CODE:0d10 78 af           MOV        R0,#0xaf                                                   force ring of light on?
-       CODE:0d12 a6 5c           MOV        @R0=>DAT_INTMEM_af,g_rol_base_error_pattern                = ??
+       CODE:0d12 a6 5c           MOV        @R0=>g_rrod_base_pattern,g_rol_base_error_pattern          = ??
        CODE:0d14 d2 48           SETB       29.0                                                       = ??
                              return_0d16                                     XREF[2]:     CODE:0cee(j), CODE:0d0d(j)  
        CODE:0d16 22              RET
@@ -2353,8 +2357,8 @@
        CODE:0d4b c2 37           CLR        26.7                                                       = ??
        CODE:0d4d c2 38           CLR        27.0                                                       = ??
        CODE:0d4f c2 39           CLR        27.1                                                       = ??
-       CODE:0d51 c2 3b           CLR        27.3                                                       = ??
-       CODE:0d53 c2 3c           CLR        27.4                                                       = ??
+       CODE:0d51 c2 3b           CLR        g_argon_ipc_event_waiting                                  = ??
+       CODE:0d53 c2 3c           CLR        g_ir_ipc_event_waiting                                     = ??
        CODE:0d55 c2 3e           CLR        g_tray_state_updated                                       = ??
        CODE:0d57 22              RET
                              LAB_CODE_0d58                                   XREF[1]:     CODE:0d44(j)  
@@ -2373,11 +2377,11 @@
        CODE:0d6f 30 39 03        JNB        27.1,LAB_CODE_0d75                                         = ??
        CODE:0d72 02 0e 1b        LJMP       LAB_CODE_0e1b
                              LAB_CODE_0d75                                   XREF[1]:     CODE:0d6f(j)  
-       CODE:0d75 30 3b 03        JNB        27.3,LAB_CODE_0d7b                                         = ??
+       CODE:0d75 30 3b 03        JNB        g_argon_ipc_event_waiting,LAB_CODE_0d7b                    = ??
        CODE:0d78 02 0e 36        LJMP       LAB_CODE_0e36
                              LAB_CODE_0d7b                                   XREF[1]:     CODE:0d75(j)  
-       CODE:0d7b 30 3c 03        JNB        27.4,LAB_CODE_0d81                                         = ??
-       CODE:0d7e 02 0e 56        LJMP       LAB_CODE_0e56
+       CODE:0d7b 30 3c 03        JNB        g_ir_ipc_event_waiting,LAB_CODE_0d81                       = ??
+       CODE:0d7e 02 0e 56        LJMP       ipc_handle_async_ir_event
                              LAB_CODE_0d81                                   XREF[1]:     CODE:0d7b(j)  
        CODE:0d81 30 3e 03        JNB        g_tray_state_updated,LAB_CODE_0d87                         = ??
        CODE:0d84 02 0e 95        LJMP       LAB_CODE_0e95
@@ -2471,11 +2475,11 @@
        CODE:0e30 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0e33 02 0d 88        LJMP       LAB_CODE_0d88
                              LAB_CODE_0e36                                   XREF[1]:     CODE:0d78(j)  
-       CODE:0e36 c2 3b           CLR        27.3                                                       = ??
+       CODE:0e36 c2 3b           CLR        g_argon_ipc_event_waiting                                  = ??
        CODE:0e38 78 b0           MOV        R0,#0xb0
-       CODE:0e3a 86 f0           MOV        B,@R0=>DAT_INTMEM_b0                                       = ??
+       CODE:0e3a 86 f0           MOV        B,@R0=>g_argon_ipc_data_byte_1                             = ??
        CODE:0e3c 78 b1           MOV        R0,#0xb1
-       CODE:0e3e e6              MOV        A,@R0=>DAT_INTMEM_b1                                       = ??
+       CODE:0e3e e6              MOV        A,@R0=>g_argon_ipc_data_byte_2                             = ??
        CODE:0e3f fb              MOV        R3,A
        CODE:0e40 74 01           MOV        A,#0x1
        CODE:0e42 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
@@ -2486,8 +2490,8 @@
        CODE:0e4f eb              MOV        A,R3
        CODE:0e50 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0e53 02 0d 88        LJMP       LAB_CODE_0d88
-                             LAB_CODE_0e56                                   XREF[1]:     CODE:0d7e(j)  
-       CODE:0e56 c2 3c           CLR        27.4                                                       = ??
+                             ipc_handle_async_ir_event                       XREF[1]:     CODE:0d7e(j)  
+       CODE:0e56 c2 3c           CLR        g_ir_ipc_event_waiting                                     = ??
        CODE:0e58 78 aa           MOV        R0,#0xaa
        CODE:0e5a e6              MOV        A,@R0=>DAT_INTMEM_aa                                       = ??
        CODE:0e5b fb              MOV        R3,A
@@ -3039,8 +3043,9 @@
        CODE:11a0 e6              MOV        A,@R0=>DAT_INTMEM_9a                                       = ??
        CODE:11a1 26              ADD        A,@R0=>DAT_INTMEM_9a                                       = ??
        CODE:11a2 26              ADD        A,@R0=>DAT_INTMEM_9a                                       = ??
-       CODE:11a3 90 11 a7        MOV        DPTR,#0x11a7
+       CODE:11a3 90 11 a7        MOV        DPTR,#LAB_CODE_11a7
        CODE:11a6 73              JMP        @A+DPTR
+                             LAB_CODE_11a7                                   XREF[1]:     FUN_CODE_1196:11a3(*)  
        CODE:11a7 02 11 51        LJMP       LAB_CODE_1151
        CODE:11aa 02 11 77        LJMP       LAB_CODE_1177
        CODE:11ad 02 11 8a        LJMP       LAB_CODE_118a
@@ -3209,7 +3214,7 @@
                                                                                                        3 quadrants (RRoD classic)
                              LAB_CODE_12b0                                   XREF[1]:     CODE:12aa(j)  
        CODE:12b0 78 af           MOV        R0,#0xaf
-       CODE:12b2 a6 5c           MOV        @R0=>DAT_INTMEM_af,g_rol_base_error_pattern                move error code to LEDs
+       CODE:12b2 a6 5c           MOV        @R0=>g_rrod_base_pattern,g_rol_base_error_pattern          move error code to LEDs
        CODE:12b4 d2 48           SETB       29.0                                                       go to error state
        CODE:12b6 c2 0e           CLR        g_sysreset_watchdog_should_run                             kill statemachine execution
        CODE:12b8 80 9d           SJMP       LAB_CODE_1257                                              and give up
@@ -3236,8 +3241,9 @@
        CODE:12d0 e6              MOV        A,@R0=>g_sysreset_watchdog_state                           = ??
        CODE:12d1 26              ADD        A,@R0=>g_sysreset_watchdog_state                           = ??
        CODE:12d2 26              ADD        A,@R0=>g_sysreset_watchdog_state                           = ??
-       CODE:12d3 90 12 d7        MOV        DPTR,#0x12d7
+       CODE:12d3 90 12 d7        MOV        DPTR,#LAB_CODE_12d7
        CODE:12d6 73              JMP        @A+DPTR
+                             LAB_CODE_12d7                                   XREF[1]:     sysreset_watchdog_statemachine_e
        CODE:12d7 02 11 b3        LJMP       LAB_CODE_11b3                                              do something flash related(??)
                                                                                                        and change powergood state
                                                                                                        (also goes to state 11
@@ -3328,8 +3334,9 @@
        CODE:1360 e6              MOV        A,@R0=>DAT_INTMEM_9f                                       = ??
        CODE:1361 26              ADD        A,@R0=>DAT_INTMEM_9f                                       = ??
        CODE:1362 26              ADD        A,@R0=>DAT_INTMEM_9f                                       = ??
-       CODE:1363 90 13 67        MOV        DPTR,#0x1367
+       CODE:1363 90 13 67        MOV        DPTR,#LAB_CODE_1367
        CODE:1366 73              JMP        @A+DPTR
+                             LAB_CODE_1367                                   XREF[1]:     audclamp_sm_exec:1363(*)  
        CODE:1367 02 13 0b        LJMP       LAB_CODE_130b
        CODE:136a 02 13 2e        LJMP       LAB_CODE_132e
        CODE:136d 02 13 50        LJMP       LAB_CODE_1350
@@ -4088,19 +4095,23 @@
        CODE:176d 85 61 f0        MOV        B,g_rol_led_flags                                          = ??
        CODE:1770 c3              CLR        CY
        CODE:1771 78 af           MOV        R0,#0xaf
-       CODE:1773 e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
+       CODE:1773 e6              MOV        A,@R0=>g_rrod_base_pattern                                 = ??
        CODE:1774 70 05           JNZ        LAB_CODE_177b
        CODE:1776 20 f5 02        JB         B.5,LAB_CODE_177b                                          skip if this bit set
        CODE:1779 a2 f4           MOV        CY,B.4                                                     otherwise, set carry to this
                              LAB_CODE_177b                                   XREF[2]:     CODE:1774(j), CODE:1776(j)  
-       CODE:177b 74 80           MOV        A,#0x80
-       CODE:177d 30 f7 1f        JNB        B.7,LAB_CODE_179f                                          = ??
-       CODE:1780 92 e0           MOV        ACC.0,CY                                                   = ??
-       CODE:1782 c2 f4           CLR        B.4                                                        = ??
+       CODE:177b 74 80           MOV        A,#0x80                                                    base argon command - 0x80
+       CODE:177d 30 f7 1f        JNB        B.7,LAB_CODE_179f                                          if RoL turned off, then send command
+                                                                                                       0x80, which turns the LEDs off
+       CODE:1780 92 e0           MOV        ACC.0,CY                                                   set bootanim flag in the byte
+                                                                                                       we're about to write
+       CODE:1782 c2 f4           CLR        B.4                                                        and clear it from the flags
        CODE:1784 85 f0 61        MOV        g_rol_led_flags,B                                          = ??
-       CODE:1787 20 f2 0d        JB         B.2,LAB_CODE_1797                                          = ??
+       CODE:1787 20 f2 0d        JB         B.2,LAB_CODE_1797                                          if bits 2/3 are set, jump down
+                                                                                                       (they're overrides from the CPU)
        CODE:178a 20 f3 0a        JB         B.3,LAB_CODE_1797                                          = ??
-       CODE:178d a2 f0           MOV        CY,B.0                                                     = ??
+       CODE:178d a2 f0           MOV        CY,B.0                                                     otherwise use bits 0/1
+                                                                                                       to populate those bits
        CODE:178f 92 e2           MOV        ACC.2,CY                                                   = ??
        CODE:1791 a2 f1           MOV        CY,B.1                                                     = ??
        CODE:1793 92 e3           MOV        ACC.3,CY                                                   = ??
@@ -4131,7 +4142,7 @@
                              LAB_CODE_17c2                                   XREF[1]:     CODE:182d(j)  
        CODE:17c2 74 20           MOV        A,#0x20
        CODE:17c4 78 7f           MOV        R0,#0x7f
-       CODE:17c6 86 f0           MOV        B,@R0=>DAT_INTMEM_7f                                       = ??
+       CODE:17c6 86 f0           MOV        B,@R0=>g_ir_address                                        = ??
        CODE:17c8 c3              CLR        CY
        CODE:17c9 30 57 03        JNB        g_rtc_wake_set,LAB_CODE_17cf                               = ??
        CODE:17cc a2 58           MOV        CY,g_rtc_alarm_should_power_up                             = ??
@@ -4196,7 +4207,7 @@
                              LAB_CODE_182f                                   XREF[1]:     CODE:182a(j)  
        CODE:182f e5 34           MOV        A,DAT_INTMEM_34                                            = ??
        CODE:1831 70 a6           JNZ        LAB_CODE_17d9
-       CODE:1833 30 4b 02        JNB        29.3,LAB_CODE_1838                                         = ??
+       CODE:1833 30 4b 02        JNB        g_argon_ipc_write_pending,LAB_CODE_1838                    = ??
        CODE:1836 80 43           SJMP       LAB_CODE_187b
                              LAB_CODE_1838                                   XREF[2]:     CODE:17f7(j), CODE:1833(j)  
        CODE:1838 c2 40           CLR        28.0                                                       = ??
@@ -4227,7 +4238,7 @@
        CODE:1866 30 e7 f6        JNB        ACC.7,LAB_CODE_185f                                        = ??
        CODE:1869 20 e5 f3        JB         ACC.5,LAB_CODE_185f                                        = ??
        CODE:186c 78 af           MOV        R0,#0xaf
-       CODE:186e e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
+       CODE:186e e6              MOV        A,@R0=>g_rrod_base_pattern                                 = ??
        CODE:186f 70 ee           JNZ        LAB_CODE_185f
        CODE:1871 d2 38           SETB       27.0                                                       = ??
        CODE:1873 74 04           MOV        A,#0x4                                                     argon command 0x04
@@ -4236,9 +4247,9 @@
        CODE:1878 02 19 47        LJMP       argon_sm_go_state_1
                              LAB_CODE_187b                                   XREF[1]:     CODE:1836(j)  
        CODE:187b 78 b1           MOV        R0,#0xb1
-       CODE:187d 86 f0           MOV        B,@R0=>DAT_INTMEM_b1                                       = ??
+       CODE:187d 86 f0           MOV        B,@R0=>g_argon_ipc_data_byte_2                             = ??
        CODE:187f 78 b0           MOV        R0,#0xb0
-       CODE:1881 e6              MOV        A,@R0=>DAT_INTMEM_b0                                       = ??
+       CODE:1881 e6              MOV        A,@R0=>g_argon_ipc_data_byte_1                             = ??
        CODE:1882 20 e7 08        JB         ACC.7,LAB_CODE_188d                                        = ??
        CODE:1885 54 0f           ANL        A,#0xf
        CODE:1887 60 0e           JZ         LAB_CODE_1897
@@ -4259,7 +4270,7 @@
                                                                                                        means we go back to state 1
        CODE:18a1 30 f7 39        JNB        B.7,LAB_CODE_18dd                                          = ??
        CODE:18a4 78 af           MOV        R0,#0xaf                                                   read error flash state
-       CODE:18a6 e6              MOV        A,@R0=>DAT_INTMEM_af                                       = ??
+       CODE:18a6 e6              MOV        A,@R0=>g_rrod_base_pattern                                 = ??
        CODE:18a7 70 0a           JNZ        LAB_CODE_18b3                                              if error code present, jump down
        CODE:18a9 85 61 f0        MOV        B,g_rol_led_flags                                          otherwise, bit 5 of this
                                                                                                        must be set
@@ -4358,7 +4369,7 @@
        CODE:1931 50 3c           JNC        LAB_CODE_196f
        CODE:1933 20 d5 0c        JB         F0,argon_sm_go_state_0                                     = ??
        CODE:1936 78 ae           MOV        R0,#0xae
-       CODE:1938 e6              MOV        A,@R0=>DAT_INTMEM_ae                                       read RoL state
+       CODE:1938 e6              MOV        A,@R0=>g_rol_ipc_led_overrides                             read RoL state
        CODE:1939 54 0f           ANL        A,#0xf                                                     red bits only please
        CODE:193b 44 b0           ORL        A,#0xb0                                                    0xB0 = 1011 xxxx
                                                                                                        = SET_RED_LEDS
@@ -4420,7 +4431,7 @@
        CODE:1973 50 fa           JNC        LAB_CODE_196f
        CODE:1975 20 d5 ca        JB         F0,argon_sm_go_state_0                                     = ??
        CODE:1978 78 ae           MOV        R0,#0xae
-       CODE:197a e6              MOV        A,@R0=>DAT_INTMEM_ae                                       = ??
+       CODE:197a e6              MOV        A,@R0=>g_rol_ipc_led_overrides                             = ??
        CODE:197b c4              SWAP       A
        CODE:197c 54 0f           ANL        A,#0xf                                                     keep green lights only
        CODE:197e 44 a0           ORL        A,#0xa0                                                    command 0xAx = SET_GREEN_LEDS
@@ -4430,16 +4441,16 @@
        CODE:1985 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
        CODE:1988 50 e5           JNC        LAB_CODE_196f
        CODE:198a 78 b1           MOV        R0,#0xb1
-       CODE:198c f6              MOV        @R0=>DAT_INTMEM_b1,A                                       = ??
+       CODE:198c f6              MOV        @R0=>g_argon_ipc_data_byte_2,A                             = ??
                              LAB_CODE_198d                                   XREF[1]:     CODE:1899(j)  
        CODE:198d 78 b0           MOV        R0,#0xb0
-       CODE:198f e6              MOV        A,@R0=>DAT_INTMEM_b0                                       = ??
+       CODE:198f e6              MOV        A,@R0=>g_argon_ipc_data_byte_1                             = ??
        CODE:1990 a2 d5           MOV        CY,F0                                                      = ??
        CODE:1992 92 e6           MOV        ACC.6,CY                                                   = ??
        CODE:1994 78 b0           MOV        R0,#0xb0
-       CODE:1996 f6              MOV        @R0=>DAT_INTMEM_b0,A                                       = ??
-       CODE:1997 d2 3b           SETB       27.3                                                       = ??
-       CODE:1999 c2 4b           CLR        29.3                                                       = ??
+       CODE:1996 f6              MOV        @R0=>g_argon_ipc_data_byte_1,A                             = ??
+       CODE:1997 d2 3b           SETB       g_argon_ipc_event_waiting                                  = ??
+       CODE:1999 c2 4b           CLR        g_argon_ipc_write_pending                                  = ??
        CODE:199b 80 a5           SJMP       argon_sm_go_state_0
                              argon_sm_exec_state_7                           XREF[1]:     CODE:1a28(j)  
        CODE:199d 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
@@ -4450,7 +4461,7 @@
        CODE:19a9 92 57           MOV        g_rtc_wake_set,CY                                          = ??
        CODE:19ab 54 0f           ANL        A,#0xf
        CODE:19ad 78 7f           MOV        R0,#0x7f
-       CODE:19af f6              MOV        @R0=>DAT_INTMEM_7f,A                                       = ??
+       CODE:19af f6              MOV        @R0=>g_ir_address,A                                        = ??
        CODE:19b0 80 90           SJMP       argon_sm_go_state_0
                              argon_sm_exec_state_8                           XREF[1]:     CODE:1a2b(j)  
        CODE:19b2 12 2a 3e        LCALL      FUN_CODE_2a3e                                              undefined FUN_CODE_2a3e()
@@ -4539,8 +4550,9 @@
        CODE:1a30 e6              MOV        A,@R0=>DAT_INTMEM_a5                                       = ??
        CODE:1a31 26              ADD        A,@R0=>DAT_INTMEM_a5                                       = ??
        CODE:1a32 26              ADD        A,@R0=>DAT_INTMEM_a5                                       = ??
-       CODE:1a33 90 1a 37        MOV        DPTR,#0x1a37
+       CODE:1a33 90 1a 37        MOV        DPTR,#LAB_CODE_1a37
        CODE:1a36 73              JMP        @A+DPTR
+                             LAB_CODE_1a37                                   XREF[1]:     hana_i2c_sm_exec:1a33(*)  
        CODE:1a37 02 1a 52        LJMP       LAB_CODE_1a52
        CODE:1a3a 02 1a db        LJMP       LAB_CODE_1adb
        CODE:1a3d 02 1a fd        LJMP       LAB_CODE_1afd
@@ -4623,7 +4635,9 @@
        CODE:1adb 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
        CODE:1ade 50 7a           JNC        LAB_CODE_1b5a
                              LAB_CODE_1ae0                                   XREF[1]:     CODE:1a65(j)  
-       CODE:1ae0 c2 2c           CLR        25.4                                                       = ??
+       CODE:1ae0 c2 2c           CLR        25.4                                                       execution likely ends up here
+                                                                                                       when a IPC to I2C write
+                                                                                                       (expecting no response) succeeds
        CODE:1ae2 c2 36           CLR        g_ipc_setter_command_blocking                              = ??
        CODE:1ae4 74 01           MOV        A,#0x1
        CODE:1ae6 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
@@ -4754,7 +4768,7 @@
        CODE:1ba0 f6              MOV        @R0=>DAT_INTMEM_ab,A                                       = ??
        CODE:1ba1 78 aa           MOV        R0,#0xaa
        CODE:1ba3 76 07           MOV        @R0=>DAT_INTMEM_aa,#0x7                                    = ??
-       CODE:1ba5 d2 3c           SETB       27.4                                                       = ??
+       CODE:1ba5 d2 3c           SETB       g_ir_ipc_event_waiting                                     = ??
        CODE:1ba7 80 84           SJMP       hana_sm_go_state_0
                              LAB_CODE_1ba9                                   XREF[1]:     CODE:1b9b(j)  
        CODE:1ba9 a2 14           MOV        CY,22.4                                                    = ??
@@ -4779,9 +4793,13 @@
        CODE:1bc3 78 81           MOV        R0,#0x81
        CODE:1bc5 16              DEC        @R0=>DAT_INTMEM_81                                         = ??
                              LAB_CODE_1bc6                                   XREF[1]:     CODE:1bc1(j)  
-       CODE:1bc6 12 2a c4        LCALL      FUN_CODE_2ac4                                              undefined FUN_CODE_2ac4()
+       CODE:1bc6 12 2a c4        LCALL      ir_parse_waiting_data                                      check if command is waiting,
+                                                                                                       and parse it if so
+                                                                                                       (will populate r2/r3/r4)
        CODE:1bc9 70 01           JNZ        LAB_CODE_1bcc
-       CODE:1bcb 22              RET
+       CODE:1bcb 22              RET                                                                   if no command was waiting
+                                                                                                       (or function returned zero)
+                                                                                                       then get out
                              LAB_CODE_1bcc                                   XREF[1]:     CODE:1bc9(j)  
        CODE:1bcc 85 2f f0        MOV        B,DAT_INTMEM_2f                                            = ??
        CODE:1bcf 30 f5 01        JNB        B.5,LAB_CODE_1bd3                                          = ??
@@ -4824,39 +4842,39 @@
        CODE:1c10 b2 01           CPL        20.1                                                       = ??
                              LAB_CODE_1c12                                   XREF[2]:     CODE:1bf2(j), CODE:1c0d(j)  
        CODE:1c12 30 02 03        JNB        20.2,LAB_CODE_1c18                                         = ??
-       CODE:1c15 20 d5 54        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c15 20 d5 54        JB         F0,return_1c6c                                             = ??
                              LAB_CODE_1c18                                   XREF[1]:     CODE:1c12(j)  
        CODE:1c18 c2 02           CLR        20.2                                                       = ??
        CODE:1c1a ba 0c 06        CJNE       R2,#0xc,LAB_CODE_1c23
-       CODE:1c1d 20 d5 4c        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c1d 20 d5 4c        JB         F0,return_1c6c                                             = ??
        CODE:1c20 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c22 22              RET
                              LAB_CODE_1c23                                   XREF[1]:     CODE:1c1a(j)  
        CODE:1c23 ba 28 06        CJNE       R2,#0x28,LAB_CODE_1c2c
-       CODE:1c26 20 d5 43        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c26 20 d5 43        JB         F0,return_1c6c                                             = ??
        CODE:1c29 d2 23           SETB       g_ir_eject_button_pressed                                  = ??
        CODE:1c2b 22              RET
                              LAB_CODE_1c2c                                   XREF[1]:     CODE:1c23(j)  
        CODE:1c2c 20 1f 0b        JB         23.7,LAB_CODE_1c3a                                         = ??
        CODE:1c2f ba 29 06        CJNE       R2,#0x29,LAB_CODE_1c38
-       CODE:1c32 20 d5 37        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c32 20 d5 37        JB         F0,return_1c6c                                             = ??
        CODE:1c35 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c37 22              RET
                              LAB_CODE_1c38                                   XREF[1]:     CODE:1c2f(j)  
        CODE:1c38 80 1b           SJMP       LAB_CODE_1c55
                              LAB_CODE_1c3a                                   XREF[1]:     CODE:1c2c(j)  
        CODE:1c3a ba 0d 06        CJNE       R2,#0xd,LAB_CODE_1c43
-       CODE:1c3d 20 d5 2c        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c3d 20 d5 2c        JB         F0,return_1c6c                                             = ??
        CODE:1c40 d2 22           SETB       g_ir_windows_button_pressed                                = ??
        CODE:1c42 22              RET
                              LAB_CODE_1c43                                   XREF[1]:     CODE:1c3a(j)  
        CODE:1c43 ba 64 06        CJNE       R2,#0x64,LAB_CODE_1c4c
-       CODE:1c46 20 d5 23        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c46 20 d5 23        JB         F0,return_1c6c                                             = ??
        CODE:1c49 d2 21           SETB       g_ir_x_button_pressed                                      = ??
        CODE:1c4b 22              RET
                              LAB_CODE_1c4c                                   XREF[1]:     CODE:1c43(j)  
        CODE:1c4c ba 2a 06        CJNE       R2,#0x2a,LAB_CODE_1c55
-       CODE:1c4f 20 d5 1a        JB         F0,LAB_CODE_1c6c                                           = ??
+       CODE:1c4f 20 d5 1a        JB         F0,return_1c6c                                             = ??
        CODE:1c52 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c54 22              RET
                              LAB_CODE_1c55                                   XREF[3]:     CODE:1bf8(j), CODE:1c38(j), 
@@ -4872,8 +4890,8 @@
        CODE:1c65 a6 f0           MOV        @R0=>DAT_INTMEM_ad,B                                       = ??
        CODE:1c67 78 aa           MOV        R0,#0xaa
        CODE:1c69 f6              MOV        @R0=>DAT_INTMEM_aa,A                                       = ??
-       CODE:1c6a d2 3c           SETB       27.4                                                       = ??
-                             LAB_CODE_1c6c                                   XREF[7]:     CODE:1c15(j), CODE:1c1d(j), 
+       CODE:1c6a d2 3c           SETB       g_ir_ipc_event_waiting                                     = ??
+                             return_1c6c                                     XREF[7]:     CODE:1c15(j), CODE:1c1d(j), 
                                                                                           CODE:1c26(j), CODE:1c32(j), 
                                                                                           CODE:1c3d(j), CODE:1c46(j), 
                                                                                           CODE:1c4f(j)  
@@ -4883,25 +4901,25 @@
                                                                                           CODE:1d01(j), CODE:1d07(j), 
                                                                                           CODE:1d0c(j)  
        CODE:1c6d 78 a6           MOV        R0,#0xa6
-       CODE:1c6f 76 00           MOV        @R0=>DAT_INTMEM_a6,#0x0                                    = ??
+       CODE:1c6f 76 00           MOV        @R0=>g_powerejectsw_sm_state,#0x0                          = ??
        CODE:1c71 22              RET
                              LAB_CODE_1c72                                   XREF[1]:     CODE:1ca9(j)  
        CODE:1c72 78 a6           MOV        R0,#0xa6
-       CODE:1c74 76 01           MOV        @R0=>DAT_INTMEM_a6,#0x1                                    = ??
+       CODE:1c74 76 01           MOV        @R0=>g_powerejectsw_sm_state,#0x1                          = ??
        CODE:1c76 22              RET
                              LAB_CODE_1c77                                   XREF[5]:     CODE:1cb5(j), CODE:1ccd(j), 
                                                                                           CODE:1cd2(j), CODE:1cdb(j), 
                                                                                           CODE:1ce0(j)  
        CODE:1c77 78 a6           MOV        R0,#0xa6
-       CODE:1c79 76 02           MOV        @R0=>DAT_INTMEM_a6,#0x2                                    = ??
+       CODE:1c79 76 02           MOV        @R0=>g_powerejectsw_sm_state,#0x2                          = ??
        CODE:1c7b 22              RET
                              LAB_CODE_1c7c                                   XREF[1]:     CODE:1cc5(j)  
        CODE:1c7c 78 a6           MOV        R0,#0xa6
-       CODE:1c7e 76 03           MOV        @R0=>DAT_INTMEM_a6,#0x3                                    = ??
+       CODE:1c7e 76 03           MOV        @R0=>g_powerejectsw_sm_state,#0x3                          = ??
        CODE:1c80 22              RET
                              LAB_CODE_1c81                                   XREF[1]:     CODE:1cc8(j)  
        CODE:1c81 78 a6           MOV        R0,#0xa6
-       CODE:1c83 76 04           MOV        @R0=>DAT_INTMEM_a6,#0x4                                    = ??
+       CODE:1c83 76 04           MOV        @R0=>g_powerejectsw_sm_state,#0x4                          = ??
        CODE:1c85 22              RET
                              LAB_CODE_1c86                                   XREF[3]:     CODE:1ca2(j), CODE:1ca7(j), 
                                                                                           CODE:1cc2(j)  
@@ -4913,11 +4931,12 @@
              undefined         ACC:1          <RETURN>
                              powerejectsw_sm_exec                            XREF[1]:     mainloop:07aa(c)  
        CODE:1c87 78 a6           MOV        R0,#0xa6
-       CODE:1c89 e6              MOV        A,@R0=>DAT_INTMEM_a6                                       = ??
-       CODE:1c8a 26              ADD        A,@R0=>DAT_INTMEM_a6                                       = ??
-       CODE:1c8b 26              ADD        A,@R0=>DAT_INTMEM_a6                                       = ??
-       CODE:1c8c 90 1c 90        MOV        DPTR,#0x1c90
+       CODE:1c89 e6              MOV        A,@R0=>g_powerejectsw_sm_state                             = ??
+       CODE:1c8a 26              ADD        A,@R0=>g_powerejectsw_sm_state                             = ??
+       CODE:1c8b 26              ADD        A,@R0=>g_powerejectsw_sm_state                             = ??
+       CODE:1c8c 90 1c 90        MOV        DPTR,#LAB_CODE_1c90
        CODE:1c8f 73              JMP        @A+DPTR
+                             LAB_CODE_1c90                                   XREF[1]:     powerejectsw_sm_exec:1c8c(*)  
        CODE:1c90 02 1c 9f        LJMP       LAB_CODE_1c9f
        CODE:1c93 02 1c ab        LJMP       LAB_CODE_1cab
        CODE:1c96 02 1c b7        LJMP       LAB_CODE_1cb7
@@ -4961,11 +4980,16 @@
        CODE:1cdd 12 25 a2        LCALL      ejectsw_read                                               if ejectswitch suddenly released
        CODE:1ce0 50 95           JNC        LAB_CODE_1c77                                              go back to state 2
        CODE:1ce2 78 af           MOV        R0,#0xaf
-       CODE:1ce4 e6              MOV        A,@R0=>DAT_INTMEM_af                                       load whatever is here
-       CODE:1ce5 60 23           JZ         LAB_CODE_1d0a
-       CODE:1ce7 12 25 a6        LCALL      bindsw_read                                                undefined bindsw_read()
+       CODE:1ce4 e6              MOV        A,@R0=>g_rrod_base_pattern                                 check if RRoD or something like
+                                                                                                       it is being displayed
+       CODE:1ce5 60 23           JZ         LAB_CODE_1d0a                                              if it isn't, then just say
+                                                                                                       the eject switch was pushed
+       CODE:1ce7 12 25 a6        LCALL      bindsw_read                                                if in RRoD mode, also check that
+                                                                                                       the bind switch was pushed
        CODE:1cea 50 1e           JNC        LAB_CODE_1d0a
-       CODE:1cec d2 48           SETB       29.0                                                       = ??
+       CODE:1cec d2 48           SETB       29.0                                                       if eject/bindsw are both pushed,
+                                                                                                       then advance through the error
+                                                                                                       code state
        CODE:1cee d2 33           SETB       26.3                                                       = ??
        CODE:1cf0 e5 5a           MOV        A,g_rrod_errordisplay_state                                = ??
        CODE:1cf2 70 06           JNZ        LAB_CODE_1cfa
@@ -5437,7 +5461,7 @@
        CODE:1fef 78 af           MOV        R0,#0xaf                                                   setup invisible ring of light
                                                                                                        error pattern???
                                                                                                        or just clear it??
-       CODE:1ff1 76 00           MOV        @R0=>DAT_INTMEM_af,#0x0                                    = ??
+       CODE:1ff1 76 00           MOV        @R0=>g_rrod_base_pattern,#0x0                              = ??
        CODE:1ff3 d2 47           SETB       28.7                                                       = ??
        CODE:1ff5 d2 48           SETB       29.0                                                       = ??
        CODE:1ff7 30 15 02        JNB        22.5,LAB_CODE_1ffc                                         = ??
@@ -5463,10 +5487,10 @@
                                                                                                        see 1fcc as to why
        CODE:201a 78 af           MOV        R0,#0xaf                                                   change some other
                                                                                                        statemachine's state
-       CODE:201c 76 0d           MOV        @R0=>DAT_INTMEM_af,#00001101b                              = ??
+       CODE:201c 76 0d           MOV        @R0=>g_rrod_base_pattern,#00001101b                        = ??
        CODE:201e 20 1c 04        JB         g_rrod_power_problem,LAB_CODE_2025                         = ??
        CODE:2021 78 af           MOV        R0,#0xaf
-       CODE:2023 76 0a           MOV        @R0=>DAT_INTMEM_af,#00001010b                              = ??
+       CODE:2023 76 0a           MOV        @R0=>g_rrod_base_pattern,#00001010b                        = ??
                              LAB_CODE_2025                                   XREF[1]:     CODE:201e(j)  
        CODE:2025 d2 48           SETB       29.0                                                       = ??
        CODE:2027 80 a3           SJMP       LAB_CODE_1fcc
@@ -5766,7 +5790,7 @@
                              LAB_CODE_2226                                   XREF[1]:     CODE:221b(j)  
        CODE:2226 e5 36           MOV        A,g_tray_state                                             = ??
        CODE:2228 64 62           XRL        A,#0x62
-       CODE:222a 60 09           JZ         LAB_CODE_2235
+       CODE:222a 60 09           JZ         LAB_CODE_2235                                              ignore if tray state is closed
        CODE:222c 75 65 00        MOV        DAT_INTMEM_65,#0x0                                         = ??
        CODE:222f a2 14           MOV        CY,22.4                                                    = ??
        CODE:2231 72 29           ORL        CY,25.1                                                    = ??
@@ -5994,7 +6018,7 @@
                              undefined FUN_CODE_2383()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2383                                   XREF[1]:     CODE:1160(c)  
-       CODE:2383 c2 62           CLR        2c.2                                                       = ??
+       CODE:2383 c2 62           CLR        g_ir_command_waiting                                       = ??
        CODE:2385 12 04 96        LCALL      FUN_CODE_0496                                              undefined FUN_CODE_0496()
        CODE:2388 12 02 ad        LCALL      FUN_CODE_02ad                                              undefined FUN_CODE_02ad()
        CODE:238b c2 64           CLR        2c.4                                                       = ??
@@ -7800,10 +7824,10 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2ac4()
+                             undefined ir_parse_waiting_data()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2ac4                                   XREF[1]:     ir_update:1bc6(c)  
-       CODE:2ac4 30 62 1d        JNB        2c.2,LAB_CODE_2ae4                                         = ??
+                             ir_parse_waiting_data                           XREF[1]:     ir_update:1bc6(c)  
+       CODE:2ac4 30 62 1d        JNB        g_ir_command_waiting,LAB_CODE_2ae4                         = ??
        CODE:2ac7 e5 70           MOV        A,DAT_INTMEM_70                                            = ??
        CODE:2ac9 70 1b           JNZ        LAB_CODE_2ae6
        CODE:2acb e5 71           MOV        A,DAT_INTMEM_71                                            = ??
@@ -7818,13 +7842,13 @@
        CODE:2add aa 72           MOV        R2,DAT_INTMEM_72                                           = ??
                              LAB_CODE_2adf                                   XREF[3]:     CODE:2af7(j), CODE:2b2b(j), 
                                                                                           CODE:2b3f(j)  
-       CODE:2adf c2 62           CLR        2c.2                                                       = ??
+       CODE:2adf c2 62           CLR        g_ir_command_waiting                                       = ??
        CODE:2ae1 22              RET
                              LAB_CODE_2ae2                                   XREF[7]:     CODE:2ad4(j), CODE:2aec(j), 
                                                                                           CODE:2af1(j), CODE:2aff(j), 
                                                                                           CODE:2b04(j), CODE:2b30(j), 
                                                                                           CODE:2b35(j)  
-       CODE:2ae2 c2 62           CLR        2c.2                                                       = ??
+       CODE:2ae2 c2 62           CLR        g_ir_command_waiting                                       = ??
                              LAB_CODE_2ae4                                   XREF[1]:     CODE:2ac4(j)  
        CODE:2ae4 e4              CLR        A
        CODE:2ae5 22              RET
@@ -7882,7 +7906,7 @@
                              **************************************************************
                              undefined FUN_CODE_2b41()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2b41                                   XREF[1]:     FUN_CODE_2ac4:2ae9(c)  
+                             FUN_CODE_2b41                                   XREF[1]:     ir_parse_waiting_data:2ae9(c)  
        CODE:2b41 e4              CLR        A
        CODE:2b42 85 71 f0        MOV        B,DAT_INTMEM_71                                            = ??
        CODE:2b45 30 f7 02        JNB        B.7,LAB_CODE_2b4a                                          = ??
@@ -7927,7 +7951,7 @@
                              **************************************************************
                              undefined FUN_CODE_2b84()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2b84                                   XREF[1]:     FUN_CODE_2ac4:2afc(c)  
+                             FUN_CODE_2b84                                   XREF[1]:     ir_parse_waiting_data:2afc(c)  
        CODE:2b84 e5 74           MOV        A,DAT_INTMEM_74                                            = ??
        CODE:2b86 f4              CPL        A
        CODE:2b87 65 71           XRL        A,DAT_INTMEM_71                                            = ??
@@ -8004,7 +8028,7 @@
                              **************************************************************
                              undefined FUN_CODE_2bfe()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2bfe                                   XREF[1]:     FUN_CODE_2ac4:2b2d(c)  
+                             FUN_CODE_2bfe                                   XREF[1]:     ir_parse_waiting_data:2b2d(c)  
        CODE:2bfe e4              CLR        A
        CODE:2bff 85 71 f0        MOV        B,DAT_INTMEM_71                                            = ??
        CODE:2c02 30 f7 02        JNB        B.7,LAB_CODE_2c07                                          = ??
@@ -8099,9 +8123,9 @@
                              **************************************************************
                              undefined FUN_CODE_2c97()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2c97                                   XREF[3]:     FUN_CODE_2ac4:2aee(c), 
-                                                                                          FUN_CODE_2ac4:2b01(c), 
-                                                                                          FUN_CODE_2ac4:2b32(c)  
+                             FUN_CODE_2c97                                   XREF[3]:     ir_parse_waiting_data:2aee(c), 
+                                                                                          ir_parse_waiting_data:2b01(c), 
+                                                                                          ir_parse_waiting_data:2b32(c)  
        CODE:2c97 e5 71           MOV        A,DAT_INTMEM_71                                            = ??
        CODE:2c99 c4              SWAP       A
        CODE:2c9a 03              RR         A
@@ -8110,9 +8134,9 @@
                              **************************************************************
                              undefined FUN_CODE_2c9b()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2c9b                                   XREF[1]:     FUN_CODE_2ac4:2ad1(c)  
+                             FUN_CODE_2c9b                                   XREF[1]:     ir_parse_waiting_data:2ad1(c)  
        CODE:2c9b 78 7f           MOV        R0,#0x7f
-       CODE:2c9d 86 f0           MOV        B,@R0=>DAT_INTMEM_7f                                       = ??
+       CODE:2c9d 86 f0           MOV        B,@R0=>g_ir_address                                        = ??
        CODE:2c9f 20 f3 03        JB         B.3,LAB_CODE_2ca5                                          = ??
        CODE:2ca2 a2 f0           MOV        CY,B.0                                                     = ??
        CODE:2ca4 22              RET
@@ -9547,7 +9571,7 @@
                                                                                           argon_queue_message:2a20(W), 
                                                                                           FUN_CODE_2a3e:2a56(W)  
        INTMEM:6e                 undefined1 ??
-                             DAT_INTMEM_6f                                   XREF[18]:    FUN_CODE_02fe:0321(R), 
+                             g_ir_irq_state                                  XREF[18]:    FUN_CODE_02fe:0321(R), 
                                                                                           FUN_CODE_02fe:03a5(RW), 
                                                                                           FUN_CODE_02fe:03b3(W), 
                                                                                           FUN_CODE_02fe:03c2(W), 
@@ -9569,15 +9593,15 @@
                              DAT_INTMEM_70                                   XREF[7]:     FUN_CODE_02fe:0393(W), 
                                                                                           FUN_CODE_02fe:046a(W), 
                                                                                           FUN_CODE_02fe:0470(R), 
-                                                                                          FUN_CODE_2ac4:2ac7(R), 
-                                                                                          FUN_CODE_2ac4:2af3(R), 
-                                                                                          FUN_CODE_2ac4:2b29(R), 
-                                                                                          FUN_CODE_2ac4:2b37(R)  
+                                                                                          ir_parse_waiting_data:2ac7(R), 
+                                                                                          ir_parse_waiting_data:2af3(R), 
+                                                                                          ir_parse_waiting_data:2b29(R), 
+                                                                                          ir_parse_waiting_data:2b37(R)  
        INTMEM:70                 undefined1 ??
                              DAT_INTMEM_71                                   XREF[12]:    FUN_CODE_02fe:040e(R), 
                                                                                           FUN_CODE_02fe:0411(W), 
                                                                                           FUN_CODE_02fe:046d(W), 
-                                                                                          FUN_CODE_2ac4:2acb(R), 
+                                                                                          ir_parse_waiting_data:2acb(R), 
                                                                                           FUN_CODE_2b41:2b42(R), 
                                                                                           FUN_CODE_2b41:2b7f(R), 
                                                                                           FUN_CODE_2b84:2b87(R), 
@@ -9591,21 +9615,21 @@
                                                                                           FUN_CODE_02fe:040c(W), 
                                                                                           FUN_CODE_02fe:0448(R), 
                                                                                           FUN_CODE_02fe:044b(W), 
-                                                                                          FUN_CODE_2ac4:2add(R), 
-                                                                                          FUN_CODE_2ac4:2b10(R), 
-                                                                                          FUN_CODE_2ac4:2b13(W), 
-                                                                                          FUN_CODE_2ac4:2b23(R), 
-                                                                                          FUN_CODE_2ac4:2b39(R), 
+                                                                                          ir_parse_waiting_data:2add(R), 
+                                                                                          ir_parse_waiting_data:2b10(R), 
+                                                                                          ir_parse_waiting_data:2b13(W), 
+                                                                                          ir_parse_waiting_data:2b23(R), 
+                                                                                          ir_parse_waiting_data:2b39(R), 
                                                                                           FUN_CODE_2b84:2ba0(R), 
                                                                                           FUN_CODE_2bfe:2c11(R)  
        INTMEM:72                 undefined1 ??
                              DAT_INTMEM_73                                   XREF[9]:     FUN_CODE_02fe:0443(R), 
                                                                                           FUN_CODE_02fe:0446(W), 
                                                                                           FUN_CODE_02fe:046a(R), 
-                                                                                          FUN_CODE_2ac4:2b0b(R), 
-                                                                                          FUN_CODE_2ac4:2b0e(W), 
-                                                                                          FUN_CODE_2ac4:2b1c(R), 
-                                                                                          FUN_CODE_2ac4:2b3b(R), 
+                                                                                          ir_parse_waiting_data:2b0b(R), 
+                                                                                          ir_parse_waiting_data:2b0e(W), 
+                                                                                          ir_parse_waiting_data:2b1c(R), 
+                                                                                          ir_parse_waiting_data:2b3b(R), 
                                                                                           FUN_CODE_2b84:2bbc(R), 
                                                                                           FUN_CODE_2bfe:2c3c(R)  
        INTMEM:73                 undefined1 ??
@@ -9613,11 +9637,11 @@
                                                                                           FUN_CODE_02fe:043e(R), 
                                                                                           FUN_CODE_02fe:0441(W), 
                                                                                           FUN_CODE_02fe:046d(R), 
-                                                                                          FUN_CODE_2ac4:2af5(R), 
-                                                                                          FUN_CODE_2ac4:2b06(R), 
-                                                                                          FUN_CODE_2ac4:2b09(W), 
-                                                                                          FUN_CODE_2ac4:2b15(R), 
-                                                                                          FUN_CODE_2ac4:2b3d(R), 
+                                                                                          ir_parse_waiting_data:2af5(R), 
+                                                                                          ir_parse_waiting_data:2b06(R), 
+                                                                                          ir_parse_waiting_data:2b09(W), 
+                                                                                          ir_parse_waiting_data:2b15(R), 
+                                                                                          ir_parse_waiting_data:2b3d(R), 
                                                                                           FUN_CODE_2b41:2b54(R), 
                                                                                           FUN_CODE_2b84:2b84(R), 
                                                                                           FUN_CODE_2b84:2be7(R), 
@@ -9701,7 +9725,7 @@
                                                                                           tiltsw_sm_exec:20ae(R), 
                                                                                           tiltsw_sm_exec:20af(R)  
        INTMEM:7e                 undefined1 ??
-                             DAT_INTMEM_7f                                   XREF[6]:     FUN_CODE_07ea:0801(W), 
+                             g_ir_address                                    XREF[6]:     FUN_CODE_07ea:0801(W), 
                                                                                           ipc_handle_messages:094c(R), 
                                                                                           ipc_handle_messages:0cb6(W), 
                                                                                           CODE:17c6(R), CODE:19af(W), 
@@ -9830,7 +9854,7 @@
                                                                                           CODE:1b4d(W), CODE:1b52(W), 
                                                                                           CODE:1b57(W)  
        INTMEM:a5                 undefined1 ??
-                             DAT_INTMEM_a6                                   XREF[8]:     CODE:1c6f(W), CODE:1c74(W), 
+                             g_powerejectsw_sm_state                         XREF[8]:     CODE:1c6f(W), CODE:1c74(W), 
                                                                                           CODE:1c79(W), CODE:1c7e(W), 
                                                                                           CODE:1c83(W), 
                                                                                           powerejectsw_sm_exec:1c89(R), 
@@ -9870,21 +9894,21 @@
                              DAT_INTMEM_ad                                   XREF[2]:     ipc_handle_async_events:0e72(R), 
                                                                                           ir_update:1c65(W)  
        INTMEM:ad                 undefined1 ??
-                             DAT_INTMEM_ae                                   XREF[3]:     ipc_handle_messages:0c90(W), 
+                             g_rol_ipc_led_overrides                         XREF[3]:     ipc_handle_messages:0c90(W), 
                                                                                           CODE:1938(R), CODE:197a(R)  
        INTMEM:ae                 undefined1 ??
-                             DAT_INTMEM_af                                   XREF[9]:     ipc_handle_messages:0d12(W), 
+                             g_rrod_base_pattern                             XREF[9]:     ipc_handle_messages:0d12(W), 
                                                                                           CODE:12b2(W), CODE:1773(R), 
                                                                                           CODE:186e(R), CODE:18a6(R), 
                                                                                           CODE:1ce4(R), CODE:1ff1(W), 
                                                                                           CODE:201c(W), CODE:2023(W)  
        INTMEM:af                 undefined1 ??
-                             DAT_INTMEM_b0                                   XREF[5]:     ipc_handle_messages:0cd1(W), 
+                             g_argon_ipc_data_byte_1                         XREF[5]:     ipc_handle_messages:0cd1(W), 
                                                                                           ipc_handle_async_events:0e3a(R), 
                                                                                           CODE:1881(R), CODE:198f(R), 
                                                                                           CODE:1996(W)  
        INTMEM:b0                 undefined1 ??
-                             DAT_INTMEM_b1                                   XREF[4]:     ipc_handle_messages:0cd6(W), 
+                             g_argon_ipc_data_byte_2                         XREF[4]:     ipc_handle_messages:0cd6(W), 
                                                                                           ipc_handle_async_events:0e3e(R), 
                                                                                           CODE:187d(R), CODE:198c(W)  
        INTMEM:b1                 undefined1 ??
@@ -10702,13 +10726,13 @@
                                                                                           ipc_handle_async_events:0d97(W), 
                                                                                           CODE:1f85(W)  
          BITS:3a                 ??         ??
-                             27.3                                            XREF[5]:     ipc_handle_messages:0cbe(R), 
+                             g_argon_ipc_event_waiting                       XREF[5]:     ipc_handle_messages:0cbe(R), 
                                                                                           ipc_handle_async_events:0d51(W), 
                                                                                           ipc_handle_async_events:0d75(R), 
                                                                                           ipc_handle_async_events:0e36(W), 
                                                                                           CODE:1997(W)  
          BITS:3b                 ??         ??
-                             27.4                                            XREF[5]:     ipc_handle_async_events:0d53(W), 
+                             g_ir_ipc_event_waiting                          XREF[5]:     ipc_handle_async_events:0d53(W), 
                                                                                           ipc_handle_async_events:0d7b(R), 
                                                                                           ipc_handle_async_events:0e56(W), 
                                                                                           CODE:1ba5(W), ir_update:1c6a(W)  
@@ -10789,7 +10813,7 @@
                              29.2                                            XREF[4]:     CODE:1182(W), CODE:17b3(W), 
                                                                                           CODE:180b(R), CODE:1ffa(W)  
          BITS:4a                 ??         ??
-                             29.3                                            XREF[4]:     ipc_handle_messages:0cbb(R), 
+                             g_argon_ipc_write_pending                       XREF[4]:     ipc_handle_messages:0cbb(R), 
                                                                                           ipc_handle_messages:0cd7(W), 
                                                                                           CODE:1833(R), CODE:1999(W)  
          BITS:4b                 ??         ??
@@ -10901,12 +10925,12 @@
                                                                                           FUN_CODE_2627:2648(W), 
                                                                                           i2c_yield_to_async_operation:264
          BITS:61                 ??         ??
-                             2c.2                                            XREF[6]:     FUN_CODE_02fe:031b(R), 
+                             g_ir_command_waiting                            XREF[6]:     FUN_CODE_02fe:031b(R), 
                                                                                           FUN_CODE_02fe:03d1(W), 
                                                                                           FUN_CODE_2383:2383(W), 
-                                                                                          FUN_CODE_2ac4:2ac4(R), 
-                                                                                          FUN_CODE_2ac4:2adf(W), 
-                                                                                          FUN_CODE_2ac4:2ae2(W)  
+                                                                                          ir_parse_waiting_data:2ac4(R), 
+                                                                                          ir_parse_waiting_data:2adf(W), 
+                                                                                          ir_parse_waiting_data:2ae2(W)  
          BITS:62                 ??         ??
                              2c.3                                            XREF[6]:     CODE:050a(R), CODE:05ae(W), 
                                                                                           CODE:05c4(W), 
@@ -11291,7 +11315,8 @@
                                                                                           FUN_CODE_2813:281f(W), 
                                                                                           FUN_CODE_2a5b:2a5e(R), 
                                                                                           FUN_CODE_2a5b:2a67(R), 
-                                                                                          FUN_CODE_2ac4:2acf(W), [more]
+                                                                                          ir_parse_waiting_data:2acf(W), 
+                                                                                          [more]
          BITS:d5                 ??         ??
                              AC
          BITS:d6                 ??         ??
@@ -11374,7 +11399,7 @@
                                                                                           CODE:1793(*), CODE:179d(*), 
                                                                                           CODE:1bb7(*), 
                                                                                           avpack_read:25bf(*), 
-                                                                                          FUN_CODE_2ac4:2acd(*)  
+                                                                                          ir_parse_waiting_data:2acd(*)  
          BITS:e3                 ??         ??
                              ACC.4                                           XREF[12]:    FUN_CODE_00d7:00de(*), 
                                                                                           ipc_inbox_get_status:00f6(*), 
@@ -11403,7 +11428,7 @@
                                                                                           ir_update:1bd3(*), 
                                                                                           avpack_read:25b7(*), 
                                                                                           argon_queue_message:2a2e(*), 
-                                                                                          FUN_CODE_2ac4:2ad7(*)  
+                                                                                          ir_parse_waiting_data:2ad7(*)  
          BITS:e6                 ??         ??
                              ACC.7                                           XREF[26]:    ipc_handle_messages:09ec(*), 
                                                                                           ipc_handle_messages:09f0(*), 
@@ -11421,9 +11446,10 @@
                                                                                           ir_update:1bff(*), 
                                                                                           ir_update:1c08(*), 
                                                                                           argon_queue_message:2a2b(*), 
-                                                                                          FUN_CODE_2ac4:2adb(*), 
-                                                                                          FUN_CODE_2ac4:2b1e(*), 
-                                                                                          FUN_CODE_2ac4:2b20(*), [more]
+                                                                                          ir_parse_waiting_data:2adb(*), 
+                                                                                          ir_parse_waiting_data:2b1e(*), 
+                                                                                          ir_parse_waiting_data:2b20(*), 
+                                                                                          [more]
          BITS:e7                 ??         ??
                              HIFLG.0
          BITS:e8                 ??         ??
