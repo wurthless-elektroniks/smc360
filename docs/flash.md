@@ -35,8 +35,9 @@ Commands should be the same as in xenon_sfcx.h, but as a reminder:
 - 0x02 reads the page in the address register to the internal buffer
 - 0x00 reads four bytes at the given address from the internal buffer to the data register
 
-Others might be possible too. Not sure if NAND to SDRAM DMA possible from the SMC, if it is we can do solderless
-JTAG but nothing more dramatic than that thanks to HRMOR protection set whenever code is running from SDRAM...
+It is also possible to launch NAND-to-SDRAM DMAs from this mode, but the SFCX registers used to start
+the DMA must be programmed via GPU JTAG, and those registers must be set before hwinit runs, as hwinit
+will disable the GPU's JTAG port. (This is actually how the JTAG SMC works.)
 
 ## eMMC
 
@@ -50,3 +51,4 @@ Registers all in EXTMEM space
 ## See also
 
 - [libxenon NAND driver](https://github.com/Free60Project/libxenon/tree/master/libxenon/drivers/xenon_nand)
+- [JTAG exploit explanation](https://github.com/gligli/tools/blob/master/imgbuild/hack.txt)
