@@ -16,32 +16,28 @@ SMC config ends up being corrupt.
 
 ## SMC config locations
 
-Small block and big block locations depend on what SFR 0E3h bits 4/5 read back.
+Small block and big block locations depend on what SFR 0E3h bits 4/5 (NAND size) read back.
 On eMMC systems, the SMC config will always be read from 0x02FFC000.
 
 ### Small block systems
 
-Assuming that logical addresses point to a 528 byte page:
-
-| Bits | Logical address | Physical address     |
-|------|-----------------|----------------------|
-| 00   | 0x007BE0        | 0x00FF7E00           |
-| 01   | 0x00F7C0        | 0x01FEFC00           |
-| 10   | 0x01EFC0        | 0x03FE7C00           |
-| 11   | 0x03DFC0        | 0x07FD7C00           |
+| Bits | Logical address |
+|------|-----------------|
+| 00   | 0x007BE000      |
+| 01   | 0x00F7C000      |
+| 10   | 0x01EFC000      |
+| 11   | 0x03DFC000      |
 
 (Table from Falcon SMC, matches one in Jasper too)
 
 ### Big block systems
 
-Assuming that logical addresses point to a 528 byte page:
-
-| Bits | Logical address | Physical address     |
-|------|-----------------|----------------------|
-| 00   | 0x00F7C0        | 0x01FEFC00           |
-| 01   | 0x00F7C0        | 0x01FEFC00           |
-| 10   | 0x03BE00        | 0x07B7E000           |
-| 11   | 0x03BC00        | 0x07B3C000           |
+| Bits | Logical address |
+|------|-----------------|
+| 00   | 0x00F7C000      |
+| 01   | 0x00F7C000      |
+| 10   | 0x03BE0000      |
+| 11   | 0x03BC0000      |
 
 (Table from Jasper SMC)
 

@@ -107,25 +107,25 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0E0h |
 | 0E1h | CPU-to-SMC IPC inbox, data
 | 0E2h | CPU-to-SMC IPC inbox, control
-| 0E3h | Flash status/configuration (bits 4/5 = NAND size, typically 00 = 16mbytes)
+| 0E3h | SFCX: Configuration register
 | 0E4h |
-| 0E5h | PSB extended flash information (bit 1 = big block)
+| 0E5h | SFCX: PSB extended flash information (bit 1 = big block)
 | 0E6h |
 | 0E7h | UART data out
 | 0E8h | UART enable/configuration
 | 0E9h | UART speed
-| 0EAh | Flash controller? (TODO)
-| 0EBh | Flash controller? (TODO)
-| 0ECh | Flash controller? (TODO)
-| 0EDh | Flash controller? (TODO)
-| 0EEh | Flash controller? (TODO)
+| 0EAh | SFCX: Address register, bits 7-0 (LSB)
+| 0EBh | SFCX: Address register, bits 15-8
+| 0ECh | SFCX: Address register, bits 23-16
+| 0EDh | SFCX: Address register, bits 31-24 (MSB)
+| 0EEh | SFCX: Status register
 | 0EFh | Flash controller? (TODO)
 | 0F0h | 
-| 0F1h | Flash controller? (TODO)
-| 0F2h | Flash controller? (TODO)
-| 0F3h | Flash controller? (TODO)
-| 0F4h | Flash controller? (TODO)
-| 0F5h | Flash controller? (TODO)
+| 0F1h | SFCX: Data register, bits 7-0 (LSB)
+| 0F2h | SFCX: Data register, bits 15-8
+| 0F3h | SFCX: Data register, bits 23-16
+| 0F4h | SFCX: Data register, bits 31-24 (MSB)
+| 0F5h | SFCX: Command register
 | 0F6h |
 | 0F7h |
 | 0F8h |
