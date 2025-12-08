@@ -107,9 +107,9 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0E0h |
 | 0E1h | CPU-to-SMC IPC inbox, data
 | 0E2h | CPU-to-SMC IPC inbox, control
-| 0E3h | ??? (Flash-related?)
+| 0E3h | Flash status/configuration (bits 4/5 = NAND size, typically 00 = 16mbytes)
 | 0E4h |
-| 0E5h |
+| 0E5h | PSB extended flash information (bit 1 = big block)
 | 0E6h |
 | 0E7h | UART data out
 | 0E8h | UART enable/configuration
@@ -136,3 +136,12 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0FDh | USB gamepad status(?), channel 2
 | 0FEh | ??? 
 | 0FFh | Watchdog? (write 0 to kick)
+
+## KSB EXTMEM registers
+
+The KSB adds more registers in EXTMEM space (use MOVX opcodes to read/write).
+
+- 0x0020~0x0023: eMMC read result
+- 0x00EC: eMMC command/status? (write 1 to set 256-byte block address, 0 to read within block)
+- 0x00ED~0x00EF: eMMC address (little endian)
+- 0x00F3: eMMC status, bit 7 = 4gbytes eMMC present, bit 6 = NAND ready

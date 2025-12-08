@@ -19,6 +19,7 @@ The I2C devices themselves shouldn't be documented here, that's a whole other ba
 
 ## I2C address map
 
+- 0x39: ????? (used for error reporting?)
 - 0x69 (Xenon only): Clock generator
 - 0x70: ANA/HANA on all XSB and PSB boards, KSB on Corona and Winchester (TBD)
 

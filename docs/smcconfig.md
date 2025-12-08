@@ -2,6 +2,10 @@
 
 TODO most of this.
 
+The "SMC Config" is the 360 community name for a bunch of pages that affect not only the "real" SMC
+configuration, but a bunch of other system settings to. In the context of this doc, "SMC config"
+refers only to what the SMC sees.
+
 See Falcon disassembly, 0x24A5 for how the SMC config gets loaded.
 
 ## Default SMC config
@@ -10,22 +14,36 @@ The SMC program will setup default SMC config values at startup until it's able 
 configuration from flash. This is a failsafe in case the flash turns out to be unreadable, or the
 SMC config ends up being corrupt.
 
-## Flash (?) SFRs
+## SMC config locations
 
-Again, all has to be tested thoroughly on real hardware...
+Small block and big block locations depend on what SFR 0E3h bits 4/5 read back.
+On eMMC systems, the SMC config will always be read from 0x02FFC000.
 
-| SFR  | Ghidra symbol | Description
-|------|---------------|-----------------------------
-| 0EAh | CCAP0L        | Word select?
-| 0EBh | CCAP1L        | Offset????
-| 0ECh | CCAP2L        | Offset????
-| 0EDh | CCAP3L        | Offset????
-| 0EEh | CCAP4L        | Status????
-| 0F1h | EPINDEX       | Read result byte 0
-| 0F2h | TXSTAT        | Read result byte 1
-| 0F3h | TXDAT         | Read result byte 2
-| 0F4h | TXCON         | Read result byte 3
-| 0F5h | TXFLG         | Operation command?
+### Small block systems
+
+Assuming that logical addresses point to a 528 byte page:
+
+| Bits | Logical address | Physical address     |
+|------|-----------------|----------------------|
+| 00   | 0x007BE0        | 0x00FF7E00           |
+| 01   | 0x00F7C0        | 0x01FEFC00           |
+| 10   | 0x01EFC0        | 0x03FE7C00           |
+| 11   | 0x03DFC0        | 0x07FD7C00           |
+
+(Table from Falcon SMC, matches one in Jasper too)
+
+### Big block systems
+
+Assuming that logical addresses point to a 528 byte page:
+
+| Bits | Logical address | Physical address     |
+|------|-----------------|----------------------|
+| 00   | 0x00F7C0        | 0x01FEFC00           |
+| 01   | 0x00F7C0        | 0x01FEFC00           |
+| 10   | 0x03BE00        | 0x07B7E000           |
+| 11   | 0x03BC00        | 0x07B3C000           |
+
+(Table from Jasper SMC)
 
 ## Ignoring SMC config load errors
 
