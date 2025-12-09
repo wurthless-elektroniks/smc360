@@ -169,7 +169,7 @@ TODO
 
 Also called "pure pain and suffering to fully reverse engineer", as I2C operations are handled asynchronously.
 
-I hope you can understand this TODO item.
+Read the [I2C document](i2c.md#i2c-over-ipc) on how to handle this.
 
 ### 0x12 - Get SMC version and two persistent memory cells
 

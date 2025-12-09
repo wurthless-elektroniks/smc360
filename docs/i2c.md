@@ -58,3 +58,145 @@ Now, let's look at what that Falcon example means:
 - `03`: jump to 0x28DC, which frees up the I2C bus and stops the I2C statemachine
 
 The jump table varies between SMC program revisions, so documenting that will be "fun" in its own right...
+
+## List of commandlist handlers
+
+Oh boy, this is gonna be fun to untangle and explain.
+
+### Init I2C bus
+
+Byte format:
+- Falcon: `00`
+
+The initialization procedure is:
+- Reset the I2C bus
+- If SDA is still low after the reset, manually drive the I2C lines to try to get the bus in
+  healthy condition, giving up if we can't (setting F0 in this case)
+- Manually toggle SCL, then hand over I2C bus control to the I2C unit
+
+### End commandlist execution
+
+Byte format:
+- Falcon: `03`
+
+Handlers:
+- Falcon: 0x28DC -> 0x2686
+
+Stops executing the commandlist and returns success (via F0 flag).
+
+### Do nothing (NOP)
+
+Byte format:
+- Falcon: `06`
+
+Handlers:
+- Falcon: 0x28DF -> 0x268A
+
+Does nothing; it simply increments the commandlist execution pointer and continues on to the
+next instruction.
+
+### Run IPC transaction
+
+Byte format:
+- Falcon: `09`
+
+Handlers:
+- Falcon: 0x28E2 -> 0x2891
+
+This will block until the transfer completes.
+
+The logic here is spaghetti code because of how the I2C interrupt handler works. When an IPC transaction is running
+the I2C IRQ handler overrides the usual read/write buffers and uses the IPC inbox and outbox instead for those operations.
+
+### Write HANA register
+
+Byte format:
+- Falcon: `0B rr dd dd dd dd`
+
+Handlers:
+- Falcon: 0x28E4 -> 0x268E
+
+Writes 4 bytes `dd dd dd dd` to the given HANA register `rr`. This will block until the transfer completes.
+If writing to HANA register 0xDB, the fourth data byte will always be overridden by a value loaded from the SMC config.
+
+### Store I2C result to temperature sensor fields
+
+TODO
+
+### Store I2C result to CPU temperature fields
+
+TODO
+
+### Dump RRoD error code to I2C buffer
+
+TODO
+
+## I2C over IPC
+
+The CPU-to-SMC IPC can be used to read or write different registers on the I2C bus. It all centers around 
+IPC command 0x11.
+
+### IPC command 0x11
+
+The basic request is:
+
+0. Command byte `0x11`
+1. Number of bytes to write (in upper nibble), command flags (lower nibble) (in r2)
+2. TODO (in r3)
+3. TODO (in r4)
+4. TODO (in r5)
+5. TODO (in r6)
+
+The basic response is:
+
+0. Command byte `0x11`
+1. Status/error code
+
+The error codes are:
+- `00`: Accepted/success
+- `01`: I2C busy?
+- `02`: Invalid request
+- `03`: Error on the I2C bus
+- `04`: Operation already in progress (DDC lock??)
+
+Note that even though this command is handled asynchronously by the SMC, the SMC will treat this as
+a synchronous event, and will block all other IPC requests until the command completes.
+
+Here's how the command is handled... (still work in progress obvs)
+
+If bit 0 in the command flags is set, an attempt is being made to do a DDC lock(?):
+- If bit 1 set, set the lock and return success
+- If bit 2 set, clear the lock and return success
+- If both bits clear, check if the lock is clear, and if it is, return error code 4 and stop
+- Otherwise execution continues into common block
+
+Bit 0 of first byte goes to F0.
+
+General error check part:
+- Number of bytes to write cannot be 10 or greater
+- Number of bytes to read cannot be 13 or greater
+- Bit 7 of either command bytes 3, 4 or 5 must be 1
+
+If any of these checks fail, return error code 2.
+
+### How the message is parsed by the I2C commandlist handler
+
+See Falcon code at 0x2891.
+
+If the command is accepted by the IPC, it's passed off to the I2C spaghetti factory, which treats the request
+as follows:
+
+0. Command byte `0x11`
+1. Number of bytes to write (in upper nibble)
+2. Number of bytes to read (in upper nibble), I2C data size? (in lower nibble)
+3. I2C address (lower 7 bits); bit 7 is still a mystery
+4. Mystery byte (lower 7 bits, shifted left once); bit 7 is still a mystery
+5. Mystery byte (lower 7 bits, shifted left once); bit 7 indicates read pending
+6. Data to write (continues for remainder of message)
+
+Note that any error handling for this message will already have been done by the IPC handler.
+
+The I2C interrupt handler will continue reading the IPC inbox where this code left off.
+If the CPU requested a read, the results of the read will be dumped to the outbox starting at offset 0x03.
+
+

@@ -275,9 +275,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00ad()
+                             undefined sfcx_flash_reset()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00ad                                   XREF[1]:     CODE:10c9(c)  
+                             sfcx_flash_reset                                XREF[1]:     CODE:10c9(c)  
        CODE:00ad 75 e3 01        MOV        RXDAT,#0x1                                                 = ??
        CODE:00b0 75 e3 00        MOV        RXDAT,#0x0                                                 = ??
        CODE:00b3 75 e3 01        MOV        RXDAT,#0x1                                                 = ??
@@ -374,30 +374,30 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00ea()
+                             undefined stubbedout_xenon_dbgled0_set()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00ea                                   XREF[1]:     CODE:13ea(c)  
+                             stubbedout_xenon_dbgled0_set                    XREF[1]:     CODE:13ea(c)  
        CODE:00ea 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00eb()
+                             undefined stubbedout_xenon_dbgled0_clear()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00eb                                   XREF[1]:     CODE:13e5(c)  
+                             stubbedout_xenon_dbgled0_clear                  XREF[1]:     CODE:13e5(c)  
        CODE:00eb 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00ec()
+                             undefined stubbedout_xenon_dbgled1_set()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00ec                                   XREF[1]:     CODE:13dc(c)  
+                             stubbedout_xenon_dbgled1_set                    XREF[1]:     CODE:13dc(c)  
        CODE:00ec 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00ed()
+                             undefined stubbedout_xenon_dbgled1_clear()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00ed                                   XREF[1]:     CODE:13d7(c)  
+                             stubbedout_xenon_dbgled1_clear                  XREF[1]:     CODE:13d7(c)  
        CODE:00ed 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -720,7 +720,7 @@
                              undefined i2c_reset_buses()
              undefined         ACC:1          <RETURN>
                              i2c_reset_buses                                 XREF[3]:     FUN_CODE_2383:2388(c), 
-                                                                                          FUN_CODE_2627:2640(c), 
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_opcode_init:2666(c)  
        CODE:02ad 43 a6 01        ORL        WDTRST,#0x1                                                set I2C pins to inputs
        CODE:02b0 43 a6 02        ORL        WDTRST,#0x2                                                = ??
@@ -1855,18 +1855,18 @@
        CODE:09dc 54 0f           ANL        A,#0xf
        CODE:09de 25 f0           ADD        A,B
        CODE:09e0 24 f5           ADD        A,#0xf5
-       CODE:09e2 40 13           JC         LAB_CODE_09f7
+       CODE:09e2 40 13           JC         ipc_i2c_reject_message_bad_parameters
        CODE:09e4 eb              MOV        A,R3
        CODE:09e5 54 0f           ANL        A,#0xf
        CODE:09e7 24 f2           ADD        A,#0xf2
-       CODE:09e9 40 0c           JC         LAB_CODE_09f7
+       CODE:09e9 40 0c           JC         ipc_i2c_reject_message_bad_parameters
        CODE:09eb ec              MOV        A,R4
        CODE:09ec 20 e7 1e        JB         ACC.7,LAB_CODE_0a0d                                        = ??
        CODE:09ef ed              MOV        A,R5
        CODE:09f0 20 e7 1a        JB         ACC.7,LAB_CODE_0a0d                                        = ??
        CODE:09f3 ee              MOV        A,R6
        CODE:09f4 20 e7 16        JB         ACC.7,LAB_CODE_0a0d                                        = ??
-                             LAB_CODE_09f7                                   XREF[7]:     CODE:09e2(j), CODE:09e9(j), 
+                             ipc_i2c_reject_message_bad_parameters           XREF[7]:     CODE:09e2(j), CODE:09e9(j), 
                                                                                           CODE:0a37(j), CODE:0a39(j), 
                                                                                           CODE:0a64(j), CODE:0a66(j), 
                                                                                           CODE:0a74(j)  
@@ -1908,10 +1908,10 @@
        CODE:0a30 24 0a           ADD        A,#0xa
        CODE:0a32 40 05           JC         LAB_CODE_0a39
        CODE:0a34 20 d5 05        JB         F0,LAB_CODE_0a3c                                           = ??
-       CODE:0a37 80 be           SJMP       LAB_CODE_09f7
+       CODE:0a37 80 be           SJMP       ipc_i2c_reject_message_bad_parameters
                              LAB_CODE_0a39                                   XREF[3]:     CODE:0a1e(j), CODE:0a2d(j), 
                                                                                           CODE:0a32(j)  
-       CODE:0a39 20 d5 bb        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a39 20 d5 bb        JB         F0,ipc_i2c_reject_message_bad_parameters                   = ??
                              LAB_CODE_0a3c                                   XREF[3]:     CODE:0a12(j), CODE:0a1a(j), 
                                                                                           CODE:0a34(j)  
        CODE:0a3c eb              MOV        A,R3
@@ -1936,10 +1936,10 @@
        CODE:0a5d 24 2f           ADD        A,#0x2f
        CODE:0a5f 40 05           JC         LAB_CODE_0a66
        CODE:0a61 20 d5 05        JB         F0,LAB_CODE_0a69                                           = ??
-       CODE:0a64 80 91           SJMP       LAB_CODE_09f7
+       CODE:0a64 80 91           SJMP       ipc_i2c_reject_message_bad_parameters
                              LAB_CODE_0a66                                   XREF[3]:     CODE:0a48(j), CODE:0a5a(j), 
                                                                                           CODE:0a5f(j)  
-       CODE:0a66 20 d5 8e        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a66 20 d5 8e        JB         F0,ipc_i2c_reject_message_bad_parameters                   = ??
                              LAB_CODE_0a69                                   XREF[3]:     CODE:0a40(j), CODE:0a43(j), 
                                                                                           CODE:0a61(j)  
        CODE:0a69 ee              MOV        A,R6                                                       think execution ends up here
@@ -1949,7 +1949,7 @@
        CODE:0a6f b4 39 02        CJNE       A,#0x39,LAB_CODE_0a74
        CODE:0a72 80 03           SJMP       LAB_CODE_0a77
                              LAB_CODE_0a74                                   XREF[1]:     CODE:0a6f(j)  
-       CODE:0a74 20 d5 80        JB         F0,LAB_CODE_09f7                                           = ??
+       CODE:0a74 20 d5 80        JB         F0,ipc_i2c_reject_message_bad_parameters                   = ??
                              LAB_CODE_0a77                                   XREF[2]:     CODE:0a6a(j), CODE:0a72(j)  
        CODE:0a77 d2 2c           SETB       g_i2c_ipc_operation_pending                                = ??
        CODE:0a79 d2 36           SETB       g_ipc_setter_command_blocking                              = ??
@@ -2923,7 +2923,7 @@
        CODE:10c5 c2 2a           CLR        g_hana_active                                              = ??
        CODE:10c7 80 da           SJMP       LAB_CODE_10a3                                              advance to step 1
                              LAB_CODE_10c9                                   XREF[1]:     CODE:1136(j)  
-       CODE:10c9 12 00 ad        LCALL      FUN_CODE_00ad                                              undefined FUN_CODE_00ad()
+       CODE:10c9 12 00 ad        LCALL      sfcx_flash_reset                                           undefined sfcx_flash_reset()
        CODE:10cc a4              MUL        AB                                                         very long NOP sled
                                                                                                        while we wait for stuff
                                                                                                        to reset
@@ -3307,15 +3307,15 @@
                              LAB_CODE_12fb                                   XREF[4]:     CODE:1324(j), CODE:132c(j), 
                                                                                           CODE:1349(j), CODE:135c(j)  
        CODE:12fb 78 9f           MOV        R0,#0x9f
-       CODE:12fd 76 00           MOV        @R0=>DAT_INTMEM_9f,#0x0                                    = ??
+       CODE:12fd 76 00           MOV        @R0=>g_audclamp_sm_state,#0x0                              = ??
        CODE:12ff 22              RET
                              LAB_CODE_1300                                   XREF[1]:     CODE:1317(j)  
        CODE:1300 78 9f           MOV        R0,#0x9f
-       CODE:1302 76 01           MOV        @R0=>DAT_INTMEM_9f,#0x1                                    = ??
+       CODE:1302 76 01           MOV        @R0=>g_audclamp_sm_state,#0x1                              = ??
        CODE:1304 22              RET
                              LAB_CODE_1305                                   XREF[1]:     CODE:1341(j)  
        CODE:1305 78 9f           MOV        R0,#0x9f
-       CODE:1307 76 02           MOV        @R0=>DAT_INTMEM_9f,#0x2                                    = ??
+       CODE:1307 76 02           MOV        @R0=>g_audclamp_sm_state,#0x2                              = ??
        CODE:1309 22              RET
                              LAB_CODE_130a                                   XREF[3]:     CODE:133c(j), CODE:134e(j), 
                                                                                           CODE:1350(j)  
@@ -3372,9 +3372,9 @@
              undefined         ACC:1          <RETURN>
                              audclamp_sm_exec                                XREF[1]:     mainloop:07b3(c)  
        CODE:135e 78 9f           MOV        R0,#0x9f
-       CODE:1360 e6              MOV        A,@R0=>DAT_INTMEM_9f                                       = ??
-       CODE:1361 26              ADD        A,@R0=>DAT_INTMEM_9f                                       = ??
-       CODE:1362 26              ADD        A,@R0=>DAT_INTMEM_9f                                       = ??
+       CODE:1360 e6              MOV        A,@R0=>g_audclamp_sm_state                                 = ??
+       CODE:1361 26              ADD        A,@R0=>g_audclamp_sm_state                                 = ??
+       CODE:1362 26              ADD        A,@R0=>g_audclamp_sm_state                                 = ??
        CODE:1363 90 13 67        MOV        DPTR,#LAB_CODE_1367
        CODE:1366 73              JMP        @A+DPTR
                              LAB_CODE_1367                                   XREF[1]:     audclamp_sm_exec:1363(*)  
@@ -3383,19 +3383,19 @@
        CODE:136d 02 13 50        LJMP       LAB_CODE_1350
                              LAB_CODE_1370                                   XREF[2]:     CODE:13a4(j), CODE:13b6(j)  
        CODE:1370 78 a0           MOV        R0,#0xa0
-       CODE:1372 76 00           MOV        @R0=>DAT_INTMEM_a0,#0x0                                    = ??
+       CODE:1372 76 00           MOV        @R0=>g_bindsw_sm_state,#0x0                                = ??
        CODE:1374 22              RET
                              LAB_CODE_1375                                   XREF[1]:     CODE:139f(j)  
        CODE:1375 78 a0           MOV        R0,#0xa0
-       CODE:1377 76 01           MOV        @R0=>DAT_INTMEM_a0,#0x1                                    = ??
+       CODE:1377 76 01           MOV        @R0=>g_bindsw_sm_state,#0x1                                = ??
        CODE:1379 22              RET
                              LAB_CODE_137a                                   XREF[2]:     CODE:13a6(j), CODE:13b2(j)  
        CODE:137a 78 a0           MOV        R0,#0xa0
-       CODE:137c 76 02           MOV        @R0=>DAT_INTMEM_a0,#0x2                                    = ??
+       CODE:137c 76 02           MOV        @R0=>g_bindsw_sm_state,#0x2                                = ??
        CODE:137e 22              RET
                              LAB_CODE_137f                                   XREF[1]:     CODE:13ab(j)  
        CODE:137f 78 a0           MOV        R0,#0xa0
-       CODE:1381 76 03           MOV        @R0=>DAT_INTMEM_a0,#0x3                                    = ??
+       CODE:1381 76 03           MOV        @R0=>g_bindsw_sm_state,#0x3                                = ??
        CODE:1383 22              RET
                              LAB_CODE_1384                                   XREF[2]:     CODE:139d(j), CODE:13ad(j)  
        CODE:1384 22              RET
@@ -3406,11 +3406,12 @@
              undefined         ACC:1          <RETURN>
                              bindsw_sm_exec                                  XREF[1]:     mainloop:07ad(c)  
        CODE:1385 78 a0           MOV        R0,#0xa0
-       CODE:1387 e6              MOV        A,@R0=>DAT_INTMEM_a0                                       = ??
-       CODE:1388 26              ADD        A,@R0=>DAT_INTMEM_a0                                       = ??
-       CODE:1389 26              ADD        A,@R0=>DAT_INTMEM_a0                                       = ??
-       CODE:138a 90 13 8e        MOV        DPTR,#0x138e
+       CODE:1387 e6              MOV        A,@R0=>g_bindsw_sm_state                                   = ??
+       CODE:1388 26              ADD        A,@R0=>g_bindsw_sm_state                                   = ??
+       CODE:1389 26              ADD        A,@R0=>g_bindsw_sm_state                                   = ??
+       CODE:138a 90 13 8e        MOV        DPTR,#LAB_CODE_138e
        CODE:138d 73              JMP        @A+DPTR
+                             LAB_CODE_138e                                   XREF[1]:     bindsw_sm_exec:138a(*)  
        CODE:138e 02 13 9a        LJMP       LAB_CODE_139a
        CODE:1391 02 13 a1        LJMP       LAB_CODE_13a1
        CODE:1394 02 13 a8        LJMP       LAB_CODE_13a8
@@ -3432,16 +3433,16 @@
        CODE:13b2 50 c6           JNC        LAB_CODE_137a
        CODE:13b4 d2 41           SETB       g_bindsw_pushed                                            all that logic to debounce this...
        CODE:13b6 80 b8           SJMP       LAB_CODE_1370
-                             LAB_CODE_13b8                                   XREF[1]:     CODE:13fa(j)  
+                             dbgled_sm_go_state_0                            XREF[1]:     CODE:13fa(j)  
        CODE:13b8 78 a1           MOV        R0,#0xa1
        CODE:13ba 76 00           MOV        @R0=>g_dbgled_sm_state,#0x0                                = ??
        CODE:13bc 22              RET
-                             LAB_CODE_13bd                                   XREF[2]:     CODE:13f5(j), CODE:13f7(j)  
+                             dbgled_sm_go_state_1                            XREF[2]:     CODE:13f5(j), CODE:13f7(j)  
        CODE:13bd 78 a1           MOV        R0,#0xa1
        CODE:13bf 76 01           MOV        @R0=>g_dbgled_sm_state,#0x1                                = ??
        CODE:13c1 22              RET
        CODE:13c2 22              RET
-                             LAB_CODE_13c3                                   XREF[1]:     CODE:1405(j)  
+                             dbgled_sm_exec_state_0                          XREF[1]:     CODE:1405(j)  
        CODE:13c3 e5 3b           MOV        A,g_boot_status_blink_pattern                              = ??
        CODE:13c5 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13c7 70 05           JNZ        LAB_CODE_13ce
@@ -3453,31 +3454,31 @@
        CODE:13d1 e5 3a           MOV        A,g_boot_attempt_blink_pattern                             = ??
        CODE:13d3 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13d5 70 05           JNZ        LAB_CODE_13dc
-       CODE:13d7 12 00 ed        LCALL      FUN_CODE_00ed                                              cleared DBG_LED1 on xenon,
+       CODE:13d7 12 00 ed        LCALL      stubbedout_xenon_dbgled1_clear                             cleared DBG_LED1 on xenon,
                                                                                                        now a stubbed-out function
        CODE:13da 80 03           SJMP       LAB_CODE_13df
                              LAB_CODE_13dc                                   XREF[1]:     CODE:13d5(j)  
-       CODE:13dc 12 00 ec        LCALL      FUN_CODE_00ec                                              set DBG_LED1 on xenon,
+       CODE:13dc 12 00 ec        LCALL      stubbedout_xenon_dbgled1_set                               set DBG_LED1 on xenon,
                                                                                                        now a stubbed-out function
                              LAB_CODE_13df                                   XREF[1]:     CODE:13da(j)  
        CODE:13df e5 39           MOV        A,g_pcie_status_blink_pattern                              = ??
        CODE:13e1 55 3c           ANL        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13e3 70 05           JNZ        LAB_CODE_13ea
-       CODE:13e5 12 00 eb        LCALL      FUN_CODE_00eb                                              cleared DBG_LED0 on xenon,
+       CODE:13e5 12 00 eb        LCALL      stubbedout_xenon_dbgled0_clear                             cleared DBG_LED0 on xenon,
                                                                                                        now a stubbed-out function
        CODE:13e8 80 03           SJMP       LAB_CODE_13ed
                              LAB_CODE_13ea                                   XREF[1]:     CODE:13e3(j)  
-       CODE:13ea 12 00 ea        LCALL      FUN_CODE_00ea                                              set DBG_LED0 on xenon,
+       CODE:13ea 12 00 ea        LCALL      stubbedout_xenon_dbgled0_set                               set DBG_LED0 on xenon,
                                                                                                        now a stubbed-out function
                              LAB_CODE_13ed                                   XREF[1]:     CODE:13e8(j)  
        CODE:13ed e5 3c           MOV        A,g_dbgled_blinkpattern_andmask                            = ??
        CODE:13ef 03              RR         A
        CODE:13f0 f5 3c           MOV        g_dbgled_blinkpattern_andmask,A                            = ??
        CODE:13f2 75 38 05        MOV        g_dbgled_sm_delay_timer,#0x5                               5 * 20 = 100 ms delay
-       CODE:13f5 80 c6           SJMP       LAB_CODE_13bd
-                             LAB_CODE_13f7                                   XREF[1]:     CODE:1408(j)  
-       CODE:13f7 d5 38 c3        DJNZ       g_dbgled_sm_delay_timer,LAB_CODE_13bd                      = ??
-       CODE:13fa 80 bc           SJMP       LAB_CODE_13b8
+       CODE:13f5 80 c6           SJMP       dbgled_sm_go_state_1
+                             dbgled_sm_exec_state_1                          XREF[1]:     CODE:1408(j)  
+       CODE:13f7 d5 38 c3        DJNZ       g_dbgled_sm_delay_timer,dbgled_sm_go_state_1               = ??
+       CODE:13fa 80 bc           SJMP       dbgled_sm_go_state_0
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
@@ -3491,8 +3492,8 @@
        CODE:1401 90 14 05        MOV        DPTR,#LAB_CODE_1405
        CODE:1404 73              JMP        @A+DPTR
                              LAB_CODE_1405                                   XREF[1]:     dbg_led_statemachine:1401(*)  
-       CODE:1405 02 13 c3        LJMP       LAB_CODE_13c3                                              state 0: update LEDs
-       CODE:1408 02 13 f7        LJMP       LAB_CODE_13f7                                              state 1: wait 100 ms
+       CODE:1405 02 13 c3        LJMP       dbgled_sm_exec_state_0                                     state 0: update LEDs
+       CODE:1408 02 13 f7        LJMP       dbgled_sm_exec_state_1                                     state 1: wait 100 ms
                              LAB_CODE_140b                                   XREF[1]:     CODE:14ae(j)  
        CODE:140b 12 25 d2        LCALL      ext_pwr_on_read                                            undefined ext_pwr_on_read()
        CODE:140e 40 05           JC         LAB_CODE_1415
@@ -3501,15 +3502,15 @@
                              LAB_CODE_1415                                   XREF[3]:     CODE:140e(j), CODE:143d(j), 
                                                                                           CODE:14a2(j)  
        CODE:1415 78 a2           MOV        R0,#0xa2
-       CODE:1417 76 00           MOV        @R0=>DAT_INTMEM_a2,#0x0                                    = ??
+       CODE:1417 76 00           MOV        @R0=>g_extpwron_sm_state,#0x0                              = ??
        CODE:1419 22              RET
                              LAB_CODE_141a                                   XREF[1]:     CODE:1413(j)  
        CODE:141a 78 a2           MOV        R0,#0xa2
-       CODE:141c 76 01           MOV        @R0=>DAT_INTMEM_a2,#0x1                                    = ??
+       CODE:141c 76 01           MOV        @R0=>g_extpwron_sm_state,#0x1                              = ??
        CODE:141e 22              RET
                              LAB_CODE_141f                                   XREF[1]:     CODE:1472(j)  
        CODE:141f 78 a2           MOV        R0,#0xa2
-       CODE:1421 76 02           MOV        @R0=>DAT_INTMEM_a2,#0x2                                    = ??
+       CODE:1421 76 02           MOV        @R0=>g_extpwron_sm_state,#0x2                              = ??
        CODE:1423 22              RET
                              LAB_CODE_1424                                   XREF[6]:     CODE:142c(j), CODE:143f(j), 
                                                                                           CODE:146e(j), CODE:1499(j), 
@@ -3598,9 +3599,9 @@
              undefined         ACC:1          <RETURN>
                              ext_pwr_on_sm_exec                              XREF[1]:     mainloop:07a7(c)  
        CODE:14a5 78 a2           MOV        R0,#0xa2
-       CODE:14a7 e6              MOV        A,@R0=>DAT_INTMEM_a2                                       = ??
-       CODE:14a8 26              ADD        A,@R0=>DAT_INTMEM_a2                                       = ??
-       CODE:14a9 26              ADD        A,@R0=>DAT_INTMEM_a2                                       = ??
+       CODE:14a7 e6              MOV        A,@R0=>g_extpwron_sm_state                                 = ??
+       CODE:14a8 26              ADD        A,@R0=>g_extpwron_sm_state                                 = ??
+       CODE:14a9 26              ADD        A,@R0=>g_extpwron_sm_state                                 = ??
        CODE:14aa 90 14 ae        MOV        DPTR,#0x14ae
        CODE:14ad 73              JMP        @A+DPTR
        CODE:14ae 02 14 0b        LJMP       LAB_CODE_140b
@@ -3775,7 +3776,8 @@
        CODE:15d4 ea              MOV        A,R2
        CODE:15d5 24 cc           ADD        A,#0xcc
        CODE:15d7 92 d5           MOV        F0,CY                                                      = ??
-       CODE:15d9 50 04           JNC        LAB_CODE_15df
+       CODE:15d9 50 04           JNC        LAB_CODE_15df                                              skip if intended speed is
+                                                                                                       less than 0x33
        CODE:15db fb              MOV        R3,A
        CODE:15dc 90 16 16        MOV        DPTR,#DAT_CODE_1616                                        = 49h    I
                              LAB_CODE_15df                                   XREF[1]:     CODE:15d9(j)  
@@ -4568,8 +4570,9 @@
        CODE:1a0c e6              MOV        A,@R0=>DAT_INTMEM_a4                                       = ??
        CODE:1a0d 26              ADD        A,@R0=>DAT_INTMEM_a4                                       = ??
        CODE:1a0e 26              ADD        A,@R0=>DAT_INTMEM_a4                                       = ??
-       CODE:1a0f 90 1a 13        MOV        DPTR,#0x1a13
+       CODE:1a0f 90 1a 13        MOV        DPTR,#LAB_CODE_1a13
        CODE:1a12 73              JMP        @A+DPTR
+                             LAB_CODE_1a13                                   XREF[1]:     argon_sm_exec:1a0f(*)  
        CODE:1a13 02 17 f5        LJMP       argon_sm_exec_state_0                                      state 0 loops through normal stuff
        CODE:1a16 02 18 ed        LJMP       argon_sm_exec_state_1                                      state 1 waits until some
                                                                                                        condition is met
@@ -4594,15 +4597,15 @@
        CODE:1a33 90 1a 37        MOV        DPTR,#LAB_CODE_1a37
        CODE:1a36 73              JMP        @A+DPTR
                              LAB_CODE_1a37                                   XREF[1]:     hana_i2c_sm_exec:1a33(*)  
-       CODE:1a37 02 1a 52        LJMP       LAB_CODE_1a52
-       CODE:1a3a 02 1a db        LJMP       LAB_CODE_1adb
-       CODE:1a3d 02 1a fd        LJMP       LAB_CODE_1afd
-       CODE:1a40 02 1b 18        LJMP       LAB_CODE_1b18
-       CODE:1a43 02 1b 24        LJMP       LAB_CODE_1b24
-       CODE:1a46 02 1b 70        LJMP       LAB_CODE_1b70
-       CODE:1a49 02 1b 8a        LJMP       LAB_CODE_1b8a
-       CODE:1a4c 02 1b 5b        LJMP       LAB_CODE_1b5b
-       CODE:1a4f 02 1b 67        LJMP       LAB_CODE_1b67
+       CODE:1a37 02 1a 52        LJMP       LAB_CODE_1a52                                              state 0
+       CODE:1a3a 02 1a db        LJMP       LAB_CODE_1adb                                              state 1
+       CODE:1a3d 02 1a fd        LJMP       LAB_CODE_1afd                                              state 2
+       CODE:1a40 02 1b 18        LJMP       LAB_CODE_1b18                                              state 3
+       CODE:1a43 02 1b 24        LJMP       LAB_CODE_1b24                                              state 4
+       CODE:1a46 02 1b 70        LJMP       LAB_CODE_1b70                                              state 5
+       CODE:1a49 02 1b 8a        LJMP       LAB_CODE_1b8a                                              state 6
+       CODE:1a4c 02 1b 5b        LJMP       LAB_CODE_1b5b                                              state 7
+       CODE:1a4f 02 1b 67        LJMP       LAB_CODE_1b67                                              state 8
                              LAB_CODE_1a52                                   XREF[1]:     CODE:1a37(j)  
        CODE:1a52 d2 2b           SETB       g_hana_mutex                                               = ??
        CODE:1a54 20 2a 02        JB         g_hana_active,LAB_CODE_1a59                                HANA must be active
@@ -4673,7 +4676,7 @@
        CODE:1ad6 c2 2b           CLR        g_hana_mutex                                               = ??
        CODE:1ad8 02 1b 5a        LJMP       LAB_CODE_1b5a
                              LAB_CODE_1adb                                   XREF[1]:     CODE:1a3a(j)  
-       CODE:1adb 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1adb 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1ade 50 7a           JNC        LAB_CODE_1b5a
                              LAB_CODE_1ae0                                   XREF[1]:     CODE:1a65(j)  
        CODE:1ae0 c2 2c           CLR        g_i2c_ipc_operation_pending                                execution likely ends up here
@@ -4692,7 +4695,7 @@
        CODE:1af8 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:1afb 80 30           SJMP       hana_sm_go_state_0
                              LAB_CODE_1afd                                   XREF[1]:     CODE:1a3d(j)  
-       CODE:1afd 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1afd 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b00 50 58           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b02                                   XREF[1]:     CODE:1a73(j)  
        CODE:1b02 c2 2d           CLR        g_i2c_hana_init_pending                                    = ??
@@ -4706,14 +4709,14 @@
        CODE:1b14 d2 33           SETB       g_i2c_error_handler_operation_pending                      = ??
        CODE:1b16 80 15           SJMP       hana_sm_go_state_0
                              LAB_CODE_1b18                                   XREF[1]:     CODE:1a40(j)  
-       CODE:1b18 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b18 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b1b 50 3d           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b1d                                   XREF[1]:     CODE:1a82(j)  
        CODE:1b1d c2 2e           CLR        25.6                                                       = ??
        CODE:1b1f 30 d5 0b        JNB        F0,hana_sm_go_state_0                                      = ??
        CODE:1b22 80 e3           SJMP       LAB_CODE_1b07
                              LAB_CODE_1b24                                   XREF[1]:     CODE:1a43(j)  
-       CODE:1b24 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b24 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b27 50 31           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b29                                   XREF[1]:     CODE:1a91(j)  
        CODE:1b29 c2 2f           CLR        25.7                                                       = ??
@@ -4767,20 +4770,20 @@
                                                                                           CODE:1b8d(j)  
        CODE:1b5a 22              RET
                              LAB_CODE_1b5b                                   XREF[1]:     CODE:1a4c(j)  
-       CODE:1b5b 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b5b 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b5e 50 fa           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b60                                   XREF[1]:     CODE:1ac1(j)  
        CODE:1b60 c2 32           CLR        26.2                                                       = ??
        CODE:1b62 30 d5 c8        JNB        F0,hana_sm_go_state_0                                      = ??
        CODE:1b65 80 a0           SJMP       LAB_CODE_1b07
                              LAB_CODE_1b67                                   XREF[1]:     CODE:1a4f(j)  
-       CODE:1b67 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b67 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b6a 50 ee           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b6c                                   XREF[1]:     CODE:1ad3(j)  
        CODE:1b6c c2 33           CLR        g_i2c_error_handler_operation_pending                      = ??
        CODE:1b6e 80 bd           SJMP       hana_sm_go_state_0
                              LAB_CODE_1b70                                   XREF[1]:     CODE:1a46(j)  
-       CODE:1b70 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b70 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b73 50 e5           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b75                                   XREF[1]:     CODE:1aa3(j)  
        CODE:1b75 c2 30           CLR        26.0                                                       = ??
@@ -4794,7 +4797,7 @@
        CODE:1b86 f5 5d           MOV        g_avpack_last_read,A                                       = ??
        CODE:1b88 80 a3           SJMP       hana_sm_go_state_0
                              LAB_CODE_1b8a                                   XREF[1]:     CODE:1a49(j)  
-       CODE:1b8a 12 26 27        LCALL      FUN_CODE_2627                                              undefined FUN_CODE_2627()
+       CODE:1b8a 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b8d 50 cb           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b8f                                   XREF[1]:     CODE:1ab2(j)  
        CODE:1b8f c2 31           CLR        26.1                                                       = ??
@@ -6792,8 +6795,8 @@
              undefined         ACC:1          <RETURN>
                              i2c_commandlist_run_ipc_transaction             XREF[1]:     CODE:1a5c(c)  
        CODE:25f4 75 78 00        MOV        g_i2c_command_start_pointer,#0x0                           = ??
-       CODE:25f7 75 7a 01        MOV        DAT_INTMEM_7a,#0x1                                         = ??
-       CODE:25fa 80 26           SJMP       FUN_CODE_261f::i2c_exec_command
+       CODE:25f7 75 7a 01        MOV        g_i2c_retry_count,#0x1                                     = ??
+       CODE:25fa 80 26           SJMP       i2c_execute_with_3_retries::i2c_exec_command
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
@@ -6801,7 +6804,7 @@
              undefined         ACC:1          <RETURN>
                              i2c_commandlist_run_hana_init                   XREF[1]:     CODE:1a6a(c)  
        CODE:25fc 75 78 03        MOV        g_i2c_command_start_pointer,#0x3                           = ??
-       CODE:25ff 80 1e           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:25ff 80 1e           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6810,7 +6813,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2601                                   XREF[1]:     CODE:1a79(c)  
        CODE:2601 75 78 3a        MOV        g_i2c_command_start_pointer,#0x3a                          = ??
-       CODE:2604 80 19           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:2604 80 19           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6819,7 +6822,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2606                                   XREF[1]:     CODE:1a88(c)  
        CODE:2606 75 78 48        MOV        g_i2c_command_start_pointer,#0x48                          = ??
-       CODE:2609 80 14           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:2609 80 14           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6828,7 +6831,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_260b                                   XREF[1]:     CODE:1a9a(c)  
        CODE:260b 75 78 5c        MOV        g_i2c_command_start_pointer,#0x5c                          = ??
-       CODE:260e 80 0f           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:260e 80 0f           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6837,7 +6840,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2610                                   XREF[1]:     CODE:1aa9(c)  
        CODE:2610 75 78 5e        MOV        g_i2c_command_start_pointer,#0x5e                          = ??
-       CODE:2613 80 0a           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:2613 80 0a           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6846,7 +6849,7 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2615                                   XREF[1]:     CODE:1ab8(c)  
        CODE:2615 75 78 8e        MOV        g_i2c_command_start_pointer,#0x8e                          = ??
-       CODE:2618 80 05           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:2618 80 05           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6855,21 +6858,21 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_261a                                   XREF[1]:     CODE:1aca(c)  
        CODE:261a 75 78 99        MOV        g_i2c_command_start_pointer,#0x99                          -> 29a0
-       CODE:261d 80 00           SJMP       FUN_CODE_261f                                              undefined FUN_CODE_261f()
+       CODE:261d 80 00           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_261f()
+                             undefined i2c_execute_with_3_retries()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_261f                                   XREF[7]:     i2c_commandlist_run_hana_init:25
+                             i2c_execute_with_3_retries                      XREF[7]:     i2c_commandlist_run_hana_init:25
                                                                                           FUN_CODE_2601:2604(c), 
                                                                                           FUN_CODE_2606:2609(c), 
                                                                                           FUN_CODE_260b:260e(c), 
                                                                                           FUN_CODE_2610:2613(c), 
                                                                                           FUN_CODE_2615:2618(c), 
                                                                                           FUN_CODE_261a:261d(c)  
-       CODE:261f 75 7a 03        MOV        DAT_INTMEM_7a,#0x3                                         = ??
+       CODE:261f 75 7a 03        MOV        g_i2c_retry_count,#0x3                                     = ??
                              i2c_exec_command                                XREF[1]:     i2c_commandlist_run_ipc_transact
        CODE:2622 85 78 79        MOV        g_i2c_command_current_pointer,g_i2c_command_start_pointer  = ??
        CODE:2625 80 35           SJMP       i2c_command_step                                           undefined i2c_command_step()
@@ -6877,16 +6880,18 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2627()
+                             undefined i2c_try_continue_commandlist_execution()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2627                                   XREF[8]:     CODE:1adb(c), CODE:1afd(c), 
+                             i2c_try_continue_commandlist_execution          XREF[8]:     CODE:1adb(c), CODE:1afd(c), 
                                                                                           CODE:1b18(c), CODE:1b24(c), 
                                                                                           CODE:1b5b(c), CODE:1b67(c), 
                                                                                           CODE:1b70(c), CODE:1b8a(c)  
-       CODE:2627 30 60 02        JNB        2c.0,LAB_CODE_262c                                         = ??
+       CODE:2627 30 60 02        JNB        2c.0,LAB_CODE_262c                                         if I2C transfer still in progress,
+                                                                                                       then go back to idling
        CODE:262a 80 2c           SJMP       LAB_CODE_2658
                              LAB_CODE_262c                                   XREF[1]:     CODE:2627(j)  
-       CODE:262c 30 da 09        JNB        CCF.2,LAB_CODE_2638                                        = ??
+       CODE:262c 30 da 09        JNB        CCF.2,LAB_CODE_2638                                        seems the I2C controller will
+                                                                                                       reset this SFR flag for us
        CODE:262f 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:2632 30 da 03        JNB        CCF.2,LAB_CODE_2638                                        = ??
        CODE:2635 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
@@ -6894,12 +6899,12 @@
        CODE:2638 30 61 21        JNB        2c.1,i2c_command_step                                      if this is clear,
                                                                                                        continue I2C statemachine execution
                                                                                                        from where we left off
-                             LAB_CODE_263b                                   XREF[4]:     i2c_opcode_init:2673(j), 
+                             i2c_error_encountered                           XREF[4]:     i2c_opcode_init:2673(j), 
                                                                                           FUN_CODE_2755:2770(j), 
                                                                                           FUN_CODE_2850:285a(j), 
                                                                                           FUN_CODE_285d:2875(j)  
-       CODE:263b d5 7a 07        DJNZ       DAT_INTMEM_7a,LAB_CODE_2645                                = ??
-       CODE:263e d2 d5           SETB       F0                                                         = ??
+       CODE:263b d5 7a 07        DJNZ       g_i2c_retry_count,LAB_CODE_2645                            = ??
+       CODE:263e d2 d5           SETB       F0                                                         error flag
                              LAB_CODE_2640                                   XREF[1]:     i2c_opcode_done:2688(j)  
        CODE:2640 12 02 ad        LCALL      i2c_reset_buses                                            undefined i2c_reset_buses()
        CODE:2643 d3              SETB       CY
@@ -6925,8 +6930,8 @@
        CODE:2650 75 10 00        MOV        i2c_statemachine_state,#0x0                                reset I2C irq handler state
        CODE:2653 d2 d9           SETB       CCF.1                                                      = ??
        CODE:2655 53 bc f7        ANL        DAT_SFR_bc,#0xf7                                           = ??
-                             LAB_CODE_2658                                   XREF[2]:     FUN_CODE_2627:262a(j), 
-                                                                                          FUN_CODE_2627:264a(j)  
+                             LAB_CODE_2658                                   XREF[2]:     i2c_try_continue_commandlist_exe
+                                                                                          i2c_try_continue_commandlist_exe
        CODE:2658 c2 d5           CLR        F0                                                         = ??
        CODE:265a c3              CLR        CY
        CODE:265b 22              RET
@@ -6935,8 +6940,8 @@
                              **************************************************************
                              undefined i2c_command_step()
              undefined         ACC:1          <RETURN>
-                             i2c_command_step                                XREF[12]:    FUN_CODE_261f:2625(c), 
-                                                                                          FUN_CODE_2627:2638(j), 
+                             i2c_command_step                                XREF[12]:    i2c_execute_with_3_retries:2625(
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_opcode_init:2684(c), 
                                                                                           i2c_opcode_nop:268a(T), 
                                                                                           i2c_opcode_nop:268c(c), 
@@ -6963,13 +6968,13 @@
        CODE:266c 50 07           JNC        LAB_CODE_2675
        CODE:266e 12 29 f2        LCALL      FUN_CODE_29f2                                              undefined FUN_CODE_29f2()
        CODE:2671 50 02           JNC        LAB_CODE_2675
-       CODE:2673 80 c6           SJMP       LAB_CODE_263b
+       CODE:2673 80 c6           SJMP       i2c_try_continue_commandlist_execution::i2c_error_encoun
                              LAB_CODE_2675                                   XREF[2]:     CODE:266c(j), CODE:2671(j)  
        CODE:2675 c2 c9           CLR        CT2                                                        = ??
        CODE:2677 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
        CODE:267a d2 c9           SETB       CT2                                                        = ??
        CODE:267c 12 29 c8        LCALL      i2c_burn_cycles                                            undefined i2c_burn_cycles()
-       CODE:267f 12 29 dc        LCALL      FUN_CODE_29dc                                              undefined FUN_CODE_29dc()
+       CODE:267f 12 29 dc        LCALL      i2c_handover_bus                                           undefined i2c_handover_bus()
        CODE:2682 05 79           INC        g_i2c_command_current_pointer                              = ??
        CODE:2684 80 d6           SJMP       i2c_command_step                                           undefined i2c_command_step()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
@@ -7154,7 +7159,7 @@
                              LAB_CODE_276d                                   XREF[1]:     CODE:275c(j)  
        CODE:276d 30 9f 11        JNB        SM0,LAB_CODE_2781                                          = ??
                              LAB_CODE_2770                                   XREF[1]:     CODE:2765(j)  
-       CODE:2770 02 26 3b        LJMP       LAB_CODE_263b
+       CODE:2770 02 26 3b        LJMP       i2c_try_continue_commandlist_execution::i2c_error_encoun
                              LAB_CODE_2773                                   XREF[1]:     CODE:2755(j)  
        CODE:2773 75 98 00        MOV        SCON,#0x0                                                  = ??
        CODE:2776 75 95 88        MOV        DAT_SFR_95,#0x88                                           = ??
@@ -7290,7 +7295,7 @@
        CODE:2857 02 26 5c        LJMP       i2c_command_step                                           undefined i2c_command_step()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_285a                                   XREF[1]:     CODE:2852(j)  
-       CODE:285a 02 26 3b        LJMP       LAB_CODE_263b
+       CODE:285a 02 26 3b        LJMP       i2c_try_continue_commandlist_execution::i2c_error_encoun
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
@@ -7308,7 +7313,7 @@
        CODE:2872 02 26 5c        LJMP       i2c_command_step                                           undefined i2c_command_step()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_2875                                   XREF[2]:     CODE:2864(j), CODE:2869(j)  
-       CODE:2875 02 26 3b        LJMP       LAB_CODE_263b
+       CODE:2875 02 26 3b        LJMP       i2c_try_continue_commandlist_execution::i2c_error_encoun
                              LAB_CODE_2878                                   XREF[1]:     CODE:285f(j)  
        CODE:2878 e5 18           MOV        A,BANK3_R0                                                 = ??
        CODE:287a 78 b8           MOV        R0,#0xb8
@@ -7346,7 +7351,7 @@
        CODE:28b4 33              RLC        A                                                          appears to be a write
                                                                                                        (lsb of address byte is
                                                                                                         0 = write)
-       CODE:28b5 f5 11           MOV        BANK2_R1,A                                                 I2C address
+       CODE:28b5 f5 11           MOV        BANK2_R1,A                                                 I2C address (write)
        CODE:28b7 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:28ba a2 e7           MOV        CY,ACC.7                                                   = ??
        CODE:28bc 92 5e           MOV        2b.6,CY                                                    = ??
@@ -7640,8 +7645,8 @@
                              **************************************************************
                              undefined i2c_burn_cycles()
              undefined         ACC:1          <RETURN>
-                             i2c_burn_cycles                                 XREF[6]:     FUN_CODE_2627:262f(c), 
-                                                                                          FUN_CODE_2627:2635(c), 
+                             i2c_burn_cycles                                 XREF[6]:     i2c_try_continue_commandlist_exe
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_opcode_init:2677(c), 
                                                                                           i2c_opcode_init:267c(c), 
                                                                                           FUN_CODE_29f2:29f7(c), 
@@ -7675,9 +7680,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_29dc()
+                             undefined i2c_handover_bus()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_29dc                                   XREF[1]:     i2c_opcode_init:267f(c)  
+                             i2c_handover_bus                                XREF[1]:     i2c_opcode_init:267f(c)  
        CODE:29dc 75 db 00        MOV        CCAPM1,#0x0                                                = ??
        CODE:29df 75 dc 00        MOV        CCAPM2,#0x0                                                = ??
        CODE:29e2 75 dd e1        MOV        CCAPM3,#0xe1                                               = ??
@@ -9739,15 +9744,15 @@
                                                                                           FUN_CODE_2610:2610(W), 
                                                                                           FUN_CODE_2615:2615(W), 
                                                                                           FUN_CODE_261a:261a(W), 
-                                                                                          FUN_CODE_261f:2622(R), 
-                                                                                          FUN_CODE_2627:2645(R), 
+                                                                                          i2c_execute_with_3_retries:2622(
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           FUN_CODE_2836:2836(R), 
                                                                                           FUN_CODE_285d:285d(R), 
                                                                                           FUN_CODE_285d:286c(W), 
                                                                                           FUN_CODE_285d:286f(R)  
        INTMEM:78                 undefined1 ??
-                             g_i2c_command_current_pointer                   XREF[41]:    FUN_CODE_261f:2622(W), 
-                                                                                          FUN_CODE_2627:2645(W), 
+                             g_i2c_command_current_pointer                   XREF[41]:    i2c_execute_with_3_retries:2622(
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_command_step:265f(R), 
                                                                                           i2c_opcode_init:2682(RW), 
                                                                                           i2c_opcode_nop:268a(RW), 
@@ -9767,9 +9772,9 @@
                                                                                           FUN_CODE_26d6:26f4(RW), 
                                                                                           CODE:280e(RW), [more]
        INTMEM:79                 undefined1 ??
-                             DAT_INTMEM_7a                                   XREF[3]:     i2c_commandlist_run_ipc_transact
-                                                                                          FUN_CODE_261f:261f(W), 
-                                                                                          FUN_CODE_2627:263b(RW)  
+                             g_i2c_retry_count                               XREF[3]:     i2c_commandlist_run_ipc_transact
+                                                                                          i2c_execute_with_3_retries:261f(
+                                                                                          i2c_try_continue_commandlist_exe
        INTMEM:7a                 ??         ??
        INTMEM:7b                 ??         ??
                              DAT_INTMEM_7c                                   XREF[2]:     argon_queue_message:2a1d(W), 
@@ -9877,13 +9882,13 @@
                                                                                           CODE:0f2a(W), CODE:0f2f(W), 
                                                                                           CODE:0f34(W)  
        INTMEM:9e                 undefined1 ??
-                             DAT_INTMEM_9f                                   XREF[6]:     CODE:12fd(W), CODE:1302(W), 
+                             g_audclamp_sm_state                             XREF[6]:     CODE:12fd(W), CODE:1302(W), 
                                                                                           CODE:1307(W), 
                                                                                           audclamp_sm_exec:1360(R), 
                                                                                           audclamp_sm_exec:1361(R), 
                                                                                           audclamp_sm_exec:1362(R)  
        INTMEM:9f                 undefined1 ??
-                             DAT_INTMEM_a0                                   XREF[7]:     CODE:1372(W), CODE:1377(W), 
+                             g_bindsw_sm_state                               XREF[7]:     CODE:1372(W), CODE:1377(W), 
                                                                                           CODE:137c(W), CODE:1381(W), 
                                                                                           bindsw_sm_exec:1387(R), 
                                                                                           bindsw_sm_exec:1388(R), 
@@ -9894,7 +9899,7 @@
                                                                                           dbg_led_statemachine:13ff(R), 
                                                                                           dbg_led_statemachine:1400(R)  
        INTMEM:a1                 undefined1 ??
-                             DAT_INTMEM_a2                                   XREF[6]:     CODE:1417(W), CODE:141c(W), 
+                             g_extpwron_sm_state                             XREF[6]:     CODE:1417(W), CODE:141c(W), 
                                                                                           CODE:1421(W), 
                                                                                           ext_pwr_on_sm_exec:14a7(R), 
                                                                                           ext_pwr_on_sm_exec:14a8(R), 
@@ -10117,7 +10122,7 @@
                              PCON                                            XREF[1]:     FUN_CODE_2383:23b3(RW)  
           SFR:87                 ??         ??
                              TCON                                            XREF[2]:     FUN_CODE_2383:239b(W), 
-                                                                                          FUN_CODE_29dc:29eb(W)  
+                                                                                          i2c_handover_bus:29eb(W)  
           SFR:88                 ??         ??
                              TMOD
           SFR:89                 ??         ??
@@ -10150,7 +10155,7 @@
           SFR:94                 ??         ??
                              DAT_SFR_95                                      XREF[3]:     FUN_CODE_2383:23a1(W), 
                                                                                           FUN_CODE_2755:2776(W), 
-                                                                                          FUN_CODE_29dc:29ee(W)  
+                                                                                          i2c_handover_bus:29ee(W)  
           SFR:95                 ??         ??
                              DAT_SFR_96                                      XREF[1]:     FUN_CODE_2383:2392(W)  
           SFR:96                 ??         ??
@@ -10347,7 +10352,7 @@
                                                                                           usb_powerevent_check:06aa(R), 
                                                                                           usb_powerevent_check:06af(R)  
           SFR:d7                 undefined1 ??
-                             CCON                                            XREF[1]:     FUN_CODE_29dc:29e8(W)  
+                             CCON                                            XREF[1]:     i2c_handover_bus:29e8(W)  
           SFR:d8                 ??         ??
                              CMOD                                            XREF[6]:     CODE:01c2(R), CODE:01d7(R), 
                                                                                           CODE:0230(R), CODE:0245(R), 
@@ -10358,14 +10363,14 @@
                                                                                           CODE:024c(W), CODE:026b(W), 
                                                                                           CODE:02a4(R), CODE:02a8(R)  
           SFR:da                 undefined1 ??
-                             CCAPM1                                          XREF[1]:     FUN_CODE_29dc:29dc(W)  
+                             CCAPM1                                          XREF[1]:     i2c_handover_bus:29dc(W)  
           SFR:db                 ??         ??
                              CCAPM2                                          XREF[2]:     i2c_reset_buses:02c9(W), 
-                                                                                          FUN_CODE_29dc:29df(W)  
+                                                                                          i2c_handover_bus:29df(W)  
           SFR:dc                 ??         ??
-                             CCAPM3                                          XREF[1]:     FUN_CODE_29dc:29e2(W)  
+                             CCAPM3                                          XREF[1]:     i2c_handover_bus:29e2(W)  
           SFR:dd                 ??         ??
-                             CCAPM4                                          XREF[1]:     FUN_CODE_29dc:29e5(W)  
+                             CCAPM4                                          XREF[1]:     i2c_handover_bus:29e5(W)  
           SFR:de                 ??         ??
                              PCON1
           SFR:df                 ??         ??
@@ -10381,10 +10386,10 @@
                                                                                           ipc_inbox_set_read_pointer:240a(
                                                                                           ipc_inbox_release:2417(W)  
           SFR:e2                 undefined1 ??
-                             RXDAT                                           XREF[5]:     FUN_CODE_00ad:00ad(W), 
-                                                                                          FUN_CODE_00ad:00b0(W), 
-                                                                                          FUN_CODE_00ad:00b3(W), 
-                                                                                          FUN_CODE_00ad:00b6(W), 
+                             RXDAT                                           XREF[5]:     sfcx_flash_reset:00ad(W), 
+                                                                                          sfcx_flash_reset:00b0(W), 
+                                                                                          sfcx_flash_reset:00b3(W), 
+                                                                                          sfcx_flash_reset:00b6(W), 
                                                                                           FUN_CODE_2442:2448(R)  
           SFR:e3                 undefined1 ??
                              RXCON
@@ -10979,13 +10984,13 @@
                                                                                           CODE:28c7(W)  
          BITS:5f                 ??         ??
                              2c.0                                            XREF[3]:     CODE:0216(W), 
-                                                                                          FUN_CODE_2627:2627(R), 
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_yield_to_async_operation:264
          BITS:60                 ??         ??
                              2c.1                                            XREF[6]:     CODE:01fc(W), CODE:025d(W), 
                                                                                           CODE:0287(W), 
-                                                                                          FUN_CODE_2627:2638(R), 
-                                                                                          FUN_CODE_2627:2648(W), 
+                                                                                          i2c_try_continue_commandlist_exe
+                                                                                          i2c_try_continue_commandlist_exe
                                                                                           i2c_yield_to_async_operation:264
          BITS:61                 ??         ??
                              g_ir_command_waiting                            XREF[6]:     FUN_CODE_02fe:031b(R), 
@@ -11398,8 +11403,8 @@
                                                                                           i2c_yield_to_async_operation:265
          BITS:d9                 ??         ??
                              CCF.2                                           XREF[3]:     CODE:020f(W), 
-                                                                                          FUN_CODE_2627:262c(R), 
-                                                                                          FUN_CODE_2627:2632(R)  
+                                                                                          i2c_try_continue_commandlist_exe
+                                                                                          i2c_try_continue_commandlist_exe
          BITS:da                 ??         ??
                              CCF.3                                           XREF[5]:     CODE:01a1(W), CODE:01bb(W), 
                                                                                           CODE:0200(W), CODE:0229(W), 
