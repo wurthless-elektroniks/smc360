@@ -20,7 +20,7 @@ The I2C devices themselves shouldn't be documented here, that's a whole other ba
 ## I2C address map
 
 - 0x39: ????? (used for error reporting?)
-- 0x69 (Xenon only): Clock generator
+- 0x69 (Xenon only): Backup clock generator (Cypress CY28517)
 - 0x70: ANA/HANA on all XSB and PSB boards, KSB on Corona and Winchester (TBD)
 
 Other things like the voltage regulators live on the I2C bus as well
@@ -77,6 +77,7 @@ The initialization procedure is:
 ### End commandlist execution
 
 Byte format:
+- Xenon: `03`
 - Falcon: `03`
 
 Handlers:
@@ -98,6 +99,7 @@ next instruction.
 ### Run IPC transaction
 
 Byte format:
+- Xenon: `06`
 - Falcon: `09`
 
 Handlers:
@@ -108,9 +110,20 @@ This will block until the transfer completes.
 The logic here is spaghetti code because of how the I2C interrupt handler works. When an IPC transaction is running
 the I2C IRQ handler overrides the usual read/write buffers and uses the IPC inbox and outbox instead for those operations.
 
-### Write HANA register
+### Write backup clockgen register (Xenon only)
 
 Byte format:
+- Xenon: `17 rr dd` (to be confirmed)
+
+Handlers:
+- Xenon: 0x282C -> 0x272B
+
+Writes to the backup clock generator, which is a Cypress CY28517.
+
+### Write ANA/HANA/KSB register
+
+Byte format:
+- Xenon: `08 rr dd dd dd dd`
 - Falcon: `0B rr dd dd dd dd`
 
 Handlers:

@@ -14,6 +14,40 @@
 
 TODO: there must be a Xenon v1, but I couldn't find it in any of my NAND dumps... someone else have it?
 
+## Version differences
+
+These basically mirror hardware revisions, but whatevs...
+
+### Xenon
+
+TODO
+
+### Zephyr
+
+TODO
+
+### Falcon
+
+- Adds checkstop support, although the program doesn't use it to raise any errors
+
+### Jasper
+
+- Big block support
+- Reset watchdog statemachine changes
+- Buggy Xenon code that strobes DBG_LED3 still present
+
+### Trinity
+
+TODO
+
+### Corona
+
+- KSB support
+
+### Winchester
+
+- IR driver code seems to be left in
+
 ## Board compatibility
 
 - Xenon boards use two different southbridges (G0 and R0). Xenon v2 should be compatible with both revisions;

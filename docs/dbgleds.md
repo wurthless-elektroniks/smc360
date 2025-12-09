@@ -19,7 +19,7 @@ Two quick notes about DBG_LED3:
 - This is actually strobed in the reset watchdog statemachine; the debug LED statemachine never
   accesses this.
 - Some SMC versions (Falcon for sure) have buggy behavior that assumes the LED still exists there and
-  attempts to strobe it upon releasing GPU reset. This is fixed on Jasper.
+  attempts to strobe it upon releasing GPU reset. (TODO: was this bug ever fixed?)
 
 ## Blink patterns
 

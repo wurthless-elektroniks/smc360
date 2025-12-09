@@ -25,14 +25,15 @@ but the basics are:
   then clear it. The SMC will then pick up the message, set the flag, process the message (even to discard it),
   then clear it. The same goes for 0xEA001094, which belongs to the SMC's outbox.
 
+TODO: the inbox/outbox registers on the CPU side are probably word-addressable like on the SMC side;
+bits 0/1 could set the word offset (0-3) and bit 2 is the lock/status flag...
+
 ## Talking to the CPU from the SMC
 
-Much TODO.
-
-- The SMC reads and writes data from the SMC FIFOs eight bits at at a time. The SMC doesn't really care that
-  the CPU has written 8 bytes when the message only requires 6, it will ignore the rest of the message.
-  You'll see code in libxenon writing more bytes than necessary to the FIFO, but it was probably written that way 
-  to make the code easier to reuse.
+The SMC reads and writes data from the SMC FIFOs eight bits at at a time. The SMC doesn't really care that
+the CPU has written 8 bytes when the message only requires 6, it will ignore the rest of the message.
+You'll see code in libxenon writing more bytes than necessary to the FIFO, but it was probably written that way 
+to make the code easier to reuse, and also to be safe, as the SMC program can't clear the inbox.
 
 ### IPC SFRs
 
@@ -41,9 +42,18 @@ These have to be reverse engineered in full. Don't think anyone's done that befo
 | SFR  | Ghidra symbol | Description                            |
 |------|---------------|----------------------------------------|
 | 0D5h | HPSC          | Outbox write; pointer auto-increments  |
-| 0D6h | DAT_SFR_d6    | Outbox control; sets pointer           |
+| 0D6h | DAT_SFR_d6    | Outbox control/status; sets pointer    |
 | 0E1h | EPCON         | Inbox read; pointer auto-increments    |
-| 0E2h | RXSTAT        | Inbox control, sets pointer            |
+| 0E2h | RXSTAT        | Inbox control/status; sets pointer     |
+
+The control registers, like their counterparts on the CPU side, have a status bit (bit 4 in this case) that
+is set when the SMC wants to lock it and cleared when the inbox/outbox is to be released. Reads will also
+return the status of this bit in the same place, so if you read the SFR and it returns 0x10 (or similar), then
+the buffer is in use by the CPU and can't be used until freed up.
+
+The "FIFOs" are actually 16 byte buffers that can be addressed in random order. To do that, you need to
+write the offset you want to access to the control register (remembering to set bit 4 to keep the inbox/outbox
+locked by the SMC). Then writes/reads will pick up from that offset.
 
 ## Commands
 
@@ -203,15 +213,17 @@ hardcodes those values right into the command handler. Here's how it looks in th
        CODE:0a88 12 24 2f        LCALL      ipc_fifo_write
        CODE:0a8b 74 06           MOV        A,#0x6
        CODE:0a8d 12 24 2f        LCALL      ipc_fifo_write
-       CODE:0a90 e5 66           MOV        A,DAT_INTMEM_66
+       CODE:0a90 e5 66           MOV        A,DAT_INTMEM_66 <-- persistent memory cell 1
        CODE:0a92 12 24 2f        LCALL      ipc_fifo_write
-       CODE:0a95 e5 67           MOV        A,DAT_INTMEM_67
+       CODE:0a95 e5 67           MOV        A,DAT_INTMEM_67 <-- persistent memory cell 2
        CODE:0a97 12 24 2f        LCALL      ipc_fifo_write
        CODE:0a9a 22              RET
 ```
 
-Note that the persistent memory cells (labelled DAT_INTMEM_66 and DAT_INTMEM_67 here) will have been cleared to zero if the
-power-up cause is 0x16.
+About the persistent memory cells:
+- The first persistent memory cell's purpose is currently unclear (could be used by the kernel).
+- The second persistent memory cell is read by hwinit and stored in a GPU register at 0xE400002C.
+- Both will be cleared to zero on SMC reset, or when the power-up cause is 0x16.
 
 ### 0x13 - Copy inbox contents to outbox
 
@@ -229,15 +241,15 @@ Outputs:
 0. Command `0x17`
 1. Single bit indicating tilt switch orientation (0 = no tilt, 1 = tilt)
 
-### 0x1E - Read 12 bytes from SMC memory (SMC_READ_82_INT)
+### 0x1E - Read 12 bytes from SMC memory debug buffer A
 
-TODO
+[See here.](#the-weird-debug-buffers)
 
 Not present on Xenon
 
-### 0x20 - Read 12 bytes from SMC memory (SMC_READ_8E_INT)
+### 0x20 - Read 12 bytes from SMC memory debug buffer B
 
-TODO
+[See here.](#the-weird-debug-buffers)
 
 Not present on Xenon
 
@@ -405,17 +417,41 @@ Inputs:
 
 Outputs: Nothing
 
-### 0x9D - Write 12 bytes from FIFO to SMC memory (SMC_SET_82_INT)
+### 0x9D - Write 12 bytes to SMC memory debug buffer A
 
-TODO
+[See here.](#the-weird-debug-buffers)
+
+Not present on Xenon
+
+### 0x9F - Write 12 bytes to SMC memory debug buffer B
+
+[See here.](#the-weird-debug-buffers)
 
 Not present on Xenon
 
-### 0x9F - Write 12 bytes from FIFO to SMC memory (SMC_SET_9F_INT)
+## The weird debug buffers
 
-Same as command 0x9D but writes to a different address.
+Starting on Zephyr(??? to confirm), the SMC program reserves a bunch of memory cells for no clear purpose other
+than to allow the CPU to store data to SMC memory there when the power is off. As this isn't implemented
+on Xenon, the kernel can't really rely on these buffers to be there.
 
-Not present on Xenon
+Buffer A locations (in INTMEM):
+- Falcon: 082h~08Dh
+- Jasper: 083h~08Eh
+
+Buffer B locations (in INTMEM):
+- Falcon: 08Eh~099h
+- Jasper: 08Fh~09Ah
+
+The IPC exposes the following commands to access these buffers:
+- 0x1E: Read Buffer A (response is `1E` followed by the contents of the buffer)
+- 0x20: Read Buffer B  (response is `20` followed by the contents of the buffer)
+- 0x9D: Write Buffer A (command is `9D` followed by the 12 bytes you want to write)
+- 0x9F: Write Buffer B (command is `9F` followed by the 12 bytes you want to write)
+
+Since Xenon doesn't support these commands, the default behavior for an invalid command applies, so reads
+will always return 0 and writes will do nothing. And of course, if you want to use these buffers for variables
+in your hacked SMC, you can patch the handlers out.
 
 ## Asynchronous operations
 
