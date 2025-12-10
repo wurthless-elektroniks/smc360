@@ -98,8 +98,8 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 | 0x21  | Eject button on Xbox universal remote                                         |
 | 0x22  | IR remote guide/X button                                                      |
 | 0x24  | IR remote Windows button                                                      |
-| 0x30  | CPU requested reboot via IPC                                                  |
-| 0x31  | "After leaving pnc charge mode via power button"                              |
+| 0x30  | Soft reset via IPC                                                            |
+| 0x31  | Hard reset via IPC (possibly other sources too??)                             |
 | 0x41  | Kiosk/debug pin (/EXT_PWR_ON_N pulled low)                                    |
 | 0x55  | Wireless controller X button                                                  |
 | 0x56  | Wired controller 1 X button (fat front top USB, slim front left USB)          |
@@ -255,7 +255,54 @@ Not present on Xenon
 
 ### 0x82 - Reset/powerdown
 
-TODO
+To power off the system:
+
+0. Command `0x82`
+1. Constant `0x01`
+2. Special, see below
+3. Delay(?), see below
+
+If the special value is 0, the SMC behaves as if the power button was pushed, and a delay
+will be copied somewhere into another memory cell that will be read during the power down
+sequence. If, however, the special value is 0x34, a flag will be set somewhere that sends
+the SMC into an infinite loop, maybe as a means of hard resetting the SMC so it loads
+a newly-flashed program. This is to be tested of course.
+
+All other special values will cause the command to be ignored.
+
+To reboot:
+
+0. Command `0x82`
+1. Constant `0x04`
+2. Special, see below
+3. Additional argument, see below
+
+If the special value is 0x30, the system will soft reset immediately and the powerup cause
+will be set to 0x30 when the reset completes.
+
+0x31 is a bit more of an odd case. The additional argument has two flags in bit 0/1 that I don't
+know exactly what they do yet. I think this is the "power down completely, delay a bit and reset"
+command that the kernel sends after installing updates. In any case, when the system powers back
+up again, the powerup cause will be 0x31.
+
+All other special values will cause the command to be ignored.
+
+To cancel any powerdown or reset event:
+
+0. Command `0x82`
+1. Constant `0x04`
+2. Constant `0x33`
+
+This will immediately cancel any event that will power down the system. All flags indicating
+that power buttons have been pushed will be cleared, and the system will stay powered on.
+
+This is likely how the kernel handles power button presses when it needs to do some tasks
+before it powers down: first, it detects that a power button press has happened (via asynchronous
+IPC), then it immediately reacts with this command and powers down its own way.
+
+Since IPC events happen in the "run as fast as possible until 20 ms have passed" part of the mainloop,
+that means you need to send this command as soon as you can, otherwise the rest of the state machine
+logic will execute and the powerdown/reset events will fire.
 
 ### 0x85 - Set RTC
 
