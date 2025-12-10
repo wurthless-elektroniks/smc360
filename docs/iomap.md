@@ -21,31 +21,39 @@ TODO: document them. 09Dh, 09Eh, 09Fh, 0A1h, 0A7h are registers; can be set as o
 
 ## 080h - Port 0
 
-| Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
-|--------|---------------|-------------------|---------|--------|------------|
-| 080h.0 | P0.0          | CPU_PWRGD         | TODO    | TODO   | TODO       |
-| 080h.1 | P0.1          | GPU_RST_N         | TODO    | TODO   | TODO       |
-| 080h.2 | P0.2          | ARGON_CLK         | TODO    | TODO   | TODO       |
-| 080h.3 | P0.3          | ARGON_DATA        | TODO    | TODO   | TODO       |
-| 080h.4 | P0.4          | SB_RST_N          | TODO    | TODO   | TODO       |
-| 080h.5 | P0.5          | SB_MAIN_PWRGD_R   | TODO    | TODO   | TODO       |
-| 080h.6 | P0.6          | CPU_RST_N         | TODO    | TODO   | TODO       |
-| 080h.7 | P0.7          | GPU_RESET_DONE    | TODO    | TODO   | TODO       |
+| Bit    | Ghidra symbol | All fats          | Trinity         | Corona         | Winchester |
+|--------|---------------|-------------------|-----------------|----------------|------------|
+| 080h.0 | P0.0          | CPU_PWRGD         | CPU_PWRGD       | CPU_PWRGD      | TODO       |
+| 080h.1 | P0.1          | GPU_RST_N         | GPU_RST_N       | GPU_RST_N      | TODO       |
+| 080h.2 | P0.2          | ARGON_CLK         | BORON_CLK       | BORON_CLK      | TODO       |
+| 080h.3 | P0.3          | ARGON_DATA        | BORON_DATA      | BORON_DATA     | TODO       |
+| 080h.4 | P0.4          | SB_RST_N          | SB_RST_N        | EXT_JTM_SEL    | TODO       |
+| 080h.5 | P0.5          | SB_MAIN_PWRGD_R   | SB_MAIN_PWRGD_R | unused         | TODO       |
+| 080h.6 | P0.6          | CPU_RST_N         | CPU_RST_N       | CPU_RST_N      | TODO       |
+| 080h.7 | P0.7          | GPU_RESET_DONE    | GPU_RESET_DONE  | GPU_RESET_DONE | TODO       |
+
+Pretty much unchanged through Trinity (Boron is probably backwards compatible with Argon).
+
+Coronas reassign two pins:
+- EXT_JTM_SEL is either pulled low by a resistor at R3R12, or pulled high (to 1v8) via a resistor at R3R10.
+- Pin 5 is unused on Corona; it goes out to DB3R4.
 
 ## 090h - Port 1
 
-| Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
-|--------|---------------|-------------------|---------|--------|------------|
-| 090h.0 | P1.0          | EJECTSW_N         | TODO    | TODO   | TODO       |
-| 090h.1 | P1.1          | TILTSW_N          | TODO    | TODO   | TODO       |
-| 090h.2 | P1.2          | BINDSW_N          | TODO    | TODO   | TODO       |
-| 090h.3 | P1.3          | VREG_V1P8_EN_N    | TODO    | TODO   | TODO       |
-| 090h.4 | P1.4          | VREG_V5P0_SEL     | TODO    | TODO   | TODO       |
-| 090h.5 | P1.5          | 5VPO_ENABLE       | TODO    | TODO   | TODO       |
-| 090h.6 | P1.6          | VREG_CPU_PWRGD    | TODO    | TODO   | TODO       |
-| 090h.7 | P1.7          | VREG_CPU_EN       | TODO    | TODO   | TODO       |
+| Bit    | Ghidra symbol | All fats, Trinity | Corona          | Winchester |
+|--------|---------------|-------------------|-----------------|------------|
+| 090h.0 | P1.0          | EJECTSW_N         | /EXT_PWR_ON_N   | TODO       |
+| 090h.1 | P1.1          | TILTSW_N          | VREG_V3P3_PWRGD | TODO       |
+| 090h.2 | P1.2          | BINDSW_N          | VREG_V5P0_SEL   | TODO       |
+| 090h.3 | P1.3          | VREG_V1P8_EN_N    | /EJECTSW_N      | TODO       |
+| 090h.4 | P1.4          | VREG_V5P0_SEL     | VREG_VEDRAM_EN  | TODO       |
+| 090h.5 | P1.5          | 5VPO_ENABLE       | /PWRSW_N        | TODO       |
+| 090h.6 | P1.6          | VREG_CPU_PWRGD    | /TILTSW_N       | TODO       |
+| 090h.7 | P1.7          | VREG_CPU_EN       | VREG_V3P3_EN    | TODO       |
 
-- TILTSW_N is the tilt switch and it's used to change the orientation of the
+Unchanged through Trinity; massively changed for Corona.
+
+- /TILTSW_N is the tilt switch and it's used to change the orientation of the
   Ring of Light depending on if the system is standing upright or laying down.
   On Xbox 360 E, the Ring of Light is simplified, so there's no more tilt switch.
   Stingray leaves the tiltswitch position unpopulated and Winchester removes it
@@ -53,29 +61,29 @@ TODO: document them. 09Dh, 09Eh, 09Fh, 0A1h, 0A7h are registers; can be set as o
 
 ## 0A0h - Port 2
 
-| Bit    | Ghidra symbol | All fats          | Trinity | Corona | Winchester |
-|--------|---------------|-------------------|---------|--------|------------|
-| 0A0h.0 | P2.0          | ANA_CLK_OE        | TODO    | TODO   | TODO       |
-| 0A0h.1 | P2.1          | PSU_12V_ENABLE    | TODO    | TODO   | TODO       |
-| 0A0h.2 | P2.2          | VREG_GPU_EN_N     | TODO    | TODO   | TODO       |
-| 0A0h.3 | P2.3          | ANA_RST_N         | TODO    | TODO   | TODO       |
-| 0A0h.4 | P2.4          | VREG_GPU_PWRGD    | TODO    | TODO   | TODO       |
-| 0A0h.5 | P2.5          | ANA_V12P0_PWRGD   | TODO    | TODO   | TODO       |
-| 0A0h.6 | P2.6          | VREG_3P3_EN_N     | TODO    | TODO   | TODO       |
-| 0A0h.7 | P2.7          | POWERSW_N         | TODO    | TODO   | TODO       |
+| Bit    | Ghidra symbol | All fats          | Trinity         | Corona            | Winchester |
+|--------|---------------|-------------------|-----------------|-------------------|------------|
+| 0A0h.0 | P2.0          | ANA_CLK_OE        | ANA_CLK_OE      | VREG_V5P0_PWRGD   | TODO       |
+| 0A0h.1 | P2.1          | PSU_12V_ENABLE    | PSU_12V_ENABLE  | VREG_VEDRAM_PWRGD | TODO       |
+| 0A0h.2 | P2.2          | VREG_GPU_EN_N     | VREG_VEDRAM_EN  | VREG_VMEM_EN      | TODO       |
+| 0A0h.3 | P2.3          | ANA_RST_N         | ANA_RST_N       | VREG_VMEM_PWRGD   | TODO       |
+| 0A0h.4 | P2.4          | VREG_GPU_PWRGD    | VREG_VEDRAM_EN  | /BINDSW_N         | TODO       |
+| 0A0h.5 | P2.5          | ANA_V12P0_PWRGD   | ANA_V12P0_PWRGD | EXT_TEMP_PWR_CTRL | TODO       |
+| 0A0h.6 | P2.6          | VREG_3P3_EN_N     | VREG_3P3_EN_N   | DBG_LED0          | TODO       |
+| 0A0h.7 | P2.7          | POWERSW_N         | /PWRSW_N        | VREG_V5P0_EN      | TODO       |
 
 ## 0C0h - Port 3
 
-| Bit    | Ghidra symbol | Xenon    | Zephyr/Falcon/Jasper   | Trinity | Corona | Winchester |
-|--------|---------------|----------|------------------------|---------|--------|------------|
-| 0C0h.0 | FIFLG.0       | DBG_LED0 | DBG_LED0               | TODO    | TODO   | TODO       |
-| 0C0h.1 | FIFLG.1       | DBG_LED1 | VREG_V5P0_VMEM_PWRGD   | TODO    | TODO   | TODO       |
-| 0C0h.2 | FIFLG.2       | DBG_LED2 | ANA_VRST_OK            | TODO    | TODO   | TODO       |
-| 0C0h.3 | FIFLG.3       | DBG_LED3 | GPU_TCLK_R             | TODO    | TODO   | TODO       |
-| 0C0h.4 | FIFLG.4       | DDC_CLK  | HDMI_DDC_CLK           | TODO    | TODO   | TODO       |
-| 0C0h.5 | FIFLG.5       | AV_MODE0 | AV_MODE0               | TODO    | TODO   | TODO       |
-| 0C0h.6 | FIFLG.6       | AV_MODE1 | AV_MODE1               | TODO    | TODO   | TODO       |
-| 0C0h.7 | FIFLG.7       | AV_MODE2 | AV_MODE2               | TODO    | TODO   | TODO       |
+| Bit    | Ghidra symbol | Xenon    | Zephyr/Falcon/Jasper   | Trinity         | Corona                 | Winchester |
+|--------|---------------|----------|------------------------|-----------------|------------------------|------------|
+| 0C0h.0 | FIFLG.0       | DBG_LED0 | DBG_LED0               | DBG_LED0        | TRAY_STATUS            | TODO       |
+| 0C0h.1 | FIFLG.1       | DBG_LED1 | VREG_V5P0_VMEM_PWRGD   | VREG_V3P3_PWRGD | VREG_CPUCORE_PWRGD     | TODO       |
+| 0C0h.2 | FIFLG.2       | DBG_LED2 | ANA_VRST_OK            | SMC_HDMI_HPD    | SMC_CPU_CHKSTOP_DETECT | TODO       |
+| 0C0h.3 | FIFLG.3       | DBG_LED3 | GPU_TCLK_R             | VREG_V5P0_PWRGD | TRAY_OPEN              | TODO       |
+| 0C0h.4 | FIFLG.4       | DDC_CLK  | HDMI_DDC_CLK           | HDMI_DDC_CLK    | /SB_RST_N              | TODO       |
+| 0C0h.5 | FIFLG.5       | AV_MODE0 | AV_MODE0               | AV_MODE0        | PSU_V12P0_EN           | TODO       |
+| 0C0h.6 | FIFLG.6       | AV_MODE1 | AV_MODE1               | AV_MODE1        | SB_MAIN_PWRGD_R        | TODO       |
+| 0C0h.7 | FIFLG.7       | AV_MODE2 | AV_MODE2               | AV_MODE2        | VREG_CPU_EN            | TODO       |
 
 - DBG_LED0-3 on Xenon are left floating externally
 - DBG_LED0 on Zephyr onwards is usually pulled low externally
@@ -86,16 +94,16 @@ TODO: document them. 09Dh, 09Eh, 09Fh, 0A1h, 0A7h are registers; can be set as o
 
 ## 0C8h - Port 4
 
-| Bit    | Ghidra symbol | Xenon        | Zephyr        | Falcon/Jasper          | Trinity | Corona | Winchester |
-|--------|---------------|--------------|---------------|------------------------|---------|--------|------------|
-| 0C8h.0 | CPRL2         | SMB_CLK      | SMB_CLK       | SMB_CLK                | TODO    | TODO   | TODO       |
-| 0C8h.1 | CT2           | SMB_DATA     | SMB_DATA      | SMB_DATA               | TODO    | TODO   | TODO       |
-| 0C8h.2 | TR2           | DDC_CLK_OUT  | SB_DETECT     | SMC_CPU_CHKSTOP_DETECT | TODO    | TODO   | TODO       |
-| 0C8h.3 | EXEN2         | DDC_DATA_OUT | HDMI_DDC_DATA | HDMI_DDC_DATA          | TODO    | TODO   | TODO       |
-| 0C8h.4 | TCLK          | AUD_CLAMP    | AUD_CLAMP     | AUD_CLAMP              | TODO    | TODO   | TODO       |
-| 0C8h.5 | RCLK          | EXT_PWR_ON_N | EXT_PWR_ON_N  | EXT_PWR_ON_N           | TODO    | TODO   | TODO       |
-| 0C8h.6 | EXF2          | TRAY_STATUS  | TRAY_STATUS   | TRAY_STATUS            | TODO    | TODO   | TODO       |
-| 0C8h.7 | TF2           | TRAY_OPEN_R  | TRAY_OPEN_R   | TRAY_OPEN_R            | TODO    | TODO   | TODO       |
+| Bit    | Ghidra symbol | Xenon        | Zephyr        | Falcon/Jasper          | Trinity                      | Corona      | Winchester |
+|--------|---------------|--------------|---------------|------------------------|------------------------------|-------------|------------|
+| 0C8h.0 | CPRL2         | SMB_CLK      | SMB_CLK       | SMB_CLK                | SMB_CLK                      | SMB_CLK     | TODO       |
+| 0C8h.1 | CT2           | SMB_DATA     | SMB_DATA      | SMB_DATA               | SMB_DATA                     | SMB_DATA    | TODO       |
+| 0C8h.2 | TR2           | DDC_CLK_OUT  | SB_DETECT     | SMC_CPU_CHKSTOP_DETECT | SMC_CPU_CHKSTOP_DETECT       | AV_MODE2    | TODO       |
+| 0C8h.3 | EXEN2         | DDC_DATA_OUT | HDMI_DDC_DATA | HDMI_DDC_DATA          | HDMI_DDC_DATA                | V12P0_PWRGD | TODO       |
+| 0C8h.4 | TCLK          | AUD_CLAMP    | AUD_CLAMP     | AUD_CLAMP              | VREG_VMEM_PWRGD_CPU_TRST_N_R | AV_MODE0    | TODO       |
+| 0C8h.5 | RCLK          | EXT_PWR_ON_N | EXT_PWR_ON_N  | EXT_PWR_ON_N           | EXT_PWR_ON_N                 | FAN_TACH    | TODO       |
+| 0C8h.6 | EXF2          | TRAY_STATUS  | TRAY_STATUS   | TRAY_STATUS            | TRAY_STATUS                  | VREG_1P2_EN | TODO       |
+| 0C8h.7 | TF2           | TRAY_OPEN_R  | TRAY_OPEN_R   | TRAY_OPEN_R            | TRAY_OPEN_R                  | AV_MODE1    | TODO       |
 
 - SB_DETECT on Zephyr is a jumper which is either pulled high by a resistor at R2N26 or pulled low by a resistor
   at R2N27. In practice it should be always pulled high to indicate the use of a R0 southbridge.
