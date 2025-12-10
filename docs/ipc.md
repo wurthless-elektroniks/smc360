@@ -264,9 +264,12 @@ To power off the system:
 
 If the special value is 0, the SMC behaves as if the power button was pushed, and a delay
 will be copied somewhere into another memory cell that will be read during the power down
-sequence. If, however, the special value is 0x34, a flag will be set somewhere that sends
-the SMC into an infinite loop, maybe as a means of hard resetting the SMC so it loads
-a newly-flashed program. This is to be tested of course.
+sequence.
+
+If the special value is 0x34, a flag will be set somewhere that, after the system has powered off,
+will send SMC code execution into a function that writes an unusual value to one of the watchdog registers
+and enters an infinite loop. What this is likely doing (to be tested) is that the SMC is forcing a watchdog
+reset to its internal ROM so that the SMC program can be reloaded.
 
 All other special values will cause the command to be ignored.
 
@@ -275,15 +278,19 @@ To reboot:
 0. Command `0x82`
 1. Constant `0x04`
 2. Special, see below
-3. Additional argument, see below
+3. Delay(?), see below
+4. Flags, see below
 
-If the special value is 0x30, the system will soft reset immediately and the powerup cause
-will be set to 0x30 when the reset completes.
+If the special value is 0x30, the system will hard reset. Everything will power down, a delay will
+pass, and the system will power back up with the powerup cause set to 0x30. The flags and delay
+value will not be used.
 
-0x31 is a bit more of an odd case. The additional argument has two flags in bit 0/1 that I don't
-know exactly what they do yet. I think this is the "power down completely, delay a bit and reset"
-command that the kernel sends after installing updates. In any case, when the system powers back
-up again, the powerup cause will be 0x31.
+0x31 soft resets the system, acting on the flags provided. It also stashes the delay value somewhere
+to be picked up later during the reset, at which point it's moved to the shared timer memory cell.
+
+The flags here are picked up by the Argon statemachine:
+- Bit 0: seems to turn all controllers off
+- Bit 1: clear all Ring of Light overrides set by IPC
 
 All other special values will cause the command to be ignored.
 
