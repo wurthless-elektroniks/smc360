@@ -22,10 +22,10 @@ Again, all has to be tested thoroughly on real hardware...
 | 0ECh | CCAP2L        | Address register, bits 23-16
 | 0EDh | CCAP3L        | Address register, bits 31-24 (MSB)
 | 0EEh | CCAP4L        | Status register
-| 0F1h | EPINDEX       | Data register, bits 7-0 (LSB)
-| 0F2h | TXSTAT        | Data register, bits 15-8
-| 0F3h | TXDAT         | Data register, bits 23-16
-| 0F4h | TXCON         | Data register, bits 31-24 (MSB)
+| 0F1h | EPINDEX       | Data register, byte 0
+| 0F2h | TXSTAT        | Data register, byte 1
+| 0F3h | TXDAT         | Data register, byte 2
+| 0F4h | TXCON         | Data register, byte 3
 | 0F5h | TXFLG         | Command register
 
 ### Accessing flash via the SFCX
