@@ -124,19 +124,46 @@ Writes to the backup clock generator, which is a Cypress CY28517.
 
 Byte format:
 - Xenon: `08 rr dd dd dd dd`
-- Falcon: `0B rr dd dd dd dd`
+- Falcon: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
 
 Handlers:
 - Falcon: 0x28E4 -> 0x268E
 
 Writes 4 bytes `dd dd dd dd` to the given HANA register `rr`. This will block until the transfer completes.
-If writing to HANA register 0xDB, the fourth data byte will always be overridden by a value loaded from the SMC config.
+
+The data is byteswapped due to how the I2C statemachine buffers work (last in/first out),
+so a write to the HANA clock mode select register 0xCE will have the data represented
+in the command as `08 e8 40 14` but the I2C bus will actually write `14 40 e8 08`.
+
+Important gotcha: HANA register 0xDB is treated specially because it is set by the SMC config. If register 0xDB is used,
+only three bytes will be read from the commandlist; the fourth will come from the SMC config cell.
+
+### Read HANA register
+
+Byte format:
+- Falcon: `0E rr`
+
+Reads the given register into memory, then it's up to some other command to process the results.
+This will block until the transfer completes.
 
 ### Store I2C result to temperature sensor fields
+
+Byte format:
+- Falcon: `1A`
 
 TODO
 
 ### Store I2C result to CPU temperature fields
+
+Byte format:
+- Falcon: `1D`
+
+TODO
+
+### Store I2C result to chassis temperature fields
+
+Byte format:
+- Falcon: `20`
 
 TODO
 

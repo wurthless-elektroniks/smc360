@@ -98,8 +98,8 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 | 0x21  | Eject button on Xbox universal remote                                         |
 | 0x22  | IR remote guide/X button                                                      |
 | 0x24  | IR remote Windows button                                                      |
-| 0x30  | Soft reset via IPC                                                            |
-| 0x31  | Hard reset via IPC (possibly other sources too??)                             |
+| 0x30  | Hard reset via IPC                                                            |
+| 0x31  | Soft reset via IPC (possibly other sources too??)                             |
 | 0x41  | Kiosk/debug pin (/EXT_PWR_ON_N pulled low)                                    |
 | 0x55  | Wireless controller X button                                                  |
 | 0x56  | Wired controller 1 X button (fat front top USB, slim front left USB)          |

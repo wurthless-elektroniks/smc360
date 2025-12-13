@@ -23,6 +23,9 @@ Two quick notes about DBG_LED3:
 
 ## Blink patterns
 
+Note that when blink patterns are updated, the current position isn't automatically reset, so you will
+get some misleading results.
+
 ### DBG_LED2 (Xenon), DBG_LED0 (all others)
 
 - 10000000 (one short blink): something powered the system up; checking what it is

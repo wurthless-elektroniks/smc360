@@ -356,9 +356,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_00d7()
+                             undefined pcie_compute_link_state_blink_code()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_00d7                                   XREF[1]:     mainloop:077b(c)  
+                             pcie_compute_link_state_blink_code              XREF[1]:     mainloop:077b(c)  
        CODE:00d7 e5 8f           MOV        A,FADDR                                                    = ??
        CODE:00d9 54 30           ANL        A,#00110000b
        CODE:00db 30 d0 06        JNB        P,LAB_CODE_00e4                                            = ??
@@ -1515,7 +1515,9 @@
        CODE:0762 12 23 10        LCALL      FUN_CODE_2310                                              undefined FUN_CODE_2310()
        CODE:0765 12 23 34        LCALL      watchdog_kick                                              undefined watchdog_kick()
        CODE:0768 12 08 0d        LCALL      FUN_CODE_080d                                              undefined FUN_CODE_080d()
-       CODE:076b 12 07 ea        LCALL      FUN_CODE_07ea                                              undefined FUN_CODE_07ea()
+       CODE:076b 12 07 ea        LCALL      FUN_CODE_07ea                                              clear memory ranges,
+                                                                                                       do something convoluted,
+                                                                                                       set default IR and A/V port values
        CODE:076e d2 0c           SETB       21.4                                                       allow powerup event sm
                                                                                                        to run below
        CODE:0770 12 25 d2        LCALL      ext_pwr_on_read                                            undefined ext_pwr_on_read()
@@ -1528,7 +1530,7 @@
                              mainloop                                        XREF[1]:     CODE:07e8(j)  
        CODE:0775 75 81 b8        MOV        SP,#0xb8                                                   = ??
        CODE:0778 12 22 b6        LCALL      FUN_CODE_22b6                                              undefined FUN_CODE_22b6()
-       CODE:077b 12 00 d7        LCALL      FUN_CODE_00d7                                              undefined FUN_CODE_00d7()
+       CODE:077b 12 00 d7        LCALL      pcie_compute_link_state_blink_code                         undefined pcie_compute_link_state_b
        CODE:077e f5 39           MOV        g_pcie_status_blink_pattern,A                              = ??
        CODE:0780 12 25 d8        LCALL      rtc_read                                                   undefined rtc_read()
        CODE:0783 ec              MOV        A,R4
@@ -1598,10 +1600,10 @@
        CODE:07fa 7a 08           MOV        R2,#0x8
        CODE:07fc 12 2c ed        LCALL      FUN_CODE_2ced                                              undefined FUN_CODE_2ced()
        CODE:07ff 78 7f           MOV        R0,#0x7f
-       CODE:0801 76 0f           MOV        @R0=>g_ir_address,#0xf                                     = ??
+       CODE:0801 76 0f           MOV        @R0=>g_ir_address,#0xf                                     init IR address (0x0F?)
        CODE:0803 78 81           MOV        R0,#0x81
-       CODE:0805 76 0d           MOV        @R0=>DAT_INTMEM_81,#0xd                                    = ??
-       CODE:0807 75 2f 5c        MOV        DAT_INTMEM_2f,#0x5c                                        = ??
+       CODE:0805 76 0d           MOV        @R0=>DAT_INTMEM_81,#0xd                                    some other IR thing
+       CODE:0807 75 2f 5c        MOV        DAT_INTMEM_2f,#01011100b                                   default A/V pack is "nothing"
        CODE:080a d2 00           SETB       20.0
        CODE:080c 22              RET
                              **************************************************************
@@ -1621,7 +1623,7 @@
        CODE:081f 12 2c ed        LCALL      FUN_CODE_2ced                                              undefined FUN_CODE_2ced()
        CODE:0822 75 53 10        MOV        DAT_INTMEM_53,#0x10                                        = ??
        CODE:0825 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
-       CODE:0828 75 46 19        MOV        DAT_INTMEM_46,#0x19                                        = ??
+       CODE:0828 75 46 19        MOV        g_chassis_current_temp,#0x19                               = ??
        CODE:082b 75 3c 80        MOV        g_dbgled_blinkpattern_andmask,#0x80                        = ??
        CODE:082e 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
        CODE:0831 d2 25           SETB       24.5                                                       = ??
@@ -1675,7 +1677,7 @@
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_0882                                   XREF[1]:     CODE:087c(j)  
        CODE:0882 b4 12 03        CJNE       A,#0x12,LAB_CODE_0888
-       CODE:0885 02 0a 7c        LJMP       FUN_CODE_0a7c                                              undefined FUN_CODE_0a7c()
+       CODE:0885 02 0a 7c        LJMP       ipc_handle_get_smc_version_and_memcells                    undefined ipc_handle_get_smc_versio
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_0888                                   XREF[1]:     CODE:0882(j)  
        CODE:0888 b4 13 03        CJNE       A,#0x13,LAB_CODE_088e
@@ -1683,11 +1685,11 @@
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_088e                                   XREF[1]:     CODE:0888(j)  
        CODE:088e b4 1e 03        CJNE       A,#0x1e,LAB_CODE_0894
-       CODE:0891 02 0a b0        LJMP       FUN_CODE_0ab0                                              undefined FUN_CODE_0ab0()
+       CODE:0891 02 0a b0        LJMP       ipc_handle_read_debugbuffer_a                              undefined ipc_handle_read_debugbuff
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_0894                                   XREF[1]:     CODE:088e(j)  
        CODE:0894 b4 20 03        CJNE       A,#0x20,LAB_CODE_089a
-       CODE:0897 02 0a bd        LJMP       FUN_CODE_0abd                                              undefined FUN_CODE_0abd()
+       CODE:0897 02 0a bd        LJMP       ipc_handle_read_debugbuffer_b                              undefined ipc_handle_read_debugbuff
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_089a                                   XREF[1]:     CODE:0894(j)  
        CODE:089a c2 35           CLR        g_ipc_getter_command_blocking                              = ??
@@ -1753,9 +1755,9 @@
        CODE:091c 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:091f e5 44           MOV        A,g_edram_current_temp                                     = ??
        CODE:0921 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:0924 e5 45           MOV        A,DAT_INTMEM_45                                            = ??
+       CODE:0924 e5 45           MOV        A,g_chassis_current_temp_frac                              = ??
        CODE:0926 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:0929 e5 46           MOV        A,DAT_INTMEM_46                                            = ??
+       CODE:0929 e5 46           MOV        A,g_chassis_current_temp                                   = ??
        CODE:092b 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:092e e5 56           MOV        A,g_fan1_target_speed                                      = ??
        CODE:0930 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
@@ -1957,9 +1959,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_0a7c()
+                             undefined ipc_handle_get_smc_version_and_memcells()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_0a7c                                   XREF[1]:     ipc_handle_messages:0885(c)  
+                             ipc_handle_get_smc_version_and_memcells         XREF[1]:     ipc_handle_messages:0885(c)  
        CODE:0a7c 74 01           MOV        A,#0x1
        CODE:0a7e 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0a81 74 31           MOV        A,#0x31
@@ -1968,9 +1970,9 @@
        CODE:0a88 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0a8b 74 06           MOV        A,#0x6
        CODE:0a8d 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:0a90 e5 66           MOV        A,DAT_INTMEM_66                                            = ??
+       CODE:0a90 e5 66           MOV        A,g_persistent_memcell_a                                   = ??
        CODE:0a92 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:0a95 e5 67           MOV        A,DAT_INTMEM_67                                            = ??
+       CODE:0a95 e5 67           MOV        A,g_persistent_memcell_b                                   = ??
        CODE:0a97 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0a9a 22              RET
                              **************************************************************
@@ -1992,9 +1994,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_0ab0()
+                             undefined ipc_handle_read_debugbuffer_a()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_0ab0                                   XREF[1]:     ipc_handle_messages:0891(c)  
+                             ipc_handle_read_debugbuffer_a                   XREF[1]:     ipc_handle_messages:0891(c)  
        CODE:0ab0 74 01           MOV        A,#0x1
        CODE:0ab2 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0ab5 78 82           MOV        R0,#0x82
@@ -2004,9 +2006,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_0abd()
+                             undefined ipc_handle_read_debugbuffer_b()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_0abd                                   XREF[1]:     ipc_handle_messages:0897(c)  
+                             ipc_handle_read_debugbuffer_b                   XREF[1]:     ipc_handle_messages:0897(c)  
        CODE:0abd 74 01           MOV        A,#0x1
        CODE:0abf 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0ac2 78 8e           MOV        R0,#0x8e
@@ -2059,16 +2061,16 @@
        CODE:0b14 02 0c bb        LJMP       LAB_CODE_0cbb
                              LAB_CODE_0b17                                   XREF[1]:     CODE:0b11(j)  
        CODE:0b17 b4 9a 03        CJNE       A,#0x9a,LAB_CODE_0b1d
-       CODE:0b1a 02 0c da        LJMP       LAB_CODE_0cda
+       CODE:0b1a 02 0c da        LJMP       ipc_handle_raise_rrod
                              LAB_CODE_0b1d                                   XREF[1]:     CODE:0b17(j)  
        CODE:0b1d b4 9c 03        CJNE       A,#0x9c,LAB_CODE_0b23
-       CODE:0b20 02 0d 17        LJMP       LAB_CODE_0d17
+       CODE:0b20 02 0d 17        LJMP       ipc_handle_write_persistent_memcells
                              LAB_CODE_0b23                                   XREF[1]:     CODE:0b1d(j)  
        CODE:0b23 b4 9d 03        CJNE       A,#0x9d,LAB_CODE_0b29
-       CODE:0b26 02 0d 29        LJMP       LAB_CODE_0d29
+       CODE:0b26 02 0d 29        LJMP       ipc_handle_write_debugbuffer_a
                              LAB_CODE_0b29                                   XREF[1]:     CODE:0b23(j)  
        CODE:0b29 b4 9f 03        CJNE       A,#0x9f,LAB_CODE_0b2f
-       CODE:0b2c 02 0d 36        LJMP       LAB_CODE_0d36
+       CODE:0b2c 02 0d 36        LJMP       ipc_handle_write_debugbuffer_b
                              LAB_CODE_0b2f                                   XREF[1]:     CODE:0b29(j)  
        CODE:0b2f 22              RET
                              LAB_CODE_0b30                                   XREF[1]:     CODE:0acd(j)  
@@ -2098,7 +2100,8 @@
                              LAB_CODE_0b52                                   XREF[1]:     CODE:0b48(j)  
        CODE:0b52 bb 32 07        CJNE       R3,#0x32,LAB_CODE_0b5c                                     0x32 is the only other valid value
        CODE:0b55 d2 04           SETB       20.4                                                       in which case, set this
-       CODE:0b57 75 3d 00        MOV        g_shared_timer_cell,#0x0                                   = ??
+       CODE:0b57 75 3d 00        MOV        g_shared_timer_cell,#0x0                                   this is either 0 (immediate)
+                                                                                                       or 255 (after 5 seconds)
        CODE:0b5a 80 32           SJMP       LAB_CODE_0b8e
                              LAB_CODE_0b5c                                   XREF[1]:     CODE:0b52(j)  
        CODE:0b5c 22              RET
@@ -2325,7 +2328,7 @@
        CODE:0cd7 d2 4b           SETB       g_argon_ipc_write_pending                                  = ??
                              LAB_CODE_0cd9                                   XREF[2]:     CODE:0cbb(j), CODE:0cbe(j)  
        CODE:0cd9 22              RET
-                             LAB_CODE_0cda                                   XREF[1]:     CODE:0b1a(j)  
+                             ipc_handle_raise_rrod                           XREF[1]:     CODE:0b1a(j)  
        CODE:0cda 74 01           MOV        A,#0x1
        CODE:0cdc 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0cdf 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
@@ -2337,7 +2340,7 @@
        CODE:0ceb ea              MOV        A,R2
        CODE:0cec 24 f0           ADD        A,#0xf0                                                    don't allow kernel
                                                                                                        to raise RRoD < 0100
-       CODE:0cee 50 26           JNC        LAB_CODE_0d16
+       CODE:0cee 50 26           JNC        return_0d15
        CODE:0cf0 8a 59           MOV        g_rrod_errordisplay_code_a,R2                              = ??
        CODE:0cf2 8b 5b           MOV        g_rrod_errordisplay_code_b,R3                              = ??
        CODE:0cf4 75 5a 00        MOV        g_rrod_errordisplay_state,#0x0                             = ??
@@ -2355,30 +2358,30 @@
                                                                                                        bot right, top right, top left
                                                                                                        RRoD Classic/General Failure
                              LAB_CODE_0d0d                                   XREF[2]:     CODE:0d01(j), CODE:0d07(j)  
-       CODE:0d0d 30 13 06        JNB        g_has_getpoweroncause_arrived,LAB_CODE_0d16                = ??
+       CODE:0d0d 30 13 06        JNB        g_has_getpoweroncause_arrived,return_0d15                  = ??
        CODE:0d10 78 af           MOV        R0,#0xaf                                                   force ring of light on?
        CODE:0d12 a6 5c           MOV        @R0=>g_rrod_base_pattern,g_rol_base_error_pattern          = ??
        CODE:0d14 d2 48           SETB       29.0                                                       = ??
-                             LAB_CODE_0d16                                   XREF[2]:     CODE:0cee(j), CODE:0d0d(j)  
+                             return_0d15                                     XREF[2]:     CODE:0cee(j), CODE:0d0d(j)  
        CODE:0d16 22              RET
-                             LAB_CODE_0d17                                   XREF[1]:     CODE:0b20(j)  
+                             ipc_handle_write_persistent_memcells            XREF[1]:     CODE:0b20(j)  
        CODE:0d17 74 01           MOV        A,#0x1
        CODE:0d19 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d1c 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:0d1f fa              MOV        R2,A
        CODE:0d20 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:0d23 fb              MOV        R3,A
-       CODE:0d24 8a 66           MOV        DAT_INTMEM_66,R2                                           = ??
-       CODE:0d26 8b 67           MOV        DAT_INTMEM_67,R3                                           = ??
+       CODE:0d24 8a 66           MOV        g_persistent_memcell_a,R2                                  = ??
+       CODE:0d26 8b 67           MOV        g_persistent_memcell_b,R3                                  = ??
        CODE:0d28 22              RET
-                             LAB_CODE_0d29                                   XREF[1]:     CODE:0b26(j)  
+                             ipc_handle_write_debugbuffer_a                  XREF[1]:     CODE:0b26(j)  
        CODE:0d29 74 01           MOV        A,#0x1
        CODE:0d2b 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d2e 78 82           MOV        R0,#0x82
        CODE:0d30 7a 0c           MOV        R2,#0xc
        CODE:0d32 12 24 10        LCALL      ipc_fifo_read_to_buffer                                    undefined ipc_fifo_read_to_buffer()
        CODE:0d35 22              RET
-                             LAB_CODE_0d36                                   XREF[1]:     CODE:0b2c(j)  
+                             ipc_handle_write_debugbuffer_b                  XREF[1]:     CODE:0b2c(j)  
        CODE:0d36 74 01           MOV        A,#0x1
        CODE:0d38 12 24 08        LCALL      ipc_inbox_set_read_pointer                                 undefined ipc_inbox_set_read_pointe
        CODE:0d3b 78 8e           MOV        R0,#0x8e
@@ -2590,8 +2593,9 @@
        CODE:0eae e6              MOV        A,@R0=>DAT_INTMEM_9e                                       = ??
        CODE:0eaf 26              ADD        A,@R0=>DAT_INTMEM_9e                                       = ??
        CODE:0eb0 26              ADD        A,@R0=>DAT_INTMEM_9e                                       = ??
-       CODE:0eb1 90 0e b5        MOV        DPTR,#0xeb5
+       CODE:0eb1 90 0e b5        MOV        DPTR,#LAB_CODE_0eb5
        CODE:0eb4 73              JMP        @A+DPTR
+                             LAB_CODE_0eb5                                   XREF[1]:     powerdown_sm_exec:0eb1(*)  
        CODE:0eb5 02 0e d6        LJMP       LAB_CODE_0ed6                                              state 0 - wait for power down
                                                                                                        (023h.4 / 023h.5 must be set)
        CODE:0eb8 02 0e ec        LJMP       LAB_CODE_0eec                                              state 1 - shut down clocks
@@ -3602,8 +3606,9 @@
        CODE:14a7 e6              MOV        A,@R0=>g_extpwron_sm_state                                 = ??
        CODE:14a8 26              ADD        A,@R0=>g_extpwron_sm_state                                 = ??
        CODE:14a9 26              ADD        A,@R0=>g_extpwron_sm_state                                 = ??
-       CODE:14aa 90 14 ae        MOV        DPTR,#0x14ae
+       CODE:14aa 90 14 ae        MOV        DPTR,#LAB_CODE_14ae
        CODE:14ad 73              JMP        @A+DPTR
+                             LAB_CODE_14ae                                   XREF[1]:     ext_pwr_on_sm_exec:14aa(*)  
        CODE:14ae 02 14 0b        LJMP       LAB_CODE_140b
        CODE:14b1 02 14 25        LJMP       LAB_CODE_1425
        CODE:14b4 02 14 9d        LJMP       LAB_CODE_149d
@@ -3753,7 +3758,7 @@
                              undefined FUN_CODE_15b5()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_15b5                                   XREF[1]:     thermal_monitor_do_checks:1520(c
-       CODE:15b5 e5 46           MOV        A,DAT_INTMEM_46                                            = ??
+       CODE:15b5 e5 46           MOV        A,g_chassis_current_temp                                   = ??
        CODE:15b7 30 4e 04        JNB        29.6,LAB_CODE_15be                                         = ??
        CODE:15ba 24 ea           ADD        A,#0xea
        CODE:15bc 50 06           JNC        LAB_CODE_15c4
@@ -3781,7 +3786,7 @@
        CODE:15db fb              MOV        R3,A
        CODE:15dc 90 16 16        MOV        DPTR,#DAT_CODE_1616                                        = 49h    I
                              LAB_CODE_15df                                   XREF[1]:     CODE:15d9(j)  
-       CODE:15df 85 45 f0        MOV        B,DAT_INTMEM_45                                            = ??
+       CODE:15df 85 45 f0        MOV        B,g_chassis_current_temp_frac                              = ??
        CODE:15e2 a2 f7           MOV        CY,B.7                                                     = ??
        CODE:15e4 eb              MOV        A,R3
        CODE:15e5 33              RLC        A
@@ -4658,7 +4663,7 @@
        CODE:1ab2 02 1b 8f        LJMP       LAB_CODE_1b8f
                              LAB_CODE_1ab5                                   XREF[2]:     CODE:1a94(j), CODE:1aa6(j)  
        CODE:1ab5 30 32 0c        JNB        26.2,LAB_CODE_1ac4                                         = ??
-       CODE:1ab8 12 26 15        LCALL      FUN_CODE_2615                                              undefined FUN_CODE_2615()
+       CODE:1ab8 12 26 15        LCALL      i2c_commandlist_run_temperature_update                     undefined i2c_commandlist_run_tempe
        CODE:1abb 20 d5 03        JB         F0,LAB_CODE_1ac1                                           = ??
        CODE:1abe 02 1b 50        LJMP       LAB_CODE_1b50
                              LAB_CODE_1ac1                                   XREF[1]:     CODE:1abb(j)  
@@ -5489,8 +5494,8 @@
        CODE:1fd0 02 1f 2c        LJMP       LAB_CODE_1f2c
                              LAB_CODE_1fd3                                   XREF[1]:     CODE:1f6f(j)  
        CODE:1fd3 c2 57           CLR        g_rtc_wake_set                                             = ??
-       CODE:1fd5 75 66 00        MOV        DAT_INTMEM_66,#0x0                                         = ??
-       CODE:1fd8 75 67 00        MOV        DAT_INTMEM_67,#0x0                                         = ??
+       CODE:1fd5 75 66 00        MOV        g_persistent_memcell_a,#0x0                                = ??
+       CODE:1fd8 75 67 00        MOV        g_persistent_memcell_b,#0x0                                = ??
        CODE:1fdb 75 62 16        MOV        g_power_up_cause,#0x16                                     undocumented
        CODE:1fde d2 14           SETB       22.4                                                       = ??
        CODE:1fe0 80 03           SJMP       LAB_CODE_1fe5
@@ -5499,7 +5504,7 @@
                              LAB_CODE_1fe5                                   XREF[1]:     CODE:1fe0(j)  
        CODE:1fe5 c2 4e           CLR        29.6                                                       = ??
        CODE:1fe7 20 16 03        JB         22.6,LAB_CODE_1fed                                         = ??
-       CODE:1fea 53 61 c3        ANL        g_rol_led_flags,#0xc3                                      = ??
+       CODE:1fea 53 61 c3        ANL        g_rol_led_flags,#11000011b                                 = ??
                              LAB_CODE_1fed                                   XREF[1]:     CODE:1fe7(j)  
        CODE:1fed c2 16           CLR        22.6                                                       = ??
        CODE:1fef 78 af           MOV        R0,#0xaf                                                   setup invisible ring of light
@@ -6338,10 +6343,10 @@
                                                                                           CODE:09aa(c), CODE:09ba(c), 
                                                                                           CODE:09c8(c), CODE:09f9(c), 
                                                                                           CODE:0a04(c), 
-                                                                                          FUN_CODE_0a7c:0a7e(c), 
+                                                                                          ipc_handle_get_smc_version_and_m
                                                                                           ipc_handle_copy_inbox_to_outbox:
-                                                                                          FUN_CODE_0ab0:0ab2(c), 
-                                                                                          FUN_CODE_0abd:0abf(c), 
+                                                                                          ipc_handle_read_debugbuffer_a:0a
+                                                                                          ipc_handle_read_debugbuffer_b:0a
                                                                                           ipc_handle_async_events:0d8a(c), 
                                                                                           ipc_handle_async_events:0da8(c), 
                                                                                           CODE:1ae6(c), [more]
@@ -6380,8 +6385,8 @@
                              **************************************************************
                              undefined ipc_outbox_write_buffer()
              undefined         ACC:1          <RETURN>
-                             ipc_outbox_write_buffer                         XREF[3]:     FUN_CODE_0ab0:0ab9(c), 
-                                                                                          FUN_CODE_0abd:0ac6(c), 
+                             ipc_outbox_write_buffer                         XREF[3]:     ipc_handle_read_debugbuffer_a:0a
+                                                                                          ipc_handle_read_debugbuffer_b:0a
                                                                                           CODE:2436(j)  
        CODE:2432 e6              MOV        A,@R0
        CODE:2433 f5 d5           MOV        HPSC,A                                                     = ??
@@ -6845,10 +6850,10 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2615()
+                             undefined i2c_commandlist_run_temperature_update()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2615                                   XREF[1]:     CODE:1ab8(c)  
-       CODE:2615 75 78 8e        MOV        g_i2c_command_start_pointer,#0x8e                          = ??
+                             i2c_commandlist_run_temperature_update          XREF[1]:     CODE:1ab8(c)  
+       CODE:2615 75 78 8e        MOV        g_i2c_command_start_pointer,#0x8e                          -> 0x2995
        CODE:2618 80 05           SJMP       i2c_execute_with_3_retries                                 undefined i2c_execute_with_3_retrie
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              **************************************************************
@@ -6870,7 +6875,7 @@
                                                                                           FUN_CODE_2606:2609(c), 
                                                                                           FUN_CODE_260b:260e(c), 
                                                                                           FUN_CODE_2610:2613(c), 
-                                                                                          FUN_CODE_2615:2618(c), 
+                                                                                          i2c_commandlist_run_temperature_
                                                                                           FUN_CODE_261a:261d(c)  
        CODE:261f 75 7a 03        MOV        g_i2c_retry_count,#0x3                                     = ??
                              i2c_exec_command                                XREF[1]:     i2c_commandlist_run_ipc_transact
@@ -6919,7 +6924,7 @@
                              undefined i2c_yield_to_async_operation()
              undefined         ACC:1          <RETURN>
                              i2c_yield_to_async_operation                    XREF[8]:     i2c_opcode_hana_write:26d3(c), 
-                                                                                          FUN_CODE_26d6:26f6(c), 
+                                                                                          i2c_opcode_hana_read:26f6(c), 
                                                                                           FUN_CODE_26f9:2729(c), 
                                                                                           FUN_CODE_272c:2752(c), 
                                                                                           FUN_CODE_2755:279a(c), 
@@ -7033,7 +7038,7 @@
        CODE:26bc e5 1a           MOV        A,BANK3_R2                                                 = ??
        CODE:26be b4 db 07        CJNE       A,#0xdb,LAB_CODE_26c8                                      if not HANA register 0xDB,
                                                                                                        skip this
-       CODE:26c1 78 e2           MOV        R0,#0xe2                                                   when writing register 0xDB,
+       CODE:26c1 78 e2           MOV        R0,#DAT_INTMEM_e2                                          when writing register 0xDB,
                                                                                                        fourth byte to be written to I2C
                                                                                                        comes from memory cell at 0xE2
                                                                                                        (initialized by SMC config)
@@ -7053,9 +7058,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_26d6()
+                             undefined i2c_opcode_hana_read()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_26d6                                   XREF[1]:     CODE:28e7(c)  
+                             i2c_opcode_hana_read                            XREF[1]:     CODE:28e7(c)  
        CODE:26d6 d2 5d           SETB       2b.5                                                       = ??
        CODE:26d8 75 11 e0        MOV        BANK2_R1,#0xe0                                             = ??
        CODE:26db 75 12 01        MOV        BANK2_R2,#0x1                                              = ??
@@ -7067,7 +7072,7 @@
        CODE:26eb 05 79           INC        g_i2c_command_current_pointer                              = ??
        CODE:26ed e5 79           MOV        A,g_i2c_command_current_pointer                            = ??
        CODE:26ef 93              MOVC       A,@A+DPTR=>i2c_message_table
-       CODE:26f0 f5 15           MOV        BANK2_R5,A                                                 = ??
+       CODE:26f0 f5 15           MOV        BANK2_R5,A                                                 register to read from
        CODE:26f2 c2 5c           CLR        g_i2c_is_ipc_operation                                     = ??
        CODE:26f4 05 79           INC        g_i2c_command_current_pointer                              = ??
        CODE:26f6 02 26 4c        LJMP       i2c_yield_to_async_operation                               undefined i2c_yield_to_async_operat
@@ -7257,8 +7262,8 @@
        CODE:2824 78 18           MOV        R0,#BANK3_R0                                               = ??
        CODE:2826 79 f0           MOV        R1,#DAT_INTMEM_f0                                          = ??
        CODE:2828 12 2a 75        LCALL      FUN_CODE_2a75                                              undefined FUN_CODE_2a75()
-       CODE:282b 85 17 46        MOV        DAT_INTMEM_46,BANK2_R7                                     = ??
-       CODE:282e 85 18 45        MOV        DAT_INTMEM_45,BANK3_R0                                     = ??
+       CODE:282b 85 17 46        MOV        g_chassis_current_temp,BANK2_R7                            = ??
+       CODE:282e 85 18 45        MOV        g_chassis_current_temp_frac,BANK3_R0                       = ??
                              LAB_CODE_2831                                   XREF[1]:     CODE:2817(j)  
        CODE:2831 05 79           INC        g_i2c_command_current_pointer                              = ??
        CODE:2833 02 26 5c        LJMP       i2c_command_step                                           undefined i2c_command_step()
@@ -7382,7 +7387,7 @@
        CODE:28e2 80 ad           SJMP       i2c_opcode_ipc_transact
        CODE:28e4 02 26 8e        LJMP       i2c_opcode_hana_write                                      undefined i2c_opcode_hana_write()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
-       CODE:28e7 02 26 d6        LJMP       FUN_CODE_26d6                                              might be reading a HANA register,
+       CODE:28e7 02 26 d6        LJMP       i2c_opcode_hana_read                                       might be reading a HANA register,
                                                                                                        too soon to tell...
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
        CODE:28ea 02 26 f9        LJMP       FUN_CODE_26f9                                              very strange function that
@@ -7425,8 +7430,8 @@
                                                                                           i2c_opcode_hana_write:26b2(*), 
                                                                                           i2c_opcode_hana_write:26b9(*), 
                                                                                           i2c_opcode_hana_write:26cc(*), 
-                                                                                          FUN_CODE_26d6:26e8(*), 
-                                                                                          FUN_CODE_26d6:26ef(*), 
+                                                                                          i2c_opcode_hana_read:26e8(*), 
+                                                                                          i2c_opcode_hana_read:26ef(*), 
                                                                                           FUN_CODE_26f9:2702(*), 
                                                                                           FUN_CODE_26f9:2709(*), 
                                                                                           FUN_CODE_26f9:2714(*), 
@@ -7448,74 +7453,48 @@
                                                                                                        0x28d9 + 0x0b = 0x28E4
                                                                                                        setting up HANA write
        CODE:290c e4              ??         E4h                                                        write HANA register 0xE4
-       CODE:290d 00              ??         00h                                                        value = 00 00 00 1B
-       CODE:290e 00              ??         00h
-       CODE:290f 00              ??         00h
-       CODE:2910 1b              ??         1Bh
+       CODE:290d 00 00 00 1b     int        1Bh                                                        value = 00 00 00 1B
        CODE:2911 0b              ??         0Bh                                                        third byte =
                                                                                                        0x28d9 + 0x0b = 0x28E4
                                                                                                        setting up HANA write
-       CODE:2912 e3              ??         E3h
-       CODE:2913 0f              ??         0Fh
-       CODE:2914 ff              ??         FFh
-       CODE:2915 ff              ??         FFh
-       CODE:2916 ff              ??         FFh
-       CODE:2917 0b              ??         0Bh
-       CODE:2918 db              ??         DBh
-       CODE:2919 00              ??         00h
+       CODE:2912 e3              ??         E3h                                                        register E3
+       CODE:2913 0f ff ff ff     int        FFFFFFFh                                                   data 0F FF FF FF
+       CODE:2917 0b              ??         0Bh                                                        another HANA write
+       CODE:2918 db              ??         DBh                                                        register DB
+       CODE:2919 00              ??         00h                                                        00 00 00
+                                                                                                       command interpreter doesn't read
+                                                                                                       a fourth byte because DB is set
+                                                                                                       by the SMC config
        CODE:291a 00              ??         00h
        CODE:291b 00              ??         00h
-       CODE:291c 0b              ??         0Bh
-       CODE:291d d5              ??         D5h
-       CODE:291e 00              ??         00h
-       CODE:291f 00              ??         00h
-       CODE:2920 00              ??         00h
-       CODE:2921 00              ??         00h
+       CODE:291c 0b              ??         0Bh                                                        another HANA write
+       CODE:291d d5              ??         D5h                                                        D5
+       CODE:291e 00 00 00 00     int        0h                                                         00 00 00 00
        CODE:2922 0b              ??         0Bh
        CODE:2923 d9              ??         D9h
-       CODE:2924 00              ??         00h
-       CODE:2925 00              ??         00h
-       CODE:2926 00              ??         00h
-       CODE:2927 08              ??         08h
+       CODE:2924 00 00 00 08     int        8h
        CODE:2928 0b              ??         0Bh
        CODE:2929 d4              ??         D4h
-       CODE:292a 09              ??         09h
-       CODE:292b 90              ??         90h
-       CODE:292c e0              ??         E0h
-       CODE:292d 0e              ??         0Eh
+       CODE:292a 09 90 e0 0e     int        990E00Eh
        CODE:292e 0b              ??         0Bh
-       CODE:292f ce              ??         CEh
-       CODE:2930 08              ??         08h
-       CODE:2931 e8              ??         E8h
-       CODE:2932 40              ??         40h    @
-       CODE:2933 14              ??         14h
+       CODE:292f ce              ??         CEh                                                        remember that this is the
+                                                                                                       clock mode register
+       CODE:2930 08 e8 40 14     int        8E84014h
        CODE:2934 0b              ??         0Bh
        CODE:2935 dc              ??         DCh
-       CODE:2936 00              ??         00h
-       CODE:2937 00              ??         00h
-       CODE:2938 42              ??         42h    B
-       CODE:2939 aa              ??         AAh
+       CODE:2936 00 00 42 aa     int        42AAh
        CODE:293a 0b              ??         0Bh
        CODE:293b df              ??         DFh
-       CODE:293c 00              ??         00h
-       CODE:293d 00              ??         00h
-       CODE:293e 00              ??         00h
-       CODE:293f 00              ??         00h
+       CODE:293c 00 00 00 00     int        0h
        CODE:2940 03              ??         03h                                                        end commandlist
        CODE:2941 00              ??         00h                                                        +0x3A
                                                                                                        start by initializing the I2C bus
        CODE:2942 0b              ??         0Bh                                                        HANA I2C write
        CODE:2943 d9              ??         D9h                                                        reg 0xD9
-       CODE:2944 00              ??         00h                                                        data 00 00 00 20
-       CODE:2945 00              ??         00h
-       CODE:2946 00              ??         00h
-       CODE:2947 20              ??         20h     
+       CODE:2944 00 00 00 20     int        20h                                                        data 00 00 00 20
        CODE:2948 0b              ??         0Bh                                                        HANA I2C write
        CODE:2949 e3              ??         E3h                                                        reg 0xE3
-       CODE:294a 84              ??         84h                                                        data 84 36 F6 66
-       CODE:294b 36              ??         36h    6
-       CODE:294c f6              ??         F6h
-       CODE:294d 66              ??         66h    f
+       CODE:294a 84 36 f6 66     int        8436F666h                                                  data 84 36 F6 66
        CODE:294e 03              ??         03h                                                        end commandlist
        CODE:294f 00              ??         00h
        CODE:2950 0b              ??         0Bh
@@ -7537,9 +7516,12 @@
        CODE:2960 00              ??         00h
        CODE:2961 00              ??         00h
        CODE:2962 03              ??         03h
-       CODE:2963 06              ??         06h
+       CODE:2963 06              ??         06h                                                        + 0x5C
+                                                                                                       (these instructions do nothing,
+                                                                                                        remnant of something that got
+                                                                                                        stubbed out)
        CODE:2964 06              ??         06h
-       CODE:2965 00              ??         00h
+       CODE:2965 00              ??         00h                                                        + 0x5E
        CODE:2966 11              ??         11h
        CODE:2967 02              ??         02h
        CODE:2968 f3              ??         F3h
@@ -7586,20 +7568,22 @@
        CODE:2991 05              ??         05h
        CODE:2992 f4              ??         F4h
        CODE:2993 29              ??         29h    )
-       CODE:2994 03              ??         03h
+       CODE:2994 03              ??         03h                                                        end commandlist
        CODE:2995 00              ??         00h                                                        +0x8E
                                                                                                        start by initializing I2C
-       CODE:2996 0e              ??         0Eh                                                        0E -> 0x28d9
+       CODE:2996 0e              ??         0Eh                                                        0E -> 0x28E7
                                                                                                        read HANA register
        CODE:2997 e0              ??         E0h
-       CODE:2998 1a              ??         1Ah
-       CODE:2999 0e              ??         0Eh
+       CODE:2998 1a              ??         1Ah                                                        1A -> 0x28F3
+                                                                                                       updating temp sensors
+       CODE:2999 0e              ??         0Eh                                                        read another HANA register
        CODE:299a e1              ??         E1h
-       CODE:299b 1d              ??         1Dh
-       CODE:299c 0e              ??         0Eh
+       CODE:299b 1d              ??         1Dh                                                        1D -> 0x28F6
+                                                                                                       updating CPU temp sensor
+       CODE:299c 0e              ??         0Eh                                                        read third HANA register
        CODE:299d e2              ??         E2h
-       CODE:299e 20              ??         20h     
-       CODE:299f 03              ??         03h                                                        done
+       CODE:299e 20              ??         20h                                                        20 -> 0x28F9
+       CODE:299f 03              ??         03h                                                        end commandlist 0x8E
        CODE:29a0 00              ??         00h                                                        + 0x99
        CODE:29a1 11              ??         11h                                                        0x11 -> 0x28EA
        CODE:29a2 02              ??         02h                                                        read two bytes
@@ -7684,7 +7668,9 @@
              undefined         ACC:1          <RETURN>
                              i2c_handover_bus                                XREF[1]:     i2c_opcode_init:267f(c)  
        CODE:29dc 75 db 00        MOV        CCAPM1,#0x0                                                = ??
-       CODE:29df 75 dc 00        MOV        CCAPM2,#0x0                                                = ??
+       CODE:29df 75 dc 00        MOV        CCAPM2,#0x0                                                this guy is set to 3 when we
+                                                                                                       reset the bus - might be an
+                                                                                                       enable/uninhibit to write 0?
        CODE:29e2 75 dd e1        MOV        CCAPM3,#0xe1                                               = ??
        CODE:29e5 75 de 83        MOV        CCAPM4,#0x83                                               = ??
        CODE:29e8 75 d8 b0        MOV        CCON,#0xb0                                                 = ??
@@ -9136,7 +9122,7 @@
        INTMEM:10                 undefined1 ??
                              BANK2_R1                                        XREF[7]:     CODE:01c5(R), 
                                                                                           i2c_opcode_hana_write:2690(W), 
-                                                                                          FUN_CODE_26d6:26d8(W), 
+                                                                                          i2c_opcode_hana_read:26d8(W), 
                                                                                           FUN_CODE_26f9:26fb(W), 
                                                                                           FUN_CODE_272c:272e(W), 
                                                                                           FUN_CODE_2755:2785(W), 
@@ -9145,21 +9131,21 @@
                              BANK2_R2                                        XREF[9]:     CODE:01da(R), CODE:01de(RW), 
                                                                                           CODE:01e5(R), 
                                                                                           i2c_opcode_hana_write:2693(W), 
-                                                                                          FUN_CODE_26d6:26db(W), 
+                                                                                          i2c_opcode_hana_read:26db(W), 
                                                                                           FUN_CODE_26f9:270a(W), 
                                                                                           FUN_CODE_272c:2731(W), 
                                                                                           FUN_CODE_2755:2788(W), 
                                                                                           CODE:289c(W)  
        INTMEM:12                 undefined1 ??
                              BANK2_R3                                        XREF[5]:     CODE:026b(R), 
-                                                                                          FUN_CODE_26d6:26e2(W), 
+                                                                                          i2c_opcode_hana_read:26e2(W), 
                                                                                           FUN_CODE_272c:2738(W), 
                                                                                           FUN_CODE_2755:2792(W), 
                                                                                           CODE:28cb(W)  
        INTMEM:13                 undefined1 ??
                              BANK2_R4                                        XREF[8]:     CODE:0283(R), CODE:0290(RW), 
                                                                                           CODE:02a1(R), 
-                                                                                          FUN_CODE_26d6:26e5(W), 
+                                                                                          i2c_opcode_hana_read:26e5(W), 
                                                                                           FUN_CODE_272c:2743(W), 
                                                                                           FUN_CODE_2755:2795(W), 
                                                                                           CODE:28a1(W), CODE:28a3(RW)  
@@ -9167,7 +9153,7 @@
                              BANK2_R5                                        XREF[19]:    CODE:01e3(*), CODE:0233(R), 
                                                                                           CODE:029f(*), 
                                                                                           i2c_opcode_hana_write:26ac(W), 
-                                                                                          FUN_CODE_26d6:26f0(W), 
+                                                                                          i2c_opcode_hana_read:26f0(W), 
                                                                                           FUN_CODE_272c:274a(W), 
                                                                                           FUN_CODE_2755:2758(R), 
                                                                                           FUN_CODE_2755:2761(R), 
@@ -9406,11 +9392,11 @@
                                                                                           FUN_CODE_279d:27a5(R), 
                                                                                           FUN_CODE_279d:27bb(W)  
        INTMEM:44                 undefined1 ??
-                             DAT_INTMEM_45                                   XREF[3]:     ipc_handle_messages:0924(R), 
+                             g_chassis_current_temp_frac                     XREF[3]:     ipc_handle_messages:0924(R), 
                                                                                           FUN_CODE_15b5:15df(R), 
                                                                                           FUN_CODE_2813:282e(W)  
        INTMEM:45                 undefined1 ??
-                             DAT_INTMEM_46                                   XREF[4]:     FUN_CODE_080d:0828(W), 
+                             g_chassis_current_temp                          XREF[4]:     FUN_CODE_080d:0828(W), 
                                                                                           ipc_handle_messages:0929(R), 
                                                                                           FUN_CODE_15b5:15b5(R), 
                                                                                           FUN_CODE_2813:282b(W)  
@@ -9593,11 +9579,11 @@
                                                                                           CODE:1fa1(W), 
                                                                                           tray_sm_exec:222c(W)  
        INTMEM:65                 undefined1 ??
-                             DAT_INTMEM_66                                   XREF[3]:     FUN_CODE_0a7c:0a90(R), 
+                             g_persistent_memcell_a                          XREF[3]:     ipc_handle_get_smc_version_and_m
                                                                                           FUN_CODE_0aca:0d24(W), 
                                                                                           CODE:1fd5(W)  
        INTMEM:66                 undefined1 ??
-                             DAT_INTMEM_67                                   XREF[3]:     FUN_CODE_0a7c:0a95(R), 
+                             g_persistent_memcell_b                          XREF[3]:     ipc_handle_get_smc_version_and_m
                                                                                           FUN_CODE_0aca:0d26(W), 
                                                                                           CODE:1fd8(W)  
        INTMEM:67                 undefined1 ??
@@ -9742,7 +9728,7 @@
                                                                                           FUN_CODE_2606:2606(W), 
                                                                                           FUN_CODE_260b:260b(W), 
                                                                                           FUN_CODE_2610:2610(W), 
-                                                                                          FUN_CODE_2615:2615(W), 
+                                                                                          i2c_commandlist_run_temperature_
                                                                                           FUN_CODE_261a:261a(W), 
                                                                                           i2c_execute_with_3_retries:2622(
                                                                                           i2c_try_continue_commandlist_exe
@@ -9767,9 +9753,9 @@
                                                                                           i2c_opcode_hana_write:26c8(RW), 
                                                                                           i2c_opcode_hana_write:26ca(R), 
                                                                                           i2c_opcode_hana_write:26d1(RW), 
-                                                                                          FUN_CODE_26d6:26eb(RW), 
-                                                                                          FUN_CODE_26d6:26ed(R), 
-                                                                                          FUN_CODE_26d6:26f4(RW), 
+                                                                                          i2c_opcode_hana_read:26eb(RW), 
+                                                                                          i2c_opcode_hana_read:26ed(R), 
+                                                                                          i2c_opcode_hana_read:26f4(RW), 
                                                                                           CODE:280e(RW), [more]
        INTMEM:79                 undefined1 ??
                              g_i2c_retry_count                               XREF[3]:     i2c_commandlist_run_ipc_transact
@@ -10036,8 +10022,9 @@
                              DAT_INTMEM_e1                                   XREF[2]:     argon_queue_message:2a1c(W), 
                                                                                           FUN_CODE_2a3e:2a54(R)  
        INTMEM:e1                 undefined1 ??
-                             DAT_INTMEM_e2                                   XREF[3]:     CODE:248a(*), 
+                             DAT_INTMEM_e2                                   XREF[4]:     CODE:248a(*), 
                                                                                           smcconfig_load:2577(W), 
+                                                                                          i2c_opcode_hana_write:26c1(*), 
                                                                                           i2c_opcode_hana_write:26c3(R)  
        INTMEM:e2                 undefined1 ??
                              DAT_INTMEM_e3                                   XREF[2]:     CODE:246a(*), 
@@ -10136,7 +10123,7 @@
           SFR:8d                 ??         ??
           SFR:8e                 ??         ??
                              FADDR                                           XREF[9]:     pcie_read_status:006f(R), 
-                                                                                          FUN_CODE_00d7:00d7(R), 
+                                                                                          pcie_compute_link_state_blink_co
                                                                                           CODE:0143(RW), CODE:0156(RW), 
                                                                                           i2c_irq:016c(RW), CODE:0192(RW), 
                                                                                           FUN_CODE_02fe:02f1(RW), 
@@ -10952,7 +10939,7 @@
          BITS:5b                 ??         ??
                              g_i2c_is_ipc_operation                          XREF[8]:     CODE:01e0(R), CODE:029c(R), 
                                                                                           i2c_opcode_hana_write:26cf(W), 
-                                                                                          FUN_CODE_26d6:26f2(W), 
+                                                                                          i2c_opcode_hana_read:26f2(W), 
                                                                                           FUN_CODE_26f9:2720(W), 
                                                                                           FUN_CODE_272c:274e(W), 
                                                                                           FUN_CODE_2755:2798(W), 
@@ -10960,7 +10947,7 @@
          BITS:5c                 ??         ??
                              2b.5                                            XREF[7]:     CODE:01a6(R), 
                                                                                           i2c_opcode_hana_write:268e(W), 
-                                                                                          FUN_CODE_26d6:26d6(W), 
+                                                                                          i2c_opcode_hana_read:26d6(W), 
                                                                                           FUN_CODE_26f9:26f9(W), 
                                                                                           FUN_CODE_272c:272c(W), 
                                                                                           FUN_CODE_2755:2783(W), 
@@ -10969,7 +10956,7 @@
                              2b.6                                            XREF[10]:    CODE:01a9(R), CODE:01f6(R), 
                                                                                           CODE:0207(R), CODE:0258(W), 
                                                                                           i2c_opcode_hana_write:2696(W), 
-                                                                                          FUN_CODE_26d6:26de(W), 
+                                                                                          i2c_opcode_hana_read:26de(W), 
                                                                                           FUN_CODE_26f9:26fe(W), 
                                                                                           FUN_CODE_272c:2734(W), 
                                                                                           FUN_CODE_2755:278e(W), 
@@ -10977,7 +10964,7 @@
          BITS:5e                 ??         ??
                              g_i2c_read_pending                              XREF[8]:     CODE:01f9(R), CODE:025a(R), 
                                                                                           i2c_opcode_hana_write:2698(W), 
-                                                                                          FUN_CODE_26d6:26e0(W), 
+                                                                                          i2c_opcode_hana_read:26e0(W), 
                                                                                           FUN_CODE_26f9:2700(W), 
                                                                                           FUN_CODE_272c:2736(W), 
                                                                                           FUN_CODE_2755:2790(W), 
@@ -11327,7 +11314,7 @@
                                                                                           tray_open_or_close:00d4(RW)  
          BITS:cf                 ??         ??
                              P                                               XREF[13]:    pcie_read_status:0073(R), 
-                                                                                          FUN_CODE_00d7:00db(R), 
+                                                                                          pcie_compute_link_state_blink_co
                                                                                           FUN_CODE_02fe:0472(R), 
                                                                                           usb_powerevent_check:067b(R), 
                                                                                           usb_powerevent_check:068a(R), 
@@ -11467,7 +11454,7 @@
                                                                                           avpack_read:25bf(*), 
                                                                                           ir_parse_waiting_data:2acd(*)  
          BITS:e3                 ??         ??
-                             ACC.4                                           XREF[12]:    FUN_CODE_00d7:00de(*), 
+                             ACC.4                                           XREF[12]:    pcie_compute_link_state_blink_co
                                                                                           ipc_inbox_get_status:00f6(*), 
                                                                                           usb_powerevent_check:06ff(*), 
                                                                                           usb_powerevent_check:0704(*), 
