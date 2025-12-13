@@ -24,10 +24,11 @@ TODO
 
 ### Zephyr
 
-TODO
+- First HANA board
 
 ### Falcon
 
+- Adds weird debug buffers accessible over IPC
 - Adds checkstop support, although the program doesn't use it to raise any errors
 
 ### Jasper

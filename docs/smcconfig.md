@@ -85,23 +85,23 @@ The default configuration values are:
 
 | Field                | Xenon    | Zephyr  | Falcon  | Jasper  | Trinity | Corona  | Winchester
 |----------------------|----------|---------|---------|---------|---------|---------|----------------
-| Fan 1 speed override | n/a      | `??`    | `e4`    | `??`    | `??`    | `??`    | `??`
-| Fan 2 speed override | n/a      | `??`    | `e4`    | `??`    | `??`    | `??`    | `??`
-| CPU temp gain        | `57 2a`  | `TO DO` | `57 2a` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| CPU temp offset      | `be 8a`  | `TO DO` | `be 8a` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| GPU temp gain        | `4b f1`  | `TO DO` | `4b f1` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| GPU temp offset      | `74 b9`  | `TO DO` | `74 b9` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| eDRAM temp gain      | `4b f1`  | `TO DO` | `4b f1` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| eDRAM temp offset    | `74 b9`  | `TO DO` | `74 b9` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| Board temp gain      | `4a b4`  | `TO DO` | `4a b4` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| Board temp offset    | `75 6a`  | `TO DO` | `75 6a` | `TO DO` | `TO DO` | `TO DO` | `TO DO`
-| HANA 0xDB override   | `03`     | `??`    | `03`    | `??`    | `??`    | `??`    | `??`      
-| CPU target temp      | `4e`     | `??`    | `50`    | `??`    | `??`    | `??`    | `??`      
-| GPU target temp      | `5f`     | `??`    | `61`    | `??`    | `??`    | `??`    | `??`      
-| eDRAM target temp    | `5f`     | `??`    | `64`    | `??`    | `??`    | `??`    | `??`      
-| CPU trip temp        | `64`     | `??`    | `64`    | `??`    | `??`    | `??`    | `5b`      
-| GPU trip temp        | `6e`     | `??`    | `6e`    | `??`    | `??`    | `??`    | `52`      
-| eDRAM trip temp      | `6e`     | `??`    | `75`    | `??`    | `??`    | `??`    | `52`      
+| Fan 1 speed override | n/a      | `e4`    | `e4`    | `e4`    | `??`    | `??`    | `??`
+| Fan 2 speed override | n/a      | `e4`    | `e4`    | `e4`    | `??`    | `??`    | `??`
+| CPU temp gain        | `57 2a`  | `57 2a` | `57 2a` | `57 2a` | `TO DO` | `TO DO` | `TO DO`
+| CPU temp offset      | `be 8a`  | `be 8a` | `be 8a` | `be 8a` | `TO DO` | `TO DO` | `TO DO`
+| GPU temp gain        | `4b f1`  | `4b f1` | `4b f1` | `4b f1` | `TO DO` | `TO DO` | `TO DO`
+| GPU temp offset      | `74 b9`  | `74 b9` | `74 b9` | `74 b9` | `TO DO` | `TO DO` | `TO DO`
+| eDRAM temp gain      | `4b f1`  | `4b f1` | `4b f1` | `4b f1` | `TO DO` | `TO DO` | `TO DO`
+| eDRAM temp offset    | `74 b9`  | `74 b9` | `74 b9` | `74 b9` | `TO DO` | `TO DO` | `TO DO`
+| Board temp gain      | `4a b4`  | `4a b4` | `4a b4` | `4a b4` | `TO DO` | `TO DO` | `TO DO`
+| Board temp offset    | `75 6a`  | `75 6a` | `75 6a` | `75 6a` | `TO DO` | `TO DO` | `TO DO`
+| HANA 0xDB override   | `03`     | `03`    | `03`    | `03`    | `??`    | `??`    | `??`      
+| CPU target temp      | `4e`     | `50`    | `50`    | `50`    | `??`    | `??`    | `??`      
+| GPU target temp      | `5f`     | `61`    | `61`    | `47`    | `??`    | `??`    | `??`      
+| eDRAM target temp    | `5f`     | `64`    | `64`    | `49`    | `??`    | `??`    | `??`      
+| CPU trip temp        | `64`     | `64`    | `64`    | `64`    | `??`    | `??`    | `5b`      
+| GPU trip temp        | `6e`     | `6e`    | `6e`    | `6e`    | `??`    | `??`    | `52`      
+| eDRAM trip temp      | `6e`     | `75`    | `75`    | `75`    | `??`    | `??`    | `52`      
 
 Note, of course, that these temperature sensor calibration values will likely not be accurate on your
 console as they're calibrated at the factory.

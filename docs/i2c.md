@@ -79,6 +79,7 @@ The initialization procedure is:
 Byte format:
 - Xenon: `03`
 - Falcon: `03`
+- Jasper: `03`
 
 Handlers:
 - Falcon: 0x28DC -> 0x2686
@@ -88,19 +89,32 @@ Stops executing the commandlist and returns success (via F0 flag).
 ### Do nothing (NOP)
 
 Byte format:
+- Zephyr: `06`
 - Falcon: `06`
+- Jasper: `06`
 
 Handlers:
-- Falcon: 0x28DF -> 0x268A
+
+| SMC revision | Absolute offset  | Jumptable entry |
+|--------------|------------------|-----------------|
+| Xenon        | Doesn't exist    | Doesn't exist   |
+| Zephyr       | TODO             | TODO            |
+| Falcon       | 0x28DF           | `ljmp 0x268A`   |
+| Jasper       | TODO             | TODO            |
+| Trinity      | TODO             | TODO            |
+| Corona       | TODO             | TODO            |
+| Winchester   | TODO             | TODO            |
 
 Does nothing; it simply increments the commandlist execution pointer and continues on to the
 next instruction.
 
-### Run IPC transaction
+### Run IPC-I2C transaction
 
 Byte format:
 - Xenon: `06`
+- Zephyr: `09`
 - Falcon: `09`
+- Jasper: `09`
 
 Handlers:
 - Falcon: 0x28E2 -> 0x2891
@@ -125,6 +139,7 @@ Writes to the backup clock generator, which is a Cypress CY28517.
 Byte format:
 - Xenon: `08 rr dd dd dd dd`
 - Falcon: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
+- Jasper: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
 
 Handlers:
 - Falcon: 0x28E4 -> 0x268E
@@ -141,6 +156,7 @@ only three bytes will be read from the commandlist; the fourth will come from th
 ### Read HANA register
 
 Byte format:
+- Xenon: `0B rr`
 - Falcon: `0E rr`
 
 Reads the given register into memory, then it's up to some other command to process the results.
@@ -170,6 +186,76 @@ TODO
 ### Dump RRoD error code to I2C buffer
 
 TODO
+
+## Commandlist disassemblies
+
+## Xenon
+
+Commandlist table at 0x283E-0x28A2 (100 bytes).
+
+Disassembly TODO.
+
+## Zephyr
+
+Commandlist table at 0x286F-0x2923 (180 bytes).
+
+Disassembly TODO.
+
+### Falcon
+
+Commandlist table at 0x2907-0x29C7 (192 bytes).
+
+Relative offset column only populated for known commandlist start points.
+
+| Rel offset | Abs offset | Bytecode            | Operation
+|------------|------------|---------------------|---------------------------------------------
+| `00`       | 0x2907     | `00`                | Init I2C bus
+|            | 0x2908     | `09`                | Run IPC-I2C transaction
+|            | 0x2909     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `03`       | 0x290A     | `00`                | Init I2C bus
+|            | 0x290B     | `0B E4 00 00 00 1B` | Write HANA register 0xE4: `1B 00 00 00`
+|            | 0x2911     | `0B E3 0F FF FF FF` | Write HANA register 0xE3: `FF FF FF 0F`
+|            | 0x2917     | `0B DB 00 00 00`    | Write HANA register 0xDB: `-- 00 00 00` (special case)
+|            | 0x291C     | `0B D5 00 00 00 00` | Write HANA register 0xD5: `00 00 00 00`
+|            | 0x2922     | `0B D9 00 00 00 08` | Write HANA register 0xD9: `08 00 00 00`
+|            | 0x2928     | `0B D4 09 90 E0 0E` | Write HANA register 0xD4: `0E E0 90 09`
+|            | 0x292E     | `0B CE 08 E8 40 14` | Write HANA register 0xCE: `14 40 E8 08`
+|            | 0x2934     | `0B DC 00 00 42 AA` | Write HANA register 0xDC: `AA 42 00 00`
+|            | 0x293A     | `0B DF 00 00 00 00` | Write HANA register 0xDF: `00 00 00 00`
+|            | 0x2940     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `3A`       | 0x2941     | `00`                | Init I2C bus
+|            | 0x2942     | `0B D9 00 00 00 20` | Write HANA register 0xD9: `20 00 00 00`
+|            | 0x2948     | `0B E3 84 36 F6 66` | Write HANA register 0xE3: `66 F6 36 84`
+|            | 0x294E     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `48`       | 0x294F     | `00`                | Init I2C bus
+|            | 0x2950     | `0B E3 0F FF FF FF` | Write HANA register 0xE3: `FF FF FF 0F`
+|            | 0x2956     | `0B D9 00 00 00 08` | Write HANA register 0xD9: `08 00 00 00`
+|            | 0x295C     | `0B DF 00 00 00 00` | Write HANA register 0xDF: `00 00 00 00`
+|            | 0x2962     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `5C`       | 0x2963     | `06`                | Do nothing
+|            | 0x2964     | `06`                | Do nothing (execution falls through to 5E below)
+| `5E`       | 0x2965     | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `8E`       | 0x2995     | `00`                | Init I2C bus
+|            | 0x2996     | `0E E0`             | Read HANA register 0xE0
+|            | 0x2998     | `1A`                | Use results of that read to update temperature sensor values
+|            | 0x2999     | `0E E1`             | Read HANA register 0xE1
+|            | 0x299B     | `1A`                | Use results of that read to update CPU temperature sensor values
+|            | 0x299C     | `0E E2`             | Read HANA register 0xE2
+|            | 0x299E     | `20`                | Use results of that read to update chassis temperature sensor values
+|            | 0x299F     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `99`       | 0x29A0     | TODO                | TODO
+
+### Jasper
+
+Commandlist table at 0x2959-0x2A37 (222 bytes).
+
+Disassembly TODO.
 
 ## I2C over IPC
 

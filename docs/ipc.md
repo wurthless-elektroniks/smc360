@@ -245,13 +245,13 @@ Outputs:
 
 [See here.](#the-weird-debug-buffers)
 
-Not present on Xenon
+Not present on Xenon or Zephyr
 
 ### 0x20 - Read 12 bytes from SMC memory debug buffer B
 
 [See here.](#the-weird-debug-buffers)
 
-Not present on Xenon
+Not present on Xenon or Zephyr
 
 ### 0x82 - Reset/powerdown
 
@@ -475,19 +475,19 @@ Outputs: Nothing
 
 [See here.](#the-weird-debug-buffers)
 
-Not present on Xenon
+Not present on Xenon or Zephyr
 
 ### 0x9F - Write 12 bytes to SMC memory debug buffer B
 
 [See here.](#the-weird-debug-buffers)
 
-Not present on Xenon
+Not present on Xenon or Zephyr
 
 ## The weird debug buffers
 
-Starting on Zephyr(??? to confirm), the SMC program reserves a bunch of memory cells for no clear purpose other
+Starting on Falcon, the SMC program reserves a bunch of memory cells for no clear purpose other
 than to allow the CPU to store data to SMC memory there when the power is off. As this isn't implemented
-on Xenon, the kernel can't really rely on these buffers to be there.
+on Xenon or Zephyr, the kernel can't really rely on these buffers to be there.
 
 Buffer A locations (in INTMEM):
 - Falcon: 082h~08Dh
@@ -499,11 +499,11 @@ Buffer B locations (in INTMEM):
 
 The IPC exposes the following commands to access these buffers:
 - 0x1E: Read Buffer A (response is `1E` followed by the contents of the buffer)
-- 0x20: Read Buffer B  (response is `20` followed by the contents of the buffer)
+- 0x20: Read Buffer B (response is `20` followed by the contents of the buffer)
 - 0x9D: Write Buffer A (command is `9D` followed by the 12 bytes you want to write)
 - 0x9F: Write Buffer B (command is `9F` followed by the 12 bytes you want to write)
 
-Since Xenon doesn't support these commands, the default behavior for an invalid command applies, so reads
+Since Xenon and Zephyr don't support these commands, the default behavior for an invalid command applies, so reads
 will always return 0 and writes will do nothing. And of course, if you want to use these buffers for variables
 in your hacked SMC, you can patch the handlers out.
 
@@ -511,6 +511,8 @@ in your hacked SMC, you can patch the handlers out.
 
 The SMC can also send statuses back to the CPU whenever it feels like it. When that happens,
 the outbox will contain the command code 0x83. Byte 1 contains the event type.
+
+Note that these commands will only be sent after the SMC sends GetPowerUpCause (command 0x01).
 
 ### 0x11 - Power switch pushed
 
@@ -547,7 +549,7 @@ Outputs:
 
 TODO
 
-### 0x31 - TODO
+### 0x31 - Soft reset acknowledged
 
 Outputs:
 
