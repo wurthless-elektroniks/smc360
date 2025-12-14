@@ -47,6 +47,10 @@ TODO
 - Buggy Xenon leftover code that strobed DBG_LED3 is finally removed
 - Big boy NANDs are still supported, even if no retail Trinity systems ever used anything other than 16mbytes
 - Partial XSB support remains although it's useless as Trinity never shipped with a XSB
+- Fan speed algorithm tables have changed because of the new CGPU fan setup
+- Support for the second (GPU) fan dropped: PWM channel 2 duty cycle now set to 0 always, thermal stuff no
+  longer updates the second fan, IPC command 0x94 is removed
+- SMC config loader now uses structure version 5
 
 ### Corona
 

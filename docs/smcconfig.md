@@ -55,9 +55,10 @@ SMC program cares about.
 | Offset(s) | Description                                                             |
 |-----------|-------------------------------------------------------------------------|
 | 0x00,0x01 | Checksum of all bytes from 0x10 to 0x3F inclusive                       |
-| 0x0E      | Structure version (should be 4 or 5)                                    |
+| 0x0E      | Structure version (4 for fats, 5 for slims)                             |
 | 0x11      | Fan 1 speed override (bit 7 must be 1 to override)                      |
 | 0x12      | Fan 2 speed override (bit 7 must be 1 to override)                      |
+| 0x13      | ????????? (slims only)                                                  |
 | 0x14      | If bit 1 set, stop loading the config and use default SMC config values |
 | 0x18,0x19 | CPU temperature sensor gain                                             |
 | 0x1A,0x1B | CPU temperature sensor offset                                           |
@@ -74,6 +75,7 @@ SMC program cares about.
 | 0x2C      | CPU thermal protection trip temperature                                 |
 | 0x2D      | GPU thermal protection trip temperature                                 |
 | 0x2E      | eDRAM thermal protection trip temperature                               |
+| 0x2F      | ????????? (slims only)                                                  |
 
 ### Default config values
 
@@ -85,8 +87,8 @@ The default configuration values are:
 
 | Field                | Xenon    | Zephyr  | Falcon  | Jasper  | Trinity | Corona  | Winchester
 |----------------------|----------|---------|---------|---------|---------|---------|----------------
-| Fan 1 speed override | n/a      | `e4`    | `e4`    | `e4`    | `??`    | `??`    | `??`
-| Fan 2 speed override | n/a      | `e4`    | `e4`    | `e4`    | `??`    | `??`    | `??`
+| Fan 1 speed override | n/a      | `e4`    | `e4`    | `e4`    | `e4`    | `??`    | `??`
+| Fan 2 speed override | n/a      | `e4`    | `e4`    | `e4`    | ????    | `??`    | `??`
 | CPU temp gain        | `57 2a`  | `57 2a` | `57 2a` | `57 2a` | `TO DO` | `TO DO` | `TO DO`
 | CPU temp offset      | `be 8a`  | `be 8a` | `be 8a` | `be 8a` | `TO DO` | `TO DO` | `TO DO`
 | GPU temp gain        | `4b f1`  | `4b f1` | `4b f1` | `4b f1` | `TO DO` | `TO DO` | `TO DO`
@@ -95,13 +97,13 @@ The default configuration values are:
 | eDRAM temp offset    | `74 b9`  | `74 b9` | `74 b9` | `74 b9` | `TO DO` | `TO DO` | `TO DO`
 | Board temp gain      | `4a b4`  | `4a b4` | `4a b4` | `4a b4` | `TO DO` | `TO DO` | `TO DO`
 | Board temp offset    | `75 6a`  | `75 6a` | `75 6a` | `75 6a` | `TO DO` | `TO DO` | `TO DO`
-| HANA 0xDB override   | `03`     | `03`    | `03`    | `03`    | `??`    | `??`    | `??`      
-| CPU target temp      | `4e`     | `50`    | `50`    | `50`    | `??`    | `??`    | `??`      
-| GPU target temp      | `5f`     | `61`    | `61`    | `47`    | `??`    | `??`    | `??`      
-| eDRAM target temp    | `5f`     | `64`    | `64`    | `49`    | `??`    | `??`    | `??`      
-| CPU trip temp        | `64`     | `64`    | `64`    | `64`    | `??`    | `??`    | `5b`      
-| GPU trip temp        | `6e`     | `6e`    | `6e`    | `6e`    | `??`    | `??`    | `52`      
-| eDRAM trip temp      | `6e`     | `75`    | `75`    | `75`    | `??`    | `??`    | `52`      
+| HANA 0xDB override   | `03`     | `03`    | `03`    | `03`    | `03`    | `??`    | `??`      
+| CPU target temp      | `4e`     | `50`    | `50`    | `50`    | `52`    | `??`    | `??`      
+| GPU target temp      | `5f`     | `61`    | `61`    | `47`    | `4c`    | `??`    | `??`      
+| eDRAM target temp    | `5f`     | `64`    | `64`    | `49`    | `4c`    | `??`    | `??`      
+| CPU trip temp        | `64`     | `64`    | `64`    | `64`    | `59`    | `??`    | `5b`      
+| GPU trip temp        | `6e`     | `6e`    | `6e`    | `6e`    | `52`    | `??`    | `52`      
+| eDRAM trip temp      | `6e`     | `75`    | `75`    | `75`    | `52`    | `??`    | `52`      
 
 Note, of course, that these temperature sensor calibration values will likely not be accurate on your
 console as they're calibrated at the factory.

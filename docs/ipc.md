@@ -395,8 +395,8 @@ Inputs:
 1. Target fan speed (bit 7 must be set to enable the override)
 
 This is only really useful on Xenon, where both fans can be controlled independently. Starting on Zephyr, the fans are
-driven by a single MOSFET, which in turn is controlled by the HANA. This command was removed from Winchester, and
-probably the other slims, because slims only have one fan (the CGPU fan).
+driven by a single MOSFET, which in turn is controlled by the HANA. This command was removed from Trinity and the other
+slims, because slims only have one fan (the CGPU fan).
 
 ### 0x95 - TODO
 
@@ -492,10 +492,12 @@ on Xenon or Zephyr, the kernel can't really rely on these buffers to be there.
 Buffer A locations (in INTMEM):
 - Falcon: 082h~08Dh
 - Jasper: 083h~08Eh
+- Trinity: 084h~08Fh
 
 Buffer B locations (in INTMEM):
 - Falcon: 08Eh~099h
 - Jasper: 08Fh~09Ah
+- Trinity: 090h~09Bh
 
 The IPC exposes the following commands to access these buffers:
 - 0x1E: Read Buffer A (response is `1E` followed by the contents of the buffer)
