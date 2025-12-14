@@ -189,13 +189,13 @@ TODO
 
 ## Commandlist disassemblies
 
-## Xenon
+### Xenon
 
 Commandlist table at 0x283E-0x28A2 (100 bytes).
 
 Disassembly TODO.
 
-## Zephyr
+### Zephyr
 
 Commandlist table at 0x286F-0x2923 (180 bytes).
 
@@ -256,6 +256,13 @@ Relative offset column only populated for known commandlist start points.
 Commandlist table at 0x2959-0x2A37 (222 bytes).
 
 Disassembly TODO.
+
+### Trinity
+
+Commandlist table at 0x2ACF-0x2BAD (222 bytes).
+
+One byte changes between Trinity and Jasper. The HANA write to register 0xE4 is now `0B E4 00 00 00 1F`
+(that's `1F 00 00 00` byteswapped). The rest of the code is identical, so it will not be disassembled in detail.
 
 ## I2C over IPC
 
