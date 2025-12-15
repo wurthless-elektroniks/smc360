@@ -11,7 +11,17 @@ TODO: find proper way to configure stop bit, also document busy registers (not r
 
 - 0E7h: Data out
 - 0E8h: Enable/disable UART (write 0xC0 to enable)
-- 0E9h: UART speed (0xFF = 1.5 mbps)
+- 0E9h: UART speed (see below)
+
+### UART speeds
+
+They're completely different than the CPU's UART.
+
+The base bitrate is 1.5 mbaud and the UART speed register acts as a divider, so the following calculation applies...
+
+```
+output_baudrate = 1_500_000 / (0x100-speed)
+```
 
 ### The (usually) disabled UART RX pin
 

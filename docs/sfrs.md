@@ -96,20 +96,20 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0D5h | CPU-to-SMC IPC outbox, data
 | 0D6h | CPU-to-SMC IPC outbox, control
 | 0D7h | USB gamepad status(?), channel 1
-| 0D8h | I2C control registers?
-| 0D9h | I2C ???
+| 0D8h | I2C status/control bits (bit 0 = rx/tx next byte?, bit 1 = start I2C/ack IRQ?, bit 2 = error?, bit 3 = ???)
+| 0D9h | I2C ??? (used in IRQ handler for some sort of error detection)
 | 0DAh | I2C rx/tx byte
-| 0DBh | I2C ???
-| 0DCh | I2C related (set to either 3 or 0)
-| 0DDh | I2C ???
-| 0DEh | I2C ???
+| 0DBh | I2C (set to 0 on handover)
+| 0DCh | I2C related (3 when releasing bus, 0 when locking it)
+| 0DDh | I2C (set to 0xE1 on handover)
+| 0DEh | I2C (set to 0x83 on handover)
 | 0DFh |
 | 0E0h |
 | 0E1h | CPU-to-SMC IPC inbox, data
 | 0E2h | CPU-to-SMC IPC inbox, control
-| 0E3h | SFCX: Configuration register
-| 0E4h |
-| 0E5h | SFCX: PSB extended flash information (bit 1 = big block)
+| 0E3h | SFCX: Configuration register, bits 0-7
+| 0E4h | SFCX: Configuration register, bits 8-15
+| 0E5h | SFCX: Configuration register, bits 16-23
 | 0E6h |
 | 0E7h | UART data out
 | 0E8h | UART enable/configuration
@@ -144,4 +144,4 @@ The KSB adds more registers in EXTMEM space (use MOVX opcodes to read/write).
 - 0x0020~0x0023: eMMC read result
 - 0x00EC: eMMC command/status? (write 1 to set 256-byte block address, 0 to read within block)
 - 0x00ED~0x00EF: eMMC address (little endian)
-- 0x00F3: eMMC status, bit 7 = 4gbytes eMMC present, bit 6 = NAND ready
+- 0x00F3: Extended SFCX configuration register, bits 24-31. bit 7 = 4gbytes eMMC present, bit 6 = NAND ready

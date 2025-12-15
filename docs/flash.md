@@ -15,8 +15,9 @@ Again, all has to be tested thoroughly on real hardware...
 
 | SFR  | Ghidra symbol | Description
 |------|---------------|-----------------------------
-| 0E3h | RXDAT         | Configuration register
-| 0E5h | RXFLG         | PSB: extended flash information (bit 1 = big block)
+| 0E3h | RXDAT         | Configuration register, bits 0-7 (LSB)
+| 0E4h | RXDAT         | Configuration register, bits 8-15
+| 0E5h | RXFLG         | Configuration register, bits 16-23 (bit 1 of this register = PSB)
 | 0EAh | CCAP0L        | Address register, bits 7-0 (LSB)
 | 0EBh | CCAP1L        | Address register, bits 15-8
 | 0ECh | CCAP2L        | Address register, bits 23-16
@@ -32,8 +33,10 @@ Again, all has to be tested thoroughly on real hardware...
 
 Commands should be the same as in xenon_sfcx.h, but as a reminder:
 
-- 0x02 reads the page in the address register to the internal buffer
-- 0x00 reads four bytes at the given address from the internal buffer to the data register
+- 0x02 reads the 256 byte page at the given logical NAND address into the internal buffer.
+  Only bits 8-31 of the address are used; bits 0-7 are ignored.
+- 0x00 reads four bytes at the given address from the internal buffer to the data register.
+  Only bits 0-15 will be used for that operation.
 
 It is also possible to launch NAND-to-SDRAM DMAs from the SMC, but the SFCX registers used to start
 the DMA must be programmed via GPU JTAG, and those registers must be set before hwinit runs, as hwinit
@@ -44,9 +47,17 @@ will disable the GPU's JTAG port. (This is actually how the JTAG SMC works.)
 Registers all in EXTMEM space
 
 - 0x0020~0x0023: eMMC read result
+- 0x002C: ????
+- 0x002F: ????
 - 0x00EC: eMMC command/status? (write 1 to set 256-byte block address, 0 to read within block)
 - 0x00ED~0x00EF: eMMC address (little endian)
-- 0x00F3: eMMC status, bit 7 = 4gbytes eMMC present, bit 6 = NAND ready
+- 0x00F2: ????
+- 0x00F3: Extended SFCX configuration register. Bit 7 = 4gbytes eMMC present, bit 6 = NAND ready
+
+## Bus arbitration with CPU
+
+There probably isn't any. The clean SMCs avoid accessing flash while the CPU is running, and JTAG SMCs
+can fire off commands with registers that would be normally set by the CPU. 
 
 ## See also
 
