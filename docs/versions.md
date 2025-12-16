@@ -46,7 +46,7 @@ TODO
 - Buggy Xenon code that strobes DBG_LED3 still present
 - GetPowerUpCause watchdog timeout shortened from 7000 ms to 5200 ms to account for faster hwinit
 - New sanity check function in reset watchdog statemachine that behaves differently between XSB and PSB boards (at 0x0084)
-- SFRs 097h, 0A9h and 0DFh are set to 0 when CPU is brought out of reset
+- SFRs 097h, 0A9h and 0DFh are now set to 0 when CPU is brought out of reset
 
 ### Trinity
 
@@ -62,7 +62,8 @@ TODO
 
 ### Corona
 
-- KSB support
+- KSB
+- EXTMEM space now acts as extended register space
 - SFR 0FCh usage is completely different now
 
 ### Winchester
