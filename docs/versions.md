@@ -22,18 +22,26 @@ These basically mirror hardware revisions, but whatevs...
 
 TODO
 
+- SFR 0FCh is always set to 0xC2
+
 ### Zephyr
 
 - First HANA board
+- Function that halts execution now moves past 0x2000 (the SMC bootstrapping ROM is probably mapped before there)
+- Debug LED statemachine keeps most of the Xenon features, but writes to anything other than DBG_LED0 are stubbed out
+- Xenon code that strobes DBG_LED3 when GPU is released from reset was left in by mistake
+- SFR 0FCh is now set to 0x43 for XSB R0 systems (detected using a jumper on I/O signal SB_DETECT)
 
 ### Falcon
 
 - Adds weird debug buffers accessible over IPC
 - Adds checkstop support, although the program doesn't use it to raise any errors
+- Buggy Xenon code that strobes DBG_LED3 still present
+- SFR 0FCh now set to 0x43 always
 
 ### Jasper
 
-- Big block support
+- PSB support, with XSB backwards compatibility
 - Reset watchdog statemachine changes
 - Buggy Xenon code that strobes DBG_LED3 still present
 - GetPowerUpCause watchdog timeout shortened from 7000 ms to 5200 ms to account for faster hwinit
@@ -55,6 +63,7 @@ TODO
 ### Corona
 
 - KSB support
+- SFR 0FCh usage is completely different now
 
 ### Winchester
 
