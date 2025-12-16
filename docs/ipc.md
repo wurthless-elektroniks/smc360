@@ -547,9 +547,22 @@ Outputs:
 1. Fixed byte `0x20`
 2. Fixed byte `0x01` (there's no "pushed" or "unpushed" state)
 
-### 0x23 - IR remote event??
+### 0x23 - IR remote event (maybe others?)
 
 TODO
+
+This can also be triggered by some code in the I2C statemachine that I haven't figured out yet.
+
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x23`
+2. Flags? (gets munged by handler)
+3. ID of button that was pressed
+4. ???
+5. ???
+6. ???
+7. ???
 
 ### 0x31 - Soft reset acknowledged
 
