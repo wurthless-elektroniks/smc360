@@ -27,8 +27,8 @@ with some typos corrected. Buttons were pressed from the top to the bottom of th
 | 0x15  | Rewind
 | 0x16  | Play
 | 0x14  | Fast-forward
-| 0x1B  | Back (`|<` button)
-| 0x1A  | Forward (`>|` button)
+| 0x1B  | Back arrow
+| 0x1A  | Forward arrow
 | 0x4F  | Display
 | 0x51  | Title
 | 0x24  | DVD Menu
