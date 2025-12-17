@@ -1360,50 +1360,56 @@
                                                                                                        a USB event
        CODE:064c 22              RET
                              LAB_CODE_064d                                   XREF[1]:     CODE:064a(j)  
-       CODE:064d e5 d7           MOV        A,HPSTAT                                                   = ??
-       CODE:064f 30 e0 11        JNB        ACC.0,LAB_CODE_0663                                        = ??
+       CODE:064d e5 d7           MOV        A,HPSTAT                                                   check USB top device presence
+       CODE:064f 30 e0 11        JNB        ACC.0,LAB_CODE_0663                                        jump down if plugged
        CODE:0652 e5 d7           MOV        A,HPSTAT                                                   = ??
-       CODE:0654 30 e0 4e        JNB        ACC.0,LAB_CODE_06a5                                        = ??
+       CODE:0654 30 e0 4e        JNB        ACC.0,usb_powerevent_check_front_bottom_usb                if the usb device was plugged
+                                                                                                       in suddenly, jump down
        CODE:0657 e5 d7           MOV        A,HPSTAT                                                   = ??
-       CODE:0659 30 e0 49        JNB        ACC.0,LAB_CODE_06a5                                        = ??
-       CODE:065c c2 6b           CLR        2d.3                                                       = ??
-       CODE:065e 75 1c 64        MOV        BANK3_R4,#0x64                                             = ??
-       CODE:0661 c1 a5           AJMP       LAB_CODE_06a5
+       CODE:0659 30 e0 49        JNB        ACC.0,usb_powerevent_check_front_bottom_usb                same deal
+       CODE:065c c2 6b           CLR        g_usb_front_top_plugged                                    ok, there's no gamepad there
+       CODE:065e 75 1c 64        MOV        g_usb_front_top_recheck_timer,#0x64                        wait 100 ms before checking
+                                                                                                       again, i think
+       CODE:0661 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0663                                   XREF[1]:     CODE:064f(j)  
-       CODE:0663 20 6b 0d        JB         2d.3,LAB_CODE_0673                                         = ??
-       CODE:0666 d5 1c 3c        DJNZ       BANK3_R4,LAB_CODE_06a5                                     = ??
-       CODE:0669 d2 6b           SETB       2d.3                                                       = ??
-       CODE:066b c2 71           CLR        2e.1                                                       = ??
-       CODE:066d a2 e1           MOV        CY,ACC.1                                                   = ??
-       CODE:066f 92 6e           MOV        2d.6,CY                                                    = ??
-       CODE:0671 c1 a5           AJMP       LAB_CODE_06a5
+       CODE:0663 20 6b 0d        JB         g_usb_front_top_plugged,LAB_CODE_0673                      = ??
+       CODE:0666 d5 1c 3c        DJNZ       g_usb_front_top_recheck_timer,usb_powerevent_check_front   = ??
+       CODE:0669 d2 6b           SETB       g_usb_front_top_plugged                                    = ??
+       CODE:066b c2 71           CLR        g_usb_front_top_button_maybe_pressed                       = ??
+       CODE:066d a2 e1           MOV        CY,ACC.1                                                   check bit 1 from that SFR
+       CODE:066f 92 6e           MOV        g_usb_front_top_button_last_poll,CY                        = ??
+       CODE:0671 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0673                                   XREF[1]:     CODE:0663(j)  
-       CODE:0673 54 02           ANL        A,#0x2
-       CODE:0675 a2 6e           MOV        CY,2d.6                                                    = ??
+       CODE:0673 54 02           ANL        A,#0x2                                                     keep bit 1 (AND 2) from the
+                                                                                                       result above
+       CODE:0675 a2 6e           MOV        CY,g_usb_front_top_button_last_poll                        read bit 1 from the last poll
        CODE:0677 13              RRC        A
-       CODE:0678 20 71 0c        JB         2e.1,LAB_CODE_0687                                         = ??
-       CODE:067b 30 d0 27        JNB        P,LAB_CODE_06a5                                            = ??
-       CODE:067e d2 71           SETB       2e.1                                                       = ??
-       CODE:0680 c2 74           CLR        2e.4                                                       = ??
-       CODE:0682 75 1c 32        MOV        BANK3_R4,#0x32                                             = ??
-       CODE:0685 c1 a5           AJMP       LAB_CODE_06a5
+       CODE:0678 20 71 0c        JB         g_usb_front_top_button_maybe_pressed,LAB_CODE_0687         = ??
+       CODE:067b 30 d0 27        JNB        P,usb_powerevent_check_front_bottom_usb                    it should have been 1
+                                                                                                       on both of those polls
+                                                                                                       or else we jump here
+       CODE:067e d2 71           SETB       g_usb_front_top_button_maybe_pressed                       = ??
+       CODE:0680 c2 74           CLR        g_usb_front_top_button_maybe_debounced                     = ??
+       CODE:0682 75 1c 32        MOV        g_usb_front_top_recheck_timer,#50                          state needs to change in 50 ms
+       CODE:0685 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0687                                   XREF[1]:     CODE:0678(j)  
-       CODE:0687 20 74 0c        JB         2e.4,LAB_CODE_0696                                         = ??
-       CODE:068a 30 d0 13        JNB        P,LAB_CODE_06a0                                            = ??
-       CODE:068d d5 1c 15        DJNZ       BANK3_R4,LAB_CODE_06a5                                     = ??
+       CODE:0687 20 74 0c        JB         g_usb_front_top_button_maybe_debounced,LAB_CODE_0696       = ??
+       CODE:068a 30 d0 13        JNB        P,LAB_CODE_06a0                                            the button state should change
+       CODE:068d d5 1c 15        DJNZ       g_usb_front_top_recheck_timer,usb_powerevent_check_front   before this timer expires
                              LAB_CODE_0690                                   XREF[1]:     CODE:0696(j)  
-       CODE:0690 b2 6e           CPL        2d.6                                                       = ??
-       CODE:0692 c2 71           CLR        2e.1                                                       = ??
-       CODE:0694 c1 a5           AJMP       LAB_CODE_06a5
+       CODE:0690 b2 6e           CPL        g_usb_front_top_button_last_poll                           = ??
+       CODE:0692 c2 71           CLR        g_usb_front_top_button_maybe_pressed                       = ??
+       CODE:0694 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0696                                   XREF[1]:     CODE:0687(j)  
-       CODE:0696 20 d0 f7        JB         P,LAB_CODE_0690                                            = ??
-       CODE:0699 d5 1c 09        DJNZ       BANK3_R4,LAB_CODE_06a5                                     = ??
+       CODE:0696 20 d0 f7        JB         P,LAB_CODE_0690                                            both polls should NOT be 1
+                                                                                                       (line should be 0 or toggling?)
+       CODE:0699 d5 1c 09        DJNZ       g_usb_front_top_recheck_timer,usb_powerevent_check_front   = ??
        CODE:069c 75 1f 56        MOV        BANK3_R7,#0x56                                             powering up from front-top USB
        CODE:069f 22              RET
                              LAB_CODE_06a0                                   XREF[1]:     CODE:068a(j)  
-       CODE:06a0 d2 74           SETB       2e.4                                                       = ??
-       CODE:06a2 75 1c 64        MOV        BANK3_R4,#0x64                                             = ??
-                             LAB_CODE_06a5                                   XREF[10]:    CODE:0654(j), CODE:0659(j), 
+       CODE:06a0 d2 74           SETB       g_usb_front_top_button_maybe_debounced                     = ??
+       CODE:06a2 75 1c 64        MOV        g_usb_front_top_recheck_timer,#100                         = ??
+                             usb_powerevent_check_front_bottom_usb           XREF[10]:    CODE:0654(j), CODE:0659(j), 
                                                                                           CODE:0661(j), CODE:0666(j), 
                                                                                           CODE:0671(j), CODE:067b(j), 
                                                                                           CODE:0685(j), CODE:068d(j), 
@@ -2109,7 +2115,7 @@
        CODE:0b5d ba 04 2d        CJNE       R2,#0x4,LAB_CODE_0b8d                                      has to be 4 (reset)
                                                                                                        or the command is invalid
        CODE:0b60 bb 31 10        CJNE       R3,#0x31,LAB_CODE_0b73
-       CODE:0b63 d2 14           SETB       22.4                                                       = ??
+       CODE:0b63 d2 14           SETB       g_ipc_soft_reset_requested                                 = ??
        CODE:0b65 ed              MOV        A,R5
        CODE:0b66 a2 e0           MOV        CY,ACC.0                                                   = ??
        CODE:0b68 92 15           MOV        22.5,CY                                                    = ??
@@ -2124,7 +2130,7 @@
        CODE:0b7b 80 11           SJMP       LAB_CODE_0b8e
                              LAB_CODE_0b7d                                   XREF[1]:     CODE:0b73(j)  
        CODE:0b7d bb 33 0c        CJNE       R3,#0x33,LAB_CODE_0b8c
-       CODE:0b80 c2 14           CLR        22.4                                                       = ??
+       CODE:0b80 c2 14           CLR        g_ipc_soft_reset_requested                                 = ??
        CODE:0b82 c2 08           CLR        g_powerswitch_pushed                                       = ??
        CODE:0b84 c2 20           CLR        g_ir_power_button_pressed                                  = ??
        CODE:0b86 c2 0b           CLR        21.3                                                       = ??
@@ -2446,7 +2452,7 @@
        CODE:0d96 22              RET
                              LAB_CODE_0d97                                   XREF[1]:     CODE:0d5b(j)  
        CODE:0d97 c2 3a           CLR        27.2                                                       = ??
-       CODE:0d99 20 14 0a        JB         22.4,LAB_CODE_0da6                                         = ??
+       CODE:0d99 20 14 0a        JB         g_ipc_soft_reset_requested,LAB_CODE_0da6                   = ??
        CODE:0d9c 20 08 18        JB         g_powerswitch_pushed,LAB_CODE_0db7                         = ??
        CODE:0d9f 20 20 26        JB         g_ir_power_button_pressed,LAB_CODE_0dc8                    = ??
        CODE:0da2 20 0b 34        JB         21.3,LAB_CODE_0dd9                                         = ??
@@ -2548,13 +2554,13 @@
        CODE:0e65 92 e0           MOV        ACC.0,CY                                                   = ??
        CODE:0e67 fb              MOV        R3,A
        CODE:0e68 78 ab           MOV        R0,#0xab
-       CODE:0e6a e6              MOV        A,@R0=>DAT_INTMEM_ab                                       = ??
+       CODE:0e6a e6              MOV        A,@R0=>g_ir_last_button_pressed                            = ??
        CODE:0e6b fc              MOV        R4,A
        CODE:0e6c 78 ac           MOV        R0,#0xac
-       CODE:0e6e e6              MOV        A,@R0=>DAT_INTMEM_ac                                       = ??
+       CODE:0e6e e6              MOV        A,@R0=>g_ir_event_r3                                       = ??
        CODE:0e6f fd              MOV        R5,A
        CODE:0e70 78 ad           MOV        R0,#0xad
-       CODE:0e72 e6              MOV        A,@R0=>DAT_INTMEM_ad                                       = ??
+       CODE:0e72 e6              MOV        A,@R0=>g_ir_event_r4                                       = ??
        CODE:0e73 fe              MOV        R6,A
        CODE:0e74 74 01           MOV        A,#0x1
        CODE:0e76 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
@@ -3097,14 +3103,14 @@
        CODE:11b0 02 11 94        LJMP       LAB_CODE_1194
                              LAB_CODE_11b3                                   XREF[1]:     CODE:12d7(j)  
        CODE:11b3 c2 1e           CLR        g_rrod_from_ipc                                            = ??
-       CODE:11b5 20 14 0a        JB         22.4,LAB_CODE_11c2                                         needs to be 0 or we start the
+       CODE:11b5 20 14 0a        JB         g_ipc_soft_reset_requested,LAB_CODE_11c2                   needs to be 0 or we start the
                                                                                                        CPU reset sequence over
        CODE:11b8 c2 29           CLR        25.1                                                       = ??
        CODE:11ba 12 24 42        LCALL      FUN_CODE_2442                                              undefined FUN_CODE_2442()
        CODE:11bd 12 00 63        LCALL      cpu_pwrgd_set                                              undefined cpu_pwrgd_set()
        CODE:11c0 80 5e           SJMP       sysreset_watchdog_go_state_1
                              LAB_CODE_11c2                                   XREF[1]:     CODE:11b5(j)  
-       CODE:11c2 c2 14           CLR        22.4                                                       = ??
+       CODE:11c2 c2 14           CLR        g_ipc_soft_reset_requested                                 = ??
        CODE:11c4 d2 0f           SETB       g_hwreset_sm_enable                                        request system reset
        CODE:11c6 02 12 52        LJMP       sysreset_watchdog_go_state_11
                              LAB_CODE_11c9                                   XREF[1]:     CODE:12da(j)  
@@ -4814,15 +4820,15 @@
        CODE:1b9a e6              MOV        A,@R0=>DAT_INTMEM_b8                                       = ??
        CODE:1b9b 30 56 0b        JNB        2a.6,LAB_CODE_1ba9                                         = ??
        CODE:1b9e 78 ab           MOV        R0,#0xab
-       CODE:1ba0 f6              MOV        @R0=>DAT_INTMEM_ab,A                                       = ??
+       CODE:1ba0 f6              MOV        @R0=>g_ir_last_button_pressed,A                            = ??
        CODE:1ba1 78 aa           MOV        R0,#0xaa
        CODE:1ba3 76 07           MOV        @R0=>DAT_INTMEM_aa,#0x7                                    = ??
        CODE:1ba5 d2 3c           SETB       g_ir_ipc_event_waiting                                     = ??
        CODE:1ba7 80 84           SJMP       hana_sm_go_state_0
                              LAB_CODE_1ba9                                   XREF[1]:     CODE:1b9b(j)  
-       CODE:1ba9 a2 14           MOV        CY,22.4                                                    = ??
+       CODE:1ba9 a2 14           MOV        CY,g_ipc_soft_reset_requested                              = ??
        CODE:1bab 72 e0           ORL        CY,ACC.0                                                   = ??
-       CODE:1bad 92 14           MOV        22.4,CY                                                    = ??
+       CODE:1bad 92 14           MOV        g_ipc_soft_reset_requested,CY                              = ??
        CODE:1baf a2 0a           MOV        CY,g_ext_pwr_on_active                                     = ??
        CODE:1bb1 72 e2           ORL        CY,ACC.2                                                   = ??
        CODE:1bb3 92 0a           MOV        g_ext_pwr_on_active,CY                                     = ??
@@ -4870,11 +4876,11 @@
        CODE:1bec 74 07           MOV        A,#0x7
        CODE:1bee 78 81           MOV        R0,#0x81
        CODE:1bf0 76 0d           MOV        @R0=>DAT_INTMEM_81,#0xd                                    = ??
-       CODE:1bf2 80 1e           SJMP       LAB_CODE_1c12
+       CODE:1bf2 80 1e           SJMP       ir_handle_button_press
                              LAB_CODE_1bf4                                   XREF[1]:     CODE:1bd6(j)  
        CODE:1bf4 78 80           MOV        R0,#0x80
        CODE:1bf6 76 00           MOV        @R0=>DAT_INTMEM_80,#0x0                                    = ??
-       CODE:1bf8 80 5b           SJMP       LAB_CODE_1c55
+       CODE:1bf8 80 5b           SJMP       ir_send_button_press_to_ipc
                              LAB_CODE_1bfa                                   XREF[1]:     CODE:1bd3(j)  
        CODE:1bfa 30 00 07        JNB        20.0,LAB_CODE_1c04
        CODE:1bfd c2 00           CLR        20.0
@@ -4887,13 +4893,14 @@
        CODE:1c08 20 e7 02        JB         ACC.7,LAB_CODE_1c0d                                        = ??
        CODE:1c0b b2 d5           CPL        F0                                                         = ??
                              LAB_CODE_1c0d                                   XREF[1]:     CODE:1c08(j)  
-       CODE:1c0d 20 d5 02        JB         F0,LAB_CODE_1c12                                           = ??
+       CODE:1c0d 20 d5 02        JB         F0,ir_handle_button_press                                  = ??
        CODE:1c10 b2 01           CPL        20.1                                                       = ??
-                             LAB_CODE_1c12                                   XREF[2]:     CODE:1bf2(j), CODE:1c0d(j)  
+                             ir_handle_button_press                          XREF[2]:     CODE:1bf2(j), CODE:1c0d(j)  
        CODE:1c12 30 02 03        JNB        20.2,LAB_CODE_1c18                                         = ??
        CODE:1c15 20 d5 54        JB         F0,return_1c6c                                             = ??
                              LAB_CODE_1c18                                   XREF[1]:     CODE:1c12(j)  
-       CODE:1c18 c2 02           CLR        20.2                                                       = ??
+       CODE:1c18 c2 02           CLR        20.2                                                       code ends up here if an IR
+                                                                                                       button has been pressed
        CODE:1c1a ba 0c 06        CJNE       R2,#0xc,LAB_CODE_1c23
        CODE:1c1d 20 d5 4c        JB         F0,return_1c6c                                             = ??
        CODE:1c20 d2 20           SETB       g_ir_power_button_pressed                                  = ??
@@ -4910,7 +4917,7 @@
        CODE:1c35 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c37 22              RET
                              LAB_CODE_1c38                                   XREF[1]:     CODE:1c2f(j)  
-       CODE:1c38 80 1b           SJMP       LAB_CODE_1c55
+       CODE:1c38 80 1b           SJMP       ir_send_button_press_to_ipc
                              LAB_CODE_1c3a                                   XREF[1]:     CODE:1c2c(j)  
        CODE:1c3a ba 0d 06        CJNE       R2,#0xd,LAB_CODE_1c43
        CODE:1c3d 20 d5 2c        JB         F0,return_1c6c                                             = ??
@@ -4922,21 +4929,21 @@
        CODE:1c49 d2 21           SETB       g_ir_x_button_pressed                                      = ??
        CODE:1c4b 22              RET
                              LAB_CODE_1c4c                                   XREF[1]:     CODE:1c43(j)  
-       CODE:1c4c ba 2a 06        CJNE       R2,#0x2a,LAB_CODE_1c55
+       CODE:1c4c ba 2a 06        CJNE       R2,#0x2a,ir_send_button_press_to_ipc
        CODE:1c4f 20 d5 1a        JB         F0,return_1c6c                                             = ??
        CODE:1c52 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c54 22              RET
-                             LAB_CODE_1c55                                   XREF[3]:     CODE:1bf8(j), CODE:1c38(j), 
+                             ir_send_button_press_to_ipc                     XREF[3]:     CODE:1bf8(j), CODE:1c38(j), 
                                                                                           CODE:1c4c(j)  
        CODE:1c55 8a f0           MOV        B,R2
        CODE:1c57 78 ab           MOV        R0,#0xab
-       CODE:1c59 a6 f0           MOV        @R0=>DAT_INTMEM_ab,B                                       = ??
+       CODE:1c59 a6 f0           MOV        @R0=>g_ir_last_button_pressed,B                            = ??
        CODE:1c5b 8b f0           MOV        B,R3
        CODE:1c5d 78 ac           MOV        R0,#0xac
-       CODE:1c5f a6 f0           MOV        @R0=>DAT_INTMEM_ac,B                                       = ??
+       CODE:1c5f a6 f0           MOV        @R0=>g_ir_event_r3,B                                       = ??
        CODE:1c61 8c f0           MOV        B,R4
        CODE:1c63 78 ad           MOV        R0,#0xad
-       CODE:1c65 a6 f0           MOV        @R0=>DAT_INTMEM_ad,B                                       = ??
+       CODE:1c65 a6 f0           MOV        @R0=>g_ir_event_r4,B                                       = ??
        CODE:1c67 78 aa           MOV        R0,#0xaa
        CODE:1c69 f6              MOV        @R0=>DAT_INTMEM_aa,A                                       = ??
        CODE:1c6a d2 3c           SETB       g_ir_ipc_event_waiting                                     = ??
@@ -5427,7 +5434,7 @@
        CODE:1f55 70 26           JNZ        LAB_CODE_1f7d
        CODE:1f57 20 04 6a        JB         20.4,LAB_CODE_1fc4                                         = ??
        CODE:1f5a 20 03 67        JB         g_ipc_requested_reboot,LAB_CODE_1fc4                       = ??
-       CODE:1f5d 20 14 22        JB         22.4,LAB_CODE_1f82                                         = ??
+       CODE:1f5d 20 14 22        JB         g_ipc_soft_reset_requested,LAB_CODE_1f82                   = ??
        CODE:1f60 20 08 1f        JB         g_powerswitch_pushed,LAB_CODE_1f82                         = ??
        CODE:1f63 20 20 1c        JB         g_ir_power_button_pressed,LAB_CODE_1f82                    = ??
        CODE:1f66 20 0b 19        JB         21.3,LAB_CODE_1f82                                         = ??
@@ -5480,7 +5487,7 @@
                                                                                           CODE:1fb6(j)  
        CODE:1fbc 02 1f 27        LJMP       LAB_CODE_1f27
                              LAB_CODE_1fbf                                   XREF[2]:     CODE:1f80(j), CODE:1f82(j)  
-       CODE:1fbf 20 14 20        JB         22.4,LAB_CODE_1fe2                                         = ??
+       CODE:1fbf 20 14 20        JB         g_ipc_soft_reset_requested,LAB_CODE_1fe2                   = ??
        CODE:1fc2 80 00           SJMP       LAB_CODE_1fc4
                              LAB_CODE_1fc4                                   XREF[4]:     CODE:1ef6(j), CODE:1f57(j), 
                                                                                           CODE:1f5a(j), CODE:1fc2(j)  
@@ -5497,7 +5504,7 @@
        CODE:1fd5 75 66 00        MOV        g_persistent_memcell_a,#0x0                                = ??
        CODE:1fd8 75 67 00        MOV        g_persistent_memcell_b,#0x0                                = ??
        CODE:1fdb 75 62 16        MOV        g_power_up_cause,#0x16                                     undocumented
-       CODE:1fde d2 14           SETB       22.4                                                       = ??
+       CODE:1fde d2 14           SETB       g_ipc_soft_reset_requested                                 = ??
        CODE:1fe0 80 03           SJMP       LAB_CODE_1fe5
                              LAB_CODE_1fe2                                   XREF[1]:     CODE:1fbf(j)  
        CODE:1fe2 75 62 31        MOV        g_power_up_cause,#0x31                                     undocumented
@@ -5841,9 +5848,9 @@
        CODE:2228 64 62           XRL        A,#0x62
        CODE:222a 60 09           JZ         LAB_CODE_2235                                              ignore if tray state is closed
        CODE:222c 75 65 00        MOV        DAT_INTMEM_65,#0x0                                         = ??
-       CODE:222f a2 14           MOV        CY,22.4                                                    = ??
+       CODE:222f a2 14           MOV        CY,g_ipc_soft_reset_requested                              = ??
        CODE:2231 72 29           ORL        CY,25.1                                                    = ??
-       CODE:2233 92 14           MOV        22.4,CY                                                    = ??
+       CODE:2233 92 14           MOV        g_ipc_soft_reset_requested,CY                              = ??
                              LAB_CODE_2235                                   XREF[1]:     CODE:222a(j)  
        CODE:2235 78 a8           MOV        R0,#0xa8
        CODE:2237 e6              MOV        A,@R0=>g_tray_sm_state                                     = ??
@@ -6079,7 +6086,7 @@
        CODE:239b 75 88 00        MOV        TCON,#0x0                                                  = ??
        CODE:239e 75 98 00        MOV        SCON,#0x0                                                  = ??
        CODE:23a1 75 95 88        MOV        DAT_SFR_95,#0x88                                           = ??
-       CODE:23a4 c2 6b           CLR        2d.3                                                       = ??
+       CODE:23a4 c2 6b           CLR        g_usb_front_top_plugged                                    = ??
        CODE:23a6 c2 6c           CLR        2d.4                                                       = ??
        CODE:23a8 c2 6d           CLR        2d.5                                                       = ??
        CODE:23aa 75 1f 00        MOV        BANK3_R7,#0x0                                              = ??
@@ -6933,7 +6940,8 @@
        CODE:264c d2 61           SETB       2c.1                                                       = ??
        CODE:264e d2 60           SETB       2c.0                                                       = ??
        CODE:2650 75 10 00        MOV        i2c_statemachine_state,#0x0                                reset I2C irq handler state
-       CODE:2653 d2 d9           SETB       CCF.1                                                      = ??
+       CODE:2653 d2 d9           SETB       CCF.1                                                      seems this will trigger an IRQ
+                                                                                                       very shortly
        CODE:2655 53 bc f7        ANL        DAT_SFR_bc,#0xf7                                           = ??
                              LAB_CODE_2658                                   XREF[2]:     i2c_try_continue_commandlist_exe
                                                                                           i2c_try_continue_commandlist_exe
@@ -7342,7 +7350,8 @@
        CODE:2899 c4              SWAP       A
        CODE:289a 54 0f           ANL        A,#0xf
        CODE:289c f5 12           MOV        BANK2_R2,A                                                 num bytes
-                                                                                                       (up to 15? that's buggy behavior)
+                                                                                                       (invalid size should have been
+                                                                                                       handled by now)
        CODE:289e 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:28a1 f5 14           MOV        BANK2_R4,A                                                 = ??
        CODE:28a3 53 14 0f        ANL        BANK2_R4,#0xf                                              = ??
@@ -7496,25 +7505,16 @@
        CODE:2949 e3              ??         E3h                                                        reg 0xE3
        CODE:294a 84 36 f6 66     int        8436F666h                                                  data 84 36 F6 66
        CODE:294e 03              ??         03h                                                        end commandlist
-       CODE:294f 00              ??         00h
+       CODE:294f 00              ??         00h                                                        +0x48
        CODE:2950 0b              ??         0Bh
        CODE:2951 e3              ??         E3h
-       CODE:2952 0f              ??         0Fh
-       CODE:2953 ff              ??         FFh
-       CODE:2954 ff              ??         FFh
-       CODE:2955 ff              ??         FFh
+       CODE:2952 0f ff ff ff     int        FFFFFFFh
        CODE:2956 0b              ??         0Bh
        CODE:2957 d9              ??         D9h
-       CODE:2958 00              ??         00h
-       CODE:2959 00              ??         00h
-       CODE:295a 00              ??         00h
-       CODE:295b 08              ??         08h
+       CODE:2958 00 00 00 08     int        8h
        CODE:295c 0b              ??         0Bh
        CODE:295d df              ??         DFh
-       CODE:295e 00              ??         00h
-       CODE:295f 00              ??         00h
-       CODE:2960 00              ??         00h
-       CODE:2961 00              ??         00h
+       CODE:295e 00 00 00 00     int        0h
        CODE:2962 03              ??         03h
        CODE:2963 06              ??         06h                                                        + 0x5C
                                                                                                        (these instructions do nothing,
@@ -7673,7 +7673,7 @@
                                                                                                        enable/uninhibit to write 0?
        CODE:29e2 75 dd e1        MOV        CCAPM3,#0xe1                                               = ??
        CODE:29e5 75 de 83        MOV        CCAPM4,#0x83                                               = ??
-       CODE:29e8 75 d8 b0        MOV        CCON,#0xb0                                                 = ??
+       CODE:29e8 75 d8 b0        MOV        CCON,#10110000b                                            = ??
        CODE:29eb 75 88 00        MOV        TCON,#0x0                                                  = ??
        CODE:29ee 75 95 88        MOV        DAT_SFR_95,#0x88                                           = ??
        CODE:29f1 22              RET
@@ -9214,7 +9214,7 @@
                                                                                           CODE:0270(W), CODE:027b(R), 
                                                                                           CODE:028d(W), CODE:0295(W)  
        INTMEM:1b                 undefined1 ??
-                             BANK3_R4                                        XREF[6]:     usb_powerevent_check:065e(W), 
+                             g_usb_front_top_recheck_timer                   XREF[6]:     usb_powerevent_check:065e(W), 
                                                                                           usb_powerevent_check:0666(RW), 
                                                                                           usb_powerevent_check:0682(W), 
                                                                                           usb_powerevent_check:068d(RW), 
@@ -9941,13 +9941,13 @@
                              DAT_INTMEM_aa                                   XREF[3]:     ipc_handle_async_events:0e5a(R), 
                                                                                           CODE:1ba3(W), ir_update:1c69(W)  
        INTMEM:aa                 undefined1 ??
-                             DAT_INTMEM_ab                                   XREF[3]:     ipc_handle_async_events:0e6a(R), 
+                             g_ir_last_button_pressed                        XREF[3]:     ipc_handle_async_events:0e6a(R), 
                                                                                           CODE:1ba0(W), ir_update:1c59(W)  
        INTMEM:ab                 undefined1 ??
-                             DAT_INTMEM_ac                                   XREF[2]:     ipc_handle_async_events:0e6e(R), 
+                             g_ir_event_r3                                   XREF[2]:     ipc_handle_async_events:0e6e(R), 
                                                                                           ir_update:1c5f(W)  
        INTMEM:ac                 undefined1 ??
-                             DAT_INTMEM_ad                                   XREF[2]:     ipc_handle_async_events:0e72(R), 
+                             g_ir_event_r4                                   XREF[2]:     ipc_handle_async_events:0e72(R), 
                                                                                           ir_update:1c65(W)  
        INTMEM:ad                 undefined1 ??
                              g_rol_ipc_led_overrides                         XREF[3]:     FUN_CODE_0aca:0c90(W), 
@@ -10594,7 +10594,7 @@
                                                                                           CODE:1287(R), CODE:1f82(R), 
                                                                                           CODE:1f97(R)  
          BITS:13                 ??         ??
-                             22.4                                            XREF[12]:    FUN_CODE_0aca:0b63(W), 
+                             g_ipc_soft_reset_requested                      XREF[12]:    FUN_CODE_0aca:0b63(W), 
                                                                                           FUN_CODE_0aca:0b80(W), 
                                                                                           ipc_handle_async_events:0d99(R), 
                                                                                           CODE:11b5(R), CODE:11c2(W), 
@@ -11032,7 +11032,7 @@
                              g_argon_serialdata_last_bit                     XREF[4]:     CODE:055e(W), CODE:05ea(W), 
                                                                                           CODE:05f6(W), CODE:060b(R)  
          BITS:6a                 ??         ??
-                             2d.3                                            XREF[4]:     usb_powerevent_check:065c(W), 
+                             g_usb_front_top_plugged                         XREF[4]:     usb_powerevent_check:065c(W), 
                                                                                           usb_powerevent_check:0663(R), 
                                                                                           usb_powerevent_check:0669(W), 
                                                                                           FUN_CODE_2383:23a4(W)  
@@ -11047,7 +11047,7 @@
                                                                                           usb_powerevent_check:0719(W), 
                                                                                           FUN_CODE_2383:23a8(W)  
          BITS:6d                 ??         ??
-                             2d.6                                            XREF[3]:     usb_powerevent_check:066f(W), 
+                             g_usb_front_top_button_last_poll                XREF[3]:     usb_powerevent_check:066f(W), 
                                                                                           usb_powerevent_check:0675(R), 
                                                                                           usb_powerevent_check:0690(RW)  
          BITS:6e                 ??         ??
@@ -11059,7 +11059,7 @@
                                                                                           usb_powerevent_check:0725(R), 
                                                                                           usb_powerevent_check:0740(RW)  
          BITS:70                 ??         ??
-                             2e.1                                            XREF[4]:     usb_powerevent_check:066b(W), 
+                             g_usb_front_top_button_maybe_pressed            XREF[4]:     usb_powerevent_check:066b(W), 
                                                                                           usb_powerevent_check:0678(R), 
                                                                                           usb_powerevent_check:067e(W), 
                                                                                           usb_powerevent_check:0692(W)  
@@ -11074,7 +11074,7 @@
                                                                                           usb_powerevent_check:072e(W), 
                                                                                           usb_powerevent_check:0742(W)  
          BITS:73                 ??         ??
-                             2e.4                                            XREF[3]:     usb_powerevent_check:0680(W), 
+                             g_usb_front_top_button_maybe_debounced          XREF[3]:     usb_powerevent_check:0680(W), 
                                                                                           usb_powerevent_check:0687(R), 
                                                                                           usb_powerevent_check:06a0(W)  
          BITS:74                 ??         ??

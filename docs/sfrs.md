@@ -95,7 +95,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0D4h | ???
 | 0D5h | CPU-to-SMC IPC outbox, data
 | 0D6h | CPU-to-SMC IPC outbox, control
-| 0D7h | USB gamepad status(?), channel 1
+| 0D7h | USB presence detect/powerup event detect, channel 1
 | 0D8h | I2C status/control bits (bit 0 = rx/tx next byte?, bit 1 = start I2C/ack IRQ?, bit 2 = error?, bit 3 = ???)
 | 0D9h | I2C ??? (used in IRQ handler for some sort of error detection)
 | 0DAh | I2C rx/tx byte
@@ -133,7 +133,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0FAh |
 | 0FBh |
 | 0FCh | ???
-| 0FDh | USB gamepad status(?), channel 2
+| 0FDh | USB presence detect/powerup event detect, channel 2
 | 0FEh | ??? 
 | 0FFh | Watchdog? (write 0 to kick)
 
