@@ -88,7 +88,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0CDh | ???
 | 0CEh | ???
 | 0CFh | ???
-| 0D0h | ???
+| 0D0h | 8051 standard flags
 | 0D1h | ???
 | 0D2h | ???
 | 0D3h | ???
@@ -104,7 +104,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0DDh | I2C (set to 0xE1 on handover)
 | 0DEh | I2C (set to 0x83 on handover)
 | 0DFh |
-| 0E0h |
+| 0E0h | 8051 accumulator (A) register
 | 0E1h | CPU-to-SMC IPC inbox, data
 | 0E2h | CPU-to-SMC IPC inbox, control
 | 0E3h | SFCX: Configuration register, bits 0-7
@@ -120,11 +120,11 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0EDh | SFCX: Address register, bits 31-24 (MSB)
 | 0EEh | SFCX: Status register
 | 0EFh | Flash controller? (TODO)
-| 0F0h | 
-| 0F1h | SFCX: Data register, bits 7-0 (LSB)
-| 0F2h | SFCX: Data register, bits 15-8
-| 0F3h | SFCX: Data register, bits 23-16
-| 0F4h | SFCX: Data register, bits 31-24 (MSB)
+| 0F0h | 8051 register B
+| 0F1h | SFCX: Data register, byte 0
+| 0F2h | SFCX: Data register, byte 1
+| 0F3h | SFCX: Data register, byte 2
+| 0F4h | SFCX: Data register, byte 3
 | 0F5h | SFCX: Command register
 | 0F6h |
 | 0F7h |
@@ -134,7 +134,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0FBh |
 | 0FCh | ???
 | 0FDh | USB presence detect/powerup event detect, channel 2
-| 0FEh | ??? 
+| 0FEh | Program to map on watchdog reboot? (0x00 = SRAM?, 0xFF = bootstrap ROM?)
 | 0FFh | Watchdog? (write 0 to kick)
 
 ## KSB EXTMEM registers

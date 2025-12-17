@@ -19,7 +19,6 @@ with some typos corrected. Buttons were pressed from the top to the bottom of th
 
 | Value | Button                           | Special case?
 |-------|----------------------------------|---------------
-| 0x0D  | Start/Windows button             | No
 | 0x0C  | Power                            | Yes 
 | 0x64  | X (guide) button                 | Yes
 | 0x28  | Eject                            | Yes

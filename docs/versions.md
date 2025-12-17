@@ -68,7 +68,7 @@ TODO
 
 ### Winchester
 
-- IR driver code seems to be left in
+- IR code has been left in even though Winchester doesn't have an IR receiver
 
 ## Board compatibility
 

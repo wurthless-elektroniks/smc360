@@ -8,10 +8,13 @@ special doorknock protocol which is confusing to document, but I'll give it my b
 
 - Wait for a device to be plugged in
 - While that device is plugged in, read the doorknock bit
-- If the bit is 1 on subsequent reads, then it must toggle within 50 ms or we throw this attempt out
+- The doorknock bit must be high for at least 2 ms and no more than 50 ms or we throw this attempt out
 
-The doorknock bit must then toggle every millisecond for the next 100 ms. If it does, then the device
-has requested a powerup, and the SMC obliges.
+The doorknock bit must then toggle every millisecond (or be zero, not sure which) for the next 100 ms.
+If it does, then the device has requested a powerup, and the SMC obliges.
+
+This is likely a variant on the standard USB wake-from-standby procedure (read the USB specs), but
+that has to be confirmed...
 
 ## Front port
 

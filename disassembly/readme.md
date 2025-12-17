@@ -1,3 +1,6 @@
 # SMC disassembly
 
 Straight outta Ghidra, all work in progress, don't expect them to be complete or entirely accurate...
+
+Falcon has the most work done to it because that was the first one I picked. Much of that's transferrable to other
+fats and Trinity, the KSB systems will be a different beast...
