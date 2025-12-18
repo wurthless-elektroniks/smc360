@@ -327,12 +327,15 @@ Notes:
 - If the RTC wakeup alarm was set before calling this command, it will be disabled, and
   you will need to set the alarm again to re-enable it.
 
-### 0x88 - Set fans
+### 0x88 - Set thermal modes
 
 Inputs:
 
 0. Command `0x88`
-1. Bit field. bit 0 = TODO, bit 1 = force fans to run at full speed
+1. Bit field. bit 0 = TODO, bit 1 = force thermal protection mode
+
+When forcing thermal protection mode, the SMC will run the fans at full speed for 5 seconds,
+then the system will power down with RRoD 0030 displayed on the front panel.
 
 ### 0x89 - Set fan 1 target speed override
 
@@ -468,8 +471,6 @@ Inputs:
 0. Command `0x9C`
 1. Persistent memory cell value 1 (e.g., in Falcon at DAT_INTMEM_66)
 2. Persistent memory cell value 2 (e.g., in Falcon at DAT_INTMEM_67)
-
-Outputs: Nothing
 
 ### 0x9D - Write 12 bytes to SMC memory debug buffer A
 

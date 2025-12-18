@@ -88,7 +88,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0CDh | ???
 | 0CEh | ???
 | 0CFh | ???
-| 0D0h | 8051 standard flags
+| 0D0h | 8051 PSW (program status word; standard flags)
 | 0D1h | ???
 | 0D2h | ???
 | 0D3h | ???
