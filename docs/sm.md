@@ -33,13 +33,13 @@ Every 20 ms:
 - Update DVD tray status
 - Check if temperature sensor is returning values via I2C and RRoD if it isn't
 - Check temperature sensors and go into overheat protection if thermal protection trips; otherwise, update fan speeds
-- Update debug LED logic
+- Update debug LED logic. Behavior documented [here](dbgleds.md).
 - Check various power-on events and act on them
-- If powering up, run the power-up sequence
+- If powering up, run the power-up sequence. Behavior documented [here](powerup.md).
 - If coming out of reset, make sure all devices reset and that GetPowerUpCause arrives from the CPU in time,
-  trying several times until finally giving up with a RRoD
-- If resetting, run the hardware reset sequence
-- If powering down, run the power-down sequence
+  trying several times until finally giving up with a RRoD. Behavior documented [here](resetwatchdog.md).
+- If resetting, run the hardware reset sequence. Behavior documented [here](reset.md).
+- If powering down, run the power-down sequence. Behavior documented [here](powerdown.md).
 
 In a loop as fast as possible:
 - Handle SMC-to-HANA communication over I2C (convoluted and not fun to disassemble)

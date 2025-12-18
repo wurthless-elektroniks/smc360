@@ -18,26 +18,39 @@ update them, the actual functions that turn those LEDs on or off are stubbed out
 Two quick notes about DBG_LED3:
 - This is actually strobed in the reset watchdog statemachine; the debug LED statemachine never
   accesses this.
-- Some SMC versions (Falcon for sure) have buggy behavior that assumes the LED still exists there and
-  attempts to strobe it upon releasing GPU reset. (TODO: was this bug ever fixed?)
+- Although the LED was removed after Xenon, Zephyr and the other fat SMCs have buggy behavior
+  that assumes the LED still exists there and attempts to strobe it upon releasing GPU reset.
+  This bug was eventually fixed on Trinity.
+
+## The state machine
+
+Locations:
+- Falcon: 0x13FC
+
+This is a simple two-state state machine.
+
+- State 0 updates the LEDs in this order: boot status, boot attempt, PCIe link status. Then it
+  sets up the 100 ms delay and goes to state 1.
+- State 1 just runs the delay timer so the LEDs advance every 100 ms; when that timer expires, we
+  go back to state 0.
 
 ## Blink patterns
 
 Note that when blink patterns are updated, the current position isn't automatically reset, so you will
 get some misleading results.
 
-### DBG_LED2 (Xenon), DBG_LED0 (all others)
+### DBG_LED2 (Xenon), DBG_LED0 (all others): boot status
 
 - 10000000 (one short blink): something powered the system up; checking what it is
 - 11111110 (one long blink): not sure yet, TODO
 - 10101010 (constant blinking): all normal here
 
-### DBG_LED0 (Xenon)
+### DBG_LED0 (Xenon): PCIe link issue
 
 - 11110000 (slow flashing): PCIe link status register bit 4 not set
 - 11111111 (stays lit): PCIe link status register bit 4 is set but bit 5 isn't
 
-### DBG_LED1 (Xenon)
+### DBG_LED1 (Xenon): Boot attempt
 
 - 10000000 (one blink): Boot attempt 1 failed
 - 10100000 (two blinks): Boot attempt 2 failed
