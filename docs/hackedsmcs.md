@@ -27,9 +27,96 @@ Evolution of the pattern between different SMC revisions:
 - Corona:     `05 3D E5 3D B4 05 1E`
 - Winchester: `05 3D E5 3D B4 05 1E`
 
-## More elaborate hacked SMCs
+## JTAG
 
-JTAG, RGH3 and others that are actively used in glitch/software exploits are to be documented in more detail later.
+This is probably the most important SMC hack ever made, simply because of how much of a joke it made of Microsoft's efforts
+to secure the 360. The code was written by Tiros, which would normally make him a hero, except for the fact that, like cOz
+and a lot of the early 360 scene programmers, he hoarded code and knowledge which makes things annoying for us fifteen years
+later.
+
+First, a primer on the JTAG exploit: it's basically a self-booting King Kong exploit. The CPU normally runs encrypted code
+that can't be tampered with, except for on two kernel versions, where a completely boneheaded vulnerability compromised that and
+allowed arbitrary code execution in the hypervisor. The King Kong exploit used a shader to exploit the hypervisor, but that
+was patched. Eventually tmbinc found out how to use the GPU's JTAG port to run attacks on vulnerable kernels, but that required
+specialized hardware, so hackers ported the attack to the SMC.
+
+Our goal here is to get a payload into SDRAM so that the hypervisor runs code it's not supposed to. On the SMC side
+we have access to the SFCX flash controller, but several of its registers aren't accessible, especially the ones that
+can be used to setup NAND-to-SDRAM DMA transfers. The SMC's task will be to program those registers over JTAG, then start
+the DMA through the SFCX command register.
+
+This documentation applies to the Xenon patches.
+
+The JTAG SMC was written with the assumption that all four pins on the debug LED header would be used for the attack,
+so when reading the code you will see accesses to pins that are unused with the common two-wire/diode scheme.
+
+The remapped I/Os are:
+
+| I/O    | Normal pin | JTAG purpose 
+|--------|------------|--------------------------------------------------------
+| 0C0h.0 | DBG_LED0   | GPU_TDI
+| 0C0h.1 | DBG_LED1   | GPU_TMS
+| 0C0h.2 | DBG_LED2   | GPU_TRST (obsolete)
+| 0C0h.3 | DBG_LED3   | GPU_TCLK (tied to the JTAG port on the PCB!!)
+
+Things to note here:
+- GPU_TRST is used in the old three-wire JTAG scheme, but in the two-wire scheme it's simply tied to
+  /GPU_SCAN_BUFF_EN_N.
+- Yes, DBG_LED3 really is tied to the JTAG port on the PCB. Who knows why Microsoft did this, but either
+  way, it means one less wire for us to solder.
+
+A bunch of custom code is dropped at 0x2DC0~, and the following patches are made.
+
+There is a nonsensical hook installed at 0x0775, which causes execution to jump down all the way to a handler at
+0x2DDD, but all it does is set the stack pointer to 0x7C (same as on a clean Xenon SMC), and continues execution
+as normal. This is likely a development leftover.
+
+Since the SMC needs to repurpose the debug LED header, the mainloop call to the debug LED statemachine (at 0x7B6)
+is NOPed out.
+
+The real fun begins just before the CPU is brought out of reset. A ljmp is placed at 0x1148 which sends execution
+to the main function at 0x2DE3. The gist of it is that, if the CPU is not running (which it should be; probably
+leftover sanity check behavior), the JTAG bus is initialized, then a function at 0x2F3B programs the JTAG port.
+After that, we can finally release the CPU from reset and let the boot continue as normal.
+
+The code written over the JTAG bus is:
+```
+d0 00 00 1b 00 02 01 00
+
+d0 00 00 1b 00 02 01 00
+
+d0 14 00 13 ea 00 c0 00 - init SFCX PCI BAR
+
+d0 14 00 07 00 00 00 06
+
+d0 15 00 13 ea 00 10 00 - init southbridge/SMC PCI BAR
+
+d0 15 00 07 00 00 00 06
+
+ea 00 c0 0f 00 00 02 00 - set SFCX_ADDRESS to 0x200, where the DMA payload lives in (logical) flash space
+
+ea 00 c0 1f 00 13 03 60 - set SFCX_DPHYSADD to the idle thread context
+                          which will redirect execution to our custom code
+
+ea 00 c0 23 00 00 20 80 - set SFCX_MPHYSADD to 0x2080, which points to hypervisor syscall 0x46
+```
+
+When IPC command 0x04 arrives, that means the kernel is far enough into the boot process that it is now trying to
+grab the current time from the RTC. The IPC handler is hooked so that any attempt to request the system time redirectsz
+to the following:
+
+- Wait for some operation to finish.
+- If the GPU_TRST GPIO line was left high, then write 0x07 to SFR 0F5h (SFCX command register), which tells the flash
+  controller to start the NAND-to-SDRAM DMA. Once that's sent, pull that GPIO line low.
+- Clear the JTAG state and head back to the normal IPC code to finish handling the IPC command.
+
+This code demonstrates a lot of low-level knowledge of the Xbox 360's boot process, including stuff that would normally be
+done by hwinit. This is basically confirmed by [hack.txt](https://github.com/gligli/tools/blob/master/imgbuild/hack.txt).
+But, because this is the 360 scene we're talking about, the actual details of hwinit and how it worked were left undocumented
+for fifteen god damn years, when Mate Kukri had to reinvent the wheel with his hwinit disassembler. Great job guys!!!
+
+One additional bit of lameness: the Glitch2 xenon.ecc in J-Runner with Extras reuses this SMC code, but it's been patched to
+reboot infinitely. I mean, the normal Xenon v2/1.51 code was right there...
 
 ## CR4
 
@@ -98,8 +185,8 @@ times out and reboots. Naturally, the scene picked the path of least resistance,
 timeouts so the SMC starts the next boot attempt sooner.
 
 However, there were two better solutions that were not considered or investigated:
-- hwinit sends SMC command 0x12 before SDRAM training begins. This was actually documented by Free60, although in
-  a vague and incorrect manner, saying that some sort of handshake happens during hwinit.
+- hwinit sends SMC command 0x12 before SDRAM training begins. This was documented in the JTAG hack.txt all the way
+  back in 2009, although in a vague and incorrect manner, saying that some sort of handshake happens during hwinit.
   Had this been used, SMC+ could have been maybe twice as fast as it was.
 
 - The SMC isn't actually monitoring the boot process at all, despite any claim that SMC+ provides some sort of
