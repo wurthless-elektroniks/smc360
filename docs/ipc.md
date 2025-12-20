@@ -152,6 +152,7 @@ The fan target speed will always be the one computed by the SMC; it doesn't refl
 ### 0x0A - Get DVD tray state
 
 Input bytes:
+
 0. Command `0x0A`
 
 Output bytes:
@@ -173,7 +174,38 @@ These states will also be signalled asynchronously by the SMC (see documentation
 
 ### 0x0F - Get A/V pack status
 
-TODO
+Input bytes:
+
+0. Command `0x0F`
+
+Output bytes:
+
+0. Command `0x0F`
+1. A/V pack state as a bitfield
+
+Bits 0 and 1 are DDC data and clock pin statuses respectively. The ANA/HANA takes care of reading the
+DDC, so it's not really clear why they'd be exposed to the CPU. Winchester will always return 0 for
+these two bits.
+
+Bits 2-4 are tied to AV_MODE0-2 on the A/V connector. The A/V pack device types
+are as follows (stolen from [here](https://gamesx.com/wiki/doku.php?id=av:xbox360av), **this may be wrong**):
+
+| AV_MODE2 (ID2) | AV_MODE1 (ID1) | AV_MODE0 (ID0) | Bits  | Hex  | What's inserted             |
+|----------------|----------------|----------------|-------|------|-----------------------------|
+| High           | High           | High           | `111` | `1c` | Nothing                     |
+| High           | High           | Low            | `110` | `18` | VGA                         |
+| High           | Low            | High           | `101` | `14` | Composite cable             |
+| High           | Low            | Low            | `100` | `10` | TOSLINK/RCA audio adapter   |
+| Low            | High           | High           | `011` | `0c` | Component cable, HDTV mode  |
+| Low            | High           | Low            | `010` | `08` | S-video                     |
+| Low            | Low            | High           | `001` | `04` | SCART (RGB)                 |
+| Low            | Low            | Low            | `000` | `00` | Component cable, TV mode    |
+
+Note that Stingray and Winchester only connect AV_PACK1 to the TRS connector, so the only device types
+you will ever (normally) see on those boards are "composite cable" or "nothing".
+
+Bit 6 on HDMI consoles is tied to ANA_VRST_OK on fats. On Trinity, it's tied to SMC_HDMI_HPD. I guess
+that this is the HDMI presence detect bit; libxenon will assume HDMI if this pin is low.
 
 ### 0x11 - I2C transaction
 
@@ -580,6 +612,8 @@ Outputs:
 0. Command `0x83`
 1. Fixed byte `0x40`
 2. New AV pack value
+
+Bits 
 
 ### 0x42 - TODO
 
