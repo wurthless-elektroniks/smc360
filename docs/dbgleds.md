@@ -15,12 +15,10 @@ update them, the actual functions that turn those LEDs on or off are stubbed out
 | DBG_LED2  | DBG_LED0   | Power-up state machine events
 | DBG_LED3  | n/a        | Rapidly pulsed when GPU is released from reset, not normally visible
 
-Two quick notes about DBG_LED3:
-- This is actually strobed in the reset watchdog statemachine; the debug LED statemachine never
-  accesses this.
-- Although the LED was removed after Xenon, Zephyr and the other fat SMCs have buggy behavior
-  that assumes the LED still exists there and attempts to strobe it upon releasing GPU reset.
-  This bug was eventually fixed on Trinity.
+DBG_LED3 on Xenon is tied to the GPU's JTAG port on the GPU_TCLK_R pin. This remains in place
+for all other fats. The SMC code will strobe this line before releasing the GPU from reset,
+and it's not clear why this is needed, because you can patch this out and the system will boot
+without it. This is removed from slims.
 
 ## The state machine
 

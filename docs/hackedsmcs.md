@@ -75,8 +75,8 @@ Since the SMC needs to repurpose the debug LED header, the mainloop call to the 
 is NOPed out.
 
 The real fun begins just before the CPU is brought out of reset. A ljmp is placed at 0x1148 which sends execution
-to the main function at 0x2DE3. The gist of it is that, if the CPU is not running (which it should be; probably
-leftover sanity check behavior), the JTAG bus is initialized, then a function at 0x2F3B programs the JTAG port.
+to the main function at 0x2DE3. The gist of it is that, if the CPU is not running (which should already be the case;
+probably leftover sanity check behavior), the JTAG bus is initialized, then a function at 0x2F3B programs the JTAG port.
 After that, we can finally release the CPU from reset and let the boot continue as normal.
 
 The code written over the JTAG bus is:
@@ -102,7 +102,7 @@ ea 00 c0 23 00 00 20 80 - set SFCX_MPHYSADD to 0x2080, which points to hyperviso
 ```
 
 When IPC command 0x04 arrives, that means the kernel is far enough into the boot process that it is now trying to
-grab the current time from the RTC. The IPC handler is hooked so that any attempt to request the system time redirectsz
+grab the current time from the RTC. The IPC handler is hooked so that any attempt to request the system time redirects
 to the following:
 
 - Wait for some operation to finish.

@@ -29,21 +29,18 @@ TODO
 - First HANA board
 - Function that halts execution now moves past 0x2000 (the SMC bootstrapping ROM is probably mapped before there)
 - Debug LED statemachine keeps most of the Xenon features, but writes to anything other than DBG_LED0 are stubbed out
-- Xenon code that strobes DBG_LED3 when GPU is released from reset was left in by mistake
 - SFR 0FCh is now set to 0x43 for XSB R0 systems (detected using a jumper on I/O signal SB_DETECT)
 
 ### Falcon
 
 - Adds weird debug buffers accessible over IPC
 - Adds checkstop support, although the program doesn't use it to raise any errors
-- Buggy Xenon code that strobes DBG_LED3 still present
 - SFR 0FCh now set to 0x43 always
 
 ### Jasper
 
 - PSB support, with XSB backwards compatibility
 - Reset watchdog statemachine changes
-- Buggy Xenon code that strobes DBG_LED3 still present
 - GetPowerUpCause watchdog timeout shortened from 7000 ms to 5200 ms to account for faster hwinit
 - New sanity check function in reset watchdog statemachine that behaves differently between XSB and PSB boards (at 0x0084)
 - SFRs 097h, 0A9h and 0DFh are now set to 0 when CPU is brought out of reset
@@ -52,7 +49,8 @@ TODO
 
 - RRoD handling code simplified (there also have to be lots of other Boron changes to document)
 - Debug LED statemachine massively cleaned up; no more state tracking for LEDs that were removed ages ago
-- Buggy Xenon leftover code that strobed DBG_LED3 is finally removed
+- The TCLK pin on the GPU's JTAG port is no longer tied to the SMC's GPIO, so it is no longer strobed when the
+  GPU is released from reset
 - Big boy NANDs are still supported, even if no retail Trinity systems ever used anything other than 16mbytes
 - Partial XSB support remains although it's useless as Trinity never shipped with a XSB
 - Fan speed algorithm tables have changed because of the new CGPU fan setup

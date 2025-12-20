@@ -74,16 +74,16 @@ Unchanged through Trinity; massively changed for Corona.
 
 ## 0C0h - Port 3
 
-| Bit    | Ghidra symbol | Xenon    | Zephyr/Falcon/Jasper   | Trinity         | Corona                 | Winchester |
-|--------|---------------|----------|------------------------|-----------------|------------------------|------------|
-| 0C0h.0 | FIFLG.0       | DBG_LED0 | DBG_LED0               | DBG_LED0        | TRAY_STATUS            | TODO       |
-| 0C0h.1 | FIFLG.1       | DBG_LED1 | VREG_V5P0_VMEM_PWRGD   | VREG_V3P3_PWRGD | VREG_CPUCORE_PWRGD     | TODO       |
-| 0C0h.2 | FIFLG.2       | DBG_LED2 | ANA_VRST_OK            | SMC_HDMI_HPD    | SMC_CPU_CHKSTOP_DETECT | TODO       |
-| 0C0h.3 | FIFLG.3       | DBG_LED3 | GPU_TCLK_R             | VREG_V5P0_PWRGD | TRAY_OPEN              | TODO       |
-| 0C0h.4 | FIFLG.4       | DDC_CLK  | HDMI_DDC_CLK           | HDMI_DDC_CLK    | /SB_RST_N              | TODO       |
-| 0C0h.5 | FIFLG.5       | AV_MODE0 | AV_MODE0               | AV_MODE0        | PSU_V12P0_EN           | TODO       |
-| 0C0h.6 | FIFLG.6       | AV_MODE1 | AV_MODE1               | AV_MODE1        | SB_MAIN_PWRGD_R        | TODO       |
-| 0C0h.7 | FIFLG.7       | AV_MODE2 | AV_MODE2               | AV_MODE2        | VREG_CPU_EN            | TODO       |
+| Bit    | Ghidra symbol | Xenon                   | Zephyr/Falcon/Jasper   | Trinity         | Corona                 | Winchester |
+|--------|---------------|-------------------------|------------------------|-----------------|------------------------|------------|
+| 0C0h.0 | FIFLG.0       | DBG_LED0                | DBG_LED0               | DBG_LED0        | TRAY_STATUS            | TODO       |
+| 0C0h.1 | FIFLG.1       | DBG_LED1                | VREG_V5P0_VMEM_PWRGD   | VREG_V3P3_PWRGD | VREG_CPUCORE_PWRGD     | TODO       |
+| 0C0h.2 | FIFLG.2       | DBG_LED2                | ANA_VRST_OK            | SMC_HDMI_HPD    | SMC_CPU_CHKSTOP_DETECT | TODO       |
+| 0C0h.3 | FIFLG.3       | DBG_LED3 and GPU_TCLK_R | GPU_TCLK_R             | VREG_V5P0_PWRGD | TRAY_OPEN              | TODO       |
+| 0C0h.4 | FIFLG.4       | DDC_CLK                 | HDMI_DDC_CLK           | HDMI_DDC_CLK    | /SB_RST_N              | TODO       |
+| 0C0h.5 | FIFLG.5       | AV_MODE0                | AV_MODE0               | AV_MODE0        | PSU_V12P0_EN           | TODO       |
+| 0C0h.6 | FIFLG.6       | AV_MODE1                | AV_MODE1               | AV_MODE1        | SB_MAIN_PWRGD_R        | TODO       |
+| 0C0h.7 | FIFLG.7       | AV_MODE2                | AV_MODE2               | AV_MODE2        | VREG_CPU_EN            | TODO       |
 
 - DBG_LED0-3 on Xenon are left floating externally
 - DBG_LED0 on Zephyr onwards is usually pulled low externally
