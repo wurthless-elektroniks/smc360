@@ -25,9 +25,9 @@ These are NOT listed in their order of operations as they're different between S
 Every 20 ms:
 - Monitor various powergood signals and RRoD if something goes wrong. Function documented [here](vregmon.md).
 - Read /EXT_PWR_ON_N
-- Read power and eject switches
-- Read bind switch (that pairs wireless controllers to the RF board)
-- Read tilt switch
+- Read power and eject switches. Behavior documented [here](inputs.md#powereject-switch).
+- Read bind switch (that pairs wireless controllers to the RF board). Behavior documented [here](inputs.md#bindswitch).
+- Read tilt switch. Behavior documented [here](inputs.md#tiltswitch).
 - Update AUD_CLAMP to mute/unmute audio outputs
 - Read IR receiver
 - Update DVD tray status
