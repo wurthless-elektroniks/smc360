@@ -23,7 +23,7 @@ Most tasks run in 20 ms intervals, but a few others run in "real time" after the
 These are NOT listed in their order of operations as they're different between SMCs.
 
 Every 20 ms:
-- Monitor various powergood signals and RRoD if something goes wrong
+- Monitor various powergood signals and RRoD if something goes wrong. Function documented [here](vregmon.md).
 - Read /EXT_PWR_ON_N
 - Read power and eject switches
 - Read bind switch (that pairs wireless controllers to the RF board)

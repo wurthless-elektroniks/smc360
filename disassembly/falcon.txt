@@ -1420,13 +1420,13 @@
        CODE:06ac 30 e2 4e        JNB        ACC.2,LAB_CODE_06fd                                        = ??
        CODE:06af e5 d7           MOV        A,HPSTAT                                                   = ??
        CODE:06b1 30 e2 49        JNB        ACC.2,LAB_CODE_06fd                                        = ??
-       CODE:06b4 c2 6c           CLR        2d.4                                                       = ??
+       CODE:06b4 c2 6c           CLR        g_usb_front_bottom_plugged                                 = ??
        CODE:06b6 75 1d 64        MOV        BANK3_R5,#0x64                                             = ??
        CODE:06b9 c1 fd           AJMP       LAB_CODE_06fd
                              LAB_CODE_06bb                                   XREF[1]:     CODE:06a7(j)  
-       CODE:06bb 20 6c 0d        JB         2d.4,LAB_CODE_06cb                                         = ??
+       CODE:06bb 20 6c 0d        JB         g_usb_front_bottom_plugged,LAB_CODE_06cb                   = ??
        CODE:06be d5 1d 3c        DJNZ       BANK3_R5,LAB_CODE_06fd                                     = ??
-       CODE:06c1 d2 6c           SETB       2d.4                                                       = ??
+       CODE:06c1 d2 6c           SETB       g_usb_front_bottom_plugged                                 = ??
        CODE:06c3 c2 72           CLR        2e.2                                                       = ??
        CODE:06c5 a2 e3           MOV        CY,ACC.3                                                   = ??
        CODE:06c7 92 6f           MOV        2d.7,CY                                                    = ??
@@ -1468,13 +1468,13 @@
        CODE:0704 30 e4 4e        JNB        ACC.4,LAB_CODE_0755                                        = ??
        CODE:0707 e5 fd           MOV        A,CCAP3H                                                   = ??
        CODE:0709 30 e4 49        JNB        ACC.4,LAB_CODE_0755                                        = ??
-       CODE:070c c2 6d           CLR        2d.5                                                       = ??
+       CODE:070c c2 6d           CLR        g_usb_rear_plugged                                         = ??
        CODE:070e 75 1e 64        MOV        BANK3_R6,#0x64                                             = ??
        CODE:0711 e1 55           AJMP       LAB_CODE_0755
                              LAB_CODE_0713                                   XREF[1]:     CODE:06ff(j)  
-       CODE:0713 20 6d 0d        JB         2d.5,LAB_CODE_0723                                         = ??
+       CODE:0713 20 6d 0d        JB         g_usb_rear_plugged,LAB_CODE_0723                           = ??
        CODE:0716 d5 1e 3c        DJNZ       BANK3_R6,LAB_CODE_0755                                     = ??
-       CODE:0719 d2 6d           SETB       2d.5                                                       = ??
+       CODE:0719 d2 6d           SETB       g_usb_rear_plugged                                         = ??
        CODE:071b c2 73           CLR        2e.3                                                       = ??
        CODE:071d a2 e5           MOV        CY,ACC.5                                                   = ??
        CODE:071f 92 70           MOV        2e.0,CY                                                    = ??
@@ -1599,7 +1599,7 @@
        CODE:07ea 78 7d           MOV        R0,#DAT_INTMEM_7d                                          zero 0x7D ~ 0x9A
        CODE:07ec 7a 1d           MOV        R2,#0x1d
        CODE:07ee 12 2c dc        LCALL      zero_memory_range                                          undefined zero_memory_range()
-       CODE:07f1 78 2f           MOV        R0,#0x2f                                                   zero 0x2F ~ 0x35
+       CODE:07f1 78 2f           MOV        R0,#DAT_INTMEM_2f                                          zero 0x2F ~ 0x35
        CODE:07f3 7a 06           MOV        R2,#0x6
        CODE:07f5 12 2c dc        LCALL      zero_memory_range                                          undefined zero_memory_range()
        CODE:07f8 78 00           MOV        R0,#0x0
@@ -1627,8 +1627,8 @@
        CODE:081b 78 08           MOV        R0,#0x8
        CODE:081d 7a 53           MOV        R2,#0x53
        CODE:081f 12 2c ed        LCALL      FUN_CODE_2ced                                              undefined FUN_CODE_2ced()
-       CODE:0822 75 53 10        MOV        DAT_INTMEM_53,#0x10                                        = ??
-       CODE:0825 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
+       CODE:0822 75 53 10        MOV        g_thermal_update_wait_timer,#0x10                          = ??
+       CODE:0825 75 54 fa        MOV        g_thermal_protection_timeout,#0xfa                         = ??
        CODE:0828 75 46 19        MOV        g_chassis_current_temp,#0x19                               = ??
        CODE:082b 75 3c 80        MOV        g_dbgled_blinkpattern_andmask,#0x80                        = ??
        CODE:082e 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
@@ -2105,7 +2105,7 @@
        CODE:0b50 80 3c           SJMP       LAB_CODE_0b8e
                              LAB_CODE_0b52                                   XREF[1]:     CODE:0b48(j)  
        CODE:0b52 bb 32 07        CJNE       R3,#0x32,LAB_CODE_0b5c                                     0x32 is the only other valid value
-       CODE:0b55 d2 04           SETB       20.4                                                       in which case, set this
+       CODE:0b55 d2 04           SETB       g_smc_reset_pending                                        in which case, set this
        CODE:0b57 75 3d 00        MOV        g_shared_timer_cell,#0x0                                   this is either 0 (immediate)
                                                                                                        or 255 (after 5 seconds)
        CODE:0b5a 80 32           SJMP       LAB_CODE_0b8e
@@ -2207,7 +2207,7 @@
        CODE:0bfb 92 4e           MOV        29.6,CY                                                    = ??
        CODE:0bfd 30 e1 05        JNB        ACC.1,LAB_CODE_0c05                                        = ??
        CODE:0c00 d2 4d           SETB       g_fans_force_full_speed                                    = ??
-       CODE:0c02 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
+       CODE:0c02 75 54 fa        MOV        g_thermal_protection_timeout,#0xfa                         = ??
                              LAB_CODE_0c05                                   XREF[1]:     CODE:0bfd(j)  
        CODE:0c05 22              RET
                              LAB_CODE_0c06                                   XREF[1]:     CODE:0ae4(j)  
@@ -2404,9 +2404,9 @@
        CODE:0d44 20 13 11        JB         g_has_getpoweroncause_arrived,LAB_CODE_0d58                = ??
        CODE:0d47 c2 3a           CLR        27.2                                                       = ??
        CODE:0d49 c2 3d           CLR        g_ejectswitch_pushed_while_tray_closed                     = ??
-       CODE:0d4b c2 37           CLR        26.7                                                       = ??
-       CODE:0d4d c2 38           CLR        27.0                                                       = ??
-       CODE:0d4f c2 39           CLR        27.1                                                       = ??
+       CODE:0d4b c2 37           CLR        g_ipc_avpack_event_pending                                 = ??
+       CODE:0d4d c2 38           CLR        g_ipc_bindsw_event_pending                                 = ??
+       CODE:0d4f c2 39           CLR        g_ipc_tiltsw_event_pending                                 = ??
        CODE:0d51 c2 3b           CLR        g_argon_ipc_event_waiting                                  = ??
        CODE:0d53 c2 3c           CLR        g_ir_ipc_event_waiting                                     = ??
        CODE:0d55 c2 3e           CLR        g_tray_state_updated                                       = ??
@@ -2418,13 +2418,13 @@
        CODE:0d5d 30 3d 03        JNB        g_ejectswitch_pushed_while_tray_closed,LAB_CODE_0d63       = ??
        CODE:0d60 02 0d ea        LJMP       LAB_CODE_0dea
                              LAB_CODE_0d63                                   XREF[1]:     CODE:0d5d(j)  
-       CODE:0d63 30 37 03        JNB        26.7,LAB_CODE_0d69                                         = ??
+       CODE:0d63 30 37 03        JNB        g_ipc_avpack_event_pending,LAB_CODE_0d69                   = ??
        CODE:0d66 02 0d f8        LJMP       LAB_CODE_0df8
                              LAB_CODE_0d69                                   XREF[1]:     CODE:0d63(j)  
-       CODE:0d69 30 38 03        JNB        27.0,LAB_CODE_0d6f                                         = ??
+       CODE:0d69 30 38 03        JNB        g_ipc_bindsw_event_pending,LAB_CODE_0d6f                   = ??
        CODE:0d6c 02 0e 0c        LJMP       LAB_CODE_0e0c
                              LAB_CODE_0d6f                                   XREF[1]:     CODE:0d69(j)  
-       CODE:0d6f 30 39 03        JNB        27.1,LAB_CODE_0d75                                         = ??
+       CODE:0d6f 30 39 03        JNB        g_ipc_tiltsw_event_pending,LAB_CODE_0d75                   = ??
        CODE:0d72 02 0e 1b        LJMP       LAB_CODE_0e1b
                              LAB_CODE_0d75                                   XREF[1]:     CODE:0d6f(j)  
        CODE:0d75 30 3b 03        JNB        g_argon_ipc_event_waiting,LAB_CODE_0d7b                    = ??
@@ -2497,7 +2497,7 @@
        CODE:0df3 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0df6 80 90           SJMP       LAB_CODE_0d88
                              LAB_CODE_0df8                                   XREF[1]:     CODE:0d66(j)  
-       CODE:0df8 c2 37           CLR        26.7                                                       = ??
+       CODE:0df8 c2 37           CLR        g_ipc_avpack_event_pending                                 = ??
        CODE:0dfa 74 01           MOV        A,#0x1
        CODE:0dfc 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0dff 74 40           MOV        A,#0x40
@@ -2506,14 +2506,14 @@
        CODE:0e06 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0e09 02 0d 88        LJMP       LAB_CODE_0d88
                              LAB_CODE_0e0c                                   XREF[1]:     CODE:0d6c(j)  
-       CODE:0e0c c2 38           CLR        27.0                                                       = ??
+       CODE:0e0c c2 38           CLR        g_ipc_bindsw_event_pending                                 = ??
        CODE:0e0e 74 01           MOV        A,#0x1
        CODE:0e10 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:0e13 74 13           MOV        A,#0x13
        CODE:0e15 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0e18 02 0d 88        LJMP       LAB_CODE_0d88
                              LAB_CODE_0e1b                                   XREF[1]:     CODE:0d72(j)  
-       CODE:0e1b c2 39           CLR        27.1                                                       = ??
+       CODE:0e1b c2 39           CLR        g_ipc_tiltsw_event_pending                                 = ??
        CODE:0e1d 75 f0 00        MOV        B,#0x0
        CODE:0e20 a2 05           MOV        CY,20.5                                                    = ??
        CODE:0e22 92 f0           MOV        B.0,CY                                                     = ??
@@ -2712,7 +2712,7 @@
        CODE:0f59 c2 0b           CLR        21.3                                                       = ??
        CODE:0f5b 30 4f 0c        JNB        29.7,LAB_CODE_0f6a                                         = ??
        CODE:0f5e d5 3d d6        DJNZ       g_shared_timer_cell,LAB_CODE_0f37                          = ??
-       CODE:0f61 20 50 06        JB         2a.0,LAB_CODE_0f6a                                         = ??
+       CODE:0f61 20 50 06        JB         g_thermal_overheat_protection_tripped,LAB_CODE_0f6a        = ??
        CODE:0f64 75 3d fa        MOV        g_shared_timer_cell,#0xfa                                  = ??
        CODE:0f67 d5 65 cd        DJNZ       DAT_INTMEM_65,LAB_CODE_0f37                                = ??
                              LAB_CODE_0f6a                                   XREF[4]:     CODE:0f4f(j), CODE:0f52(j), 
@@ -3025,8 +3025,9 @@
        CODE:112c e6              MOV        A,@R0=>DAT_INTMEM_9d                                       = ??
        CODE:112d 26              ADD        A,@R0=>DAT_INTMEM_9d                                       = ??
        CODE:112e 26              ADD        A,@R0=>DAT_INTMEM_9d                                       = ??
-       CODE:112f 90 11 33        MOV        DPTR,#0x1133
+       CODE:112f 90 11 33        MOV        DPTR,#LAB_CODE_1133
        CODE:1132 73              JMP        @A+DPTR
+                             LAB_CODE_1133                                   XREF[1]:     hw_reset_statemachine_exec:112f(
        CODE:1133 02 10 ae        LJMP       LAB_CODE_10ae
        CODE:1136 02 10 c9        LJMP       LAB_CODE_10c9
        CODE:1139 02 11 13        LJMP       LAB_CODE_1113
@@ -3052,13 +3053,13 @@
        CODE:1154 12 22 be        LCALL      FUN_CODE_22be                                              undefined FUN_CODE_22be()
        CODE:1157 12 23 3e        LCALL      dbgled_read                                                undefined dbgled_read()
        CODE:115a 12 23 46        LCALL      gpios_reset                                                undefined gpios_reset()
-       CODE:115d 20 04 14        JB         20.4,LAB_CODE_1174                                         = ??
+       CODE:115d 20 04 14        JB         g_smc_reset_pending,LAB_CODE_1174                          = ??
        CODE:1160 12 23 83        LCALL      FUN_CODE_2383                                              undefined FUN_CODE_2383()
        CODE:1163 12 00 7f        LCALL      FUN_CODE_007f                                              undefined FUN_CODE_007f()
        CODE:1166 12 00 c3        LCALL      ana_reset_deassert                                         undefined ana_reset_deassert()
        CODE:1169 12 23 10        LCALL      FUN_CODE_2310                                              undefined FUN_CODE_2310()
        CODE:116c 12 23 ba        LCALL      argon_enable                                               undefined argon_enable()
-       CODE:116f 12 24 42        LCALL      FUN_CODE_2442                                              undefined FUN_CODE_2442()
+       CODE:116f 12 24 42        LCALL      smcconfig_init_defaults_and_read_page                      undefined smcconfig_init_defaults_a
        CODE:1172 80 cd           SJMP       LAB_CODE_1141
                              LAB_CODE_1174                                   XREF[1]:     CODE:115d(j)  
        CODE:1174 12 23 bd        LCALL      halt_execution                                             undefined halt_execution()
@@ -3106,7 +3107,7 @@
        CODE:11b5 20 14 0a        JB         g_ipc_soft_reset_requested,LAB_CODE_11c2                   needs to be 0 or we start the
                                                                                                        CPU reset sequence over
        CODE:11b8 c2 29           CLR        25.1                                                       = ??
-       CODE:11ba 12 24 42        LCALL      FUN_CODE_2442                                              undefined FUN_CODE_2442()
+       CODE:11ba 12 24 42        LCALL      smcconfig_init_defaults_and_read_page                      undefined smcconfig_init_defaults_a
        CODE:11bd 12 00 63        LCALL      cpu_pwrgd_set                                              undefined cpu_pwrgd_set()
        CODE:11c0 80 5e           SJMP       sysreset_watchdog_go_state_1
                              LAB_CODE_11c2                                   XREF[1]:     CODE:11b5(j)  
@@ -3371,7 +3372,7 @@
                              LAB_CODE_1350                                   XREF[1]:     CODE:136d(j)  
        CODE:1350 20 30 b7        JB         26.0,LAB_CODE_130a                                         = ??
        CODE:1353 85 5d 2f        MOV        DAT_INTMEM_2f,g_avpack_last_read                           = ??
-       CODE:1356 d2 37           SETB       26.7                                                       = ??
+       CODE:1356 d2 37           SETB       g_ipc_avpack_event_pending                                 = ??
        CODE:1358 d2 43           SETB       28.3                                                       = ??
        CODE:135a d2 48           SETB       29.0                                                       = ??
        CODE:135c 80 9d           SJMP       LAB_CODE_12fb
@@ -3649,7 +3650,7 @@
        CODE:14e4 c2 4f           CLR        29.7                                                       = ??
                              LAB_CODE_14e6                                   XREF[3]:     CODE:14d6(j), CODE:14dc(j), 
                                                                                           CODE:14e2(j)  
-       CODE:14e6 d2 50           SETB       2a.0                                                       if this is 1, it's bad news
+       CODE:14e6 d2 50           SETB       g_thermal_overheat_protection_tripped                      if this is 1, it's bad news
                                                                                                        (probably means "overheat")
        CODE:14e8 7a 05           MOV        R2,#0x5                                                    these r2/r3 thingies here are loading
                                                                                                        RRoD error codes in case of failure
@@ -3670,11 +3671,11 @@
        CODE:1503 e5 44           MOV        A,g_edram_current_temp                                     = ??
        CODE:1505 95 52           SUBB       A,g_edram_trip_temp                                        = ??
        CODE:1507 50 02           JNC        LAB_CODE_150b                                              RRoD 0013 if exceeded
-       CODE:1509 c2 50           CLR        2a.0                                                       otherwise, no issues here
+       CODE:1509 c2 50           CLR        g_thermal_overheat_protection_tripped                      otherwise, no issues here
                              LAB_CODE_150b                                   XREF[3]:     CODE:14f1(j), CODE:14fc(j), 
                                                                                           CODE:1507(j)  
        CODE:150b 20 1d 6c        JB         g_rrod_thermal_tripped,LAB_CODE_157a                       skip if error already raised
-       CODE:150e 30 50 0f        JNB        2a.0,LAB_CODE_1520                                         skip if overheat hasn't tripped
+       CODE:150e 30 50 0f        JNB        g_thermal_overheat_protection_tripped,LAB_CODE_1520        skip if overheat hasn't tripped
        CODE:1511 d2 1d           SETB       g_rrod_thermal_tripped                                     = ??
        CODE:1513 8a 59           MOV        g_rrod_errordisplay_code_a,R2                              some sensor value tripped
                                                                                                        so raise appopriate RRoD
@@ -3722,7 +3723,7 @@
        CODE:1571 12 17 3d        LCALL      FUN_CODE_173d                                              undefined FUN_CODE_173d()
        CODE:1574 08              INC        R0
        CODE:1575 e5 56           MOV        A,g_fan1_target_speed                                      = ??
-       CODE:1577 26              ADD        A,@R0=>DAT_INTMEM_b3                                       wrong - r0 points somewhere else
+       CODE:1577 26              ADD        A,@R0
        CODE:1578 f5 56           MOV        g_fan1_target_speed,A                                      = ??
                              LAB_CODE_157a                                   XREF[6]:     CODE:14b7(j), CODE:150b(j), 
                                                                                           CODE:151e(j), CODE:1525(j), 
@@ -4247,7 +4248,7 @@
        CODE:1816 30 46 02        JNB        g_argon_rrod_pending,LAB_CODE_181b                         = ??
        CODE:1819 80 22           SJMP       LAB_CODE_183d
                              LAB_CODE_181b                                   XREF[1]:     CODE:1816(j)  
-       CODE:181b 30 49 02        JNB        29.1,LAB_CODE_1820                                         = ??
+       CODE:181b 30 49 02        JNB        g_argon_chkstop_event_pending,LAB_CODE_1820                = ??
        CODE:181e 80 35           SJMP       LAB_CODE_1855
                              LAB_CODE_1820                                   XREF[1]:     CODE:181b(j)  
        CODE:1820 30 48 02        JNB        29.0,LAB_CODE_1825                                         = ??
@@ -4279,7 +4280,7 @@
        CODE:184f 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:1852 02 19 4c        LJMP       argon_sm_go_state_2
                              LAB_CODE_1855                                   XREF[1]:     CODE:181e(j)  
-       CODE:1855 c2 49           CLR        29.1                                                       = ??
+       CODE:1855 c2 49           CLR        g_argon_chkstop_event_pending                              = ??
        CODE:1857 74 42           MOV        A,#0x42                                                    undocumented debug state
        CODE:1859 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
        CODE:185c 02 19 51        LJMP       argon_sm_go_state_3
@@ -4294,7 +4295,7 @@
        CODE:186c 78 af           MOV        R0,#0xaf
        CODE:186e e6              MOV        A,@R0=>g_rrod_base_pattern                                 = ??
        CODE:186f 70 ee           JNZ        LAB_CODE_185f
-       CODE:1871 d2 38           SETB       27.0                                                       = ??
+       CODE:1871 d2 38           SETB       g_ipc_bindsw_event_pending                                 = ??
        CODE:1873 74 04           MOV        A,#0x4                                                     argon command 0x04
                                                                                                        = SYNC
        CODE:1875 12 2a 15        LCALL      argon_queue_message                                        undefined argon_queue_message()
@@ -4668,7 +4669,7 @@
                              LAB_CODE_1ab2                                   XREF[1]:     CODE:1aac(j)  
        CODE:1ab2 02 1b 8f        LJMP       LAB_CODE_1b8f
                              LAB_CODE_1ab5                                   XREF[2]:     CODE:1a94(j), CODE:1aa6(j)  
-       CODE:1ab5 30 32 0c        JNB        26.2,LAB_CODE_1ac4                                         = ??
+       CODE:1ab5 30 32 0c        JNB        g_i2c_thermal_update_requested,LAB_CODE_1ac4               = ??
        CODE:1ab8 12 26 15        LCALL      i2c_commandlist_run_temperature_update                     undefined i2c_commandlist_run_tempe
        CODE:1abb 20 d5 03        JB         F0,LAB_CODE_1ac1                                           = ??
        CODE:1abe 02 1b 50        LJMP       LAB_CODE_1b50
@@ -4784,7 +4785,7 @@
        CODE:1b5b 12 26 27        LCALL      i2c_try_continue_commandlist_execution                     undefined i2c_try_continue_commandl
        CODE:1b5e 50 fa           JNC        LAB_CODE_1b5a
                              LAB_CODE_1b60                                   XREF[1]:     CODE:1ac1(j)  
-       CODE:1b60 c2 32           CLR        26.2                                                       = ??
+       CODE:1b60 c2 32           CLR        g_i2c_thermal_update_requested                             = ??
        CODE:1b62 30 d5 c8        JNB        F0,hana_sm_go_state_0                                      = ??
        CODE:1b65 80 a0           SJMP       LAB_CODE_1b07
                              LAB_CODE_1b67                                   XREF[1]:     CODE:1a4f(j)  
@@ -5074,7 +5075,9 @@
        CODE:1d15 50 2c           JNC        LAB_CODE_1d43
                              LAB_CODE_1d17                                   XREF[1]:     CODE:1d0f(j)  
        CODE:1d17 30 18 05        JNB        g_v1p8_regulator_enabled,LAB_CODE_1d1f                     = ??
-       CODE:1d1a 12 23 eb        LCALL      FUN_CODE_23eb                                              check 1.8v regulator powergood
+       CODE:1d1a 12 23 eb        LCALL      FUN_CODE_23eb                                              check 5v powergood
+                                                                                                       (somehow only checked if
+                                                                                                       1v8 is enabled)
        CODE:1d1d 50 34           JNC        LAB_CODE_1d53
                              LAB_CODE_1d1f                                   XREF[1]:     CODE:1d17(j)  
        CODE:1d1f 30 19 05        JNB        g_vcpu_regulator_enabled,LAB_CODE_1d27                     = ??
@@ -5093,7 +5096,7 @@
        CODE:1d39 12 00 76        LCALL      checkstop_read                                             undefined checkstop_read()
        CODE:1d3c 50 04           JNC        LAB_CODE_1d42
        CODE:1d3e d2 1b           SETB       g_checkstop_active                                         = ??
-       CODE:1d40 d2 49           SETB       29.1                                                       = ??
+       CODE:1d40 d2 49           SETB       g_argon_chkstop_event_pending                              = ??
                              LAB_CODE_1d42                                   XREF[3]:     CODE:1d34(j), CODE:1d36(j), 
                                                                                           CODE:1d3c(j)  
        CODE:1d42 22              RET
@@ -5365,7 +5368,7 @@
                                                                                                        but that's invisible now
        CODE:1efe 93              MOVC       A,@A+DPTR=>boot_attempt_blink_patterns
        CODE:1eff f5 3a           MOV        g_boot_attempt_blink_pattern,A                             = ??
-       CODE:1f01 d2 37           SETB       26.7                                                       = ??
+       CODE:1f01 d2 37           SETB       g_ipc_avpack_event_pending                                 = ??
        CODE:1f03 d2 3e           SETB       g_tray_state_updated                                       = ??
        CODE:1f05 75 3d 00        MOV        g_shared_timer_cell,#0x0                                   = ??
        CODE:1f08 80 1d           SJMP       LAB_CODE_1f27
@@ -5432,7 +5435,7 @@
        CODE:1f50 20 1d bd        JB         g_rrod_thermal_tripped,LAB_CODE_1f10                       = ??
        CODE:1f53 e5 3d           MOV        A,g_shared_timer_cell                                      = ??
        CODE:1f55 70 26           JNZ        LAB_CODE_1f7d
-       CODE:1f57 20 04 6a        JB         20.4,LAB_CODE_1fc4                                         = ??
+       CODE:1f57 20 04 6a        JB         g_smc_reset_pending,LAB_CODE_1fc4                          = ??
        CODE:1f5a 20 03 67        JB         g_ipc_requested_reboot,LAB_CODE_1fc4                       = ??
        CODE:1f5d 20 14 22        JB         g_ipc_soft_reset_requested,LAB_CODE_1f82                   = ??
        CODE:1f60 20 08 1f        JB         g_powerswitch_pushed,LAB_CODE_1f82                         = ??
@@ -5514,7 +5517,7 @@
        CODE:1fea 53 61 c3        ANL        g_rol_led_flags,#11000011b                                 = ??
                              LAB_CODE_1fed                                   XREF[1]:     CODE:1fe7(j)  
        CODE:1fed c2 16           CLR        22.6                                                       = ??
-       CODE:1fef 78 af           MOV        R0,#0xaf                                                   setup invisible ring of light
+       CODE:1fef 78 af           MOV        R0,#g_rrod_base_pattern                                    setup invisible ring of light
                                                                                                        error pattern???
                                                                                                        or just clear it??
        CODE:1ff1 76 00           MOV        @R0=>g_rrod_base_pattern,#0x0                              = ??
@@ -5557,28 +5560,32 @@
              undefined         ACC:1          <RETURN>
                              thermal_monitor_check_if_temps_available        XREF[1]:     mainloop:07bc(c)  
        CODE:2029 30 17 17        JNB        g_12v_enabled,LAB_CODE_2043                                = ??
-       CODE:202c 20 4d 08        JB         g_fans_force_full_speed,LAB_CODE_2037                      = ??
-       CODE:202f d5 53 05        DJNZ       DAT_INTMEM_53,LAB_CODE_2037                                = ??
-       CODE:2032 75 53 10        MOV        DAT_INTMEM_53,#0x10                                        = ??
-       CODE:2035 d2 32           SETB       26.2                                                       = ??
+       CODE:202c 20 4d 08        JB         g_fans_force_full_speed,LAB_CODE_2037                      if thermal protection tripped
+                                                                                                       then stop updating the temperatures
+                                                                                                       (eventually falls through to
+                                                                                                       error case below)
+       CODE:202f d5 53 05        DJNZ       g_thermal_update_wait_timer,LAB_CODE_2037                  = ??
+       CODE:2032 75 53 10        MOV        g_thermal_update_wait_timer,#0x10                          = ??
+       CODE:2035 d2 32           SETB       g_i2c_thermal_update_requested                             = ??
                              LAB_CODE_2037                                   XREF[2]:     CODE:202c(j), CODE:202f(j)  
        CODE:2037 30 51 15        JNB        g_cpu_temp_updated,LAB_CODE_204f                           = ??
        CODE:203a 30 52 12        JNB        g_gpu_temp_updated,LAB_CODE_204f                           = ??
        CODE:203d 30 53 0f        JNB        g_edram_temp_updated,LAB_CODE_204f                         = ??
-       CODE:2040 30 54 0c        JNB        2a.4,LAB_CODE_204f                                         = ??
+       CODE:2040 30 54 0c        JNB        g_chassis_temp_updated,LAB_CODE_204f                       = ??
                              LAB_CODE_2043                                   XREF[1]:     CODE:2029(j)  
        CODE:2043 c2 51           CLR        g_cpu_temp_updated                                         = ??
        CODE:2045 c2 52           CLR        g_gpu_temp_updated                                         = ??
        CODE:2047 c2 53           CLR        g_edram_temp_updated                                       = ??
-       CODE:2049 c2 54           CLR        2a.4                                                       = ??
-       CODE:204b 75 54 fa        MOV        DAT_INTMEM_54,#0xfa                                        = ??
+       CODE:2049 c2 54           CLR        g_chassis_temp_updated                                     = ??
+       CODE:204b 75 54 fa        MOV        g_thermal_protection_timeout,#0xfa                         = ??
                              LAB_CODE_204e                                   XREF[1]:     CODE:204f(j)  
        CODE:204e 22              RET
                              LAB_CODE_204f                                   XREF[4]:     CODE:2037(j), CODE:203a(j), 
                                                                                           CODE:203d(j), CODE:2040(j)  
-       CODE:204f d5 54 fc        DJNZ       DAT_INTMEM_54,LAB_CODE_204e                                = ??
+       CODE:204f d5 54 fc        DJNZ       g_thermal_protection_timeout,LAB_CODE_204e                 = ??
        CODE:2052 d2 1c           SETB       g_rrod_power_problem                                       = ??
-       CODE:2054 75 59 0c        MOV        g_rrod_errordisplay_code_a,#0xc                            RRoD 0030
+       CODE:2054 75 59 0c        MOV        g_rrod_errordisplay_code_a,#0xc                            RRoD 0030 regardless of what
+                                                                                                       caused us to end up here
        CODE:2057 75 5b 0c        MOV        g_rrod_errordisplay_code_b,#0xc                            = ??
        CODE:205a 75 5a 00        MOV        g_rrod_errordisplay_state,#0x0                             = ??
        CODE:205d d2 46           SETB       g_argon_rrod_pending                                       = ??
@@ -5613,7 +5620,7 @@
        CODE:2084 50 dc           JNC        LAB_CODE_2062
        CODE:2086 d5 64 de        DJNZ       DAT_INTMEM_64,LAB_CODE_2067                                = ??
        CODE:2089 d2 05           SETB       20.5                                                       = ??
-       CODE:208b d2 39           SETB       27.1                                                       = ??
+       CODE:208b d2 39           SETB       g_ipc_tiltsw_event_pending                                 = ??
        CODE:208d d2 43           SETB       28.3                                                       = ??
        CODE:208f 80 db           SJMP       LAB_CODE_206c
                              LAB_CODE_2091                                   XREF[1]:     CODE:20ba(j)  
@@ -5626,7 +5633,7 @@
        CODE:209e 40 cc           JC         LAB_CODE_206c
        CODE:20a0 d5 64 ce        DJNZ       DAT_INTMEM_64,LAB_CODE_2071                                = ??
        CODE:20a3 c2 05           CLR        20.5                                                       = ??
-       CODE:20a5 d2 39           SETB       27.1                                                       = ??
+       CODE:20a5 d2 39           SETB       g_ipc_tiltsw_event_pending                                 = ??
        CODE:20a7 d2 43           SETB       28.3                                                       = ??
        CODE:20a9 80 b7           SJMP       LAB_CODE_2062
                              **************************************************************
@@ -6087,8 +6094,8 @@
        CODE:239e 75 98 00        MOV        SCON,#0x0                                                  = ??
        CODE:23a1 75 95 88        MOV        DAT_SFR_95,#0x88                                           = ??
        CODE:23a4 c2 6b           CLR        g_usb_front_top_plugged                                    = ??
-       CODE:23a6 c2 6c           CLR        2d.4                                                       = ??
-       CODE:23a8 c2 6d           CLR        2d.5                                                       = ??
+       CODE:23a6 c2 6c           CLR        g_usb_front_bottom_plugged                                 = ??
+       CODE:23a8 c2 6d           CLR        g_usb_rear_plugged                                         = ??
        CODE:23aa 75 1f 00        MOV        BANK3_R7,#0x0                                              = ??
        CODE:23ad 75 e8 00        MOV        HIFLG,#0x0                                                 = ??
        CODE:23b0 43 c2 40        ORL        DAT_SFR_c2,#0x40                                           = ??
@@ -6422,9 +6429,9 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_2442()
+                             undefined smcconfig_init_defaults_and_read_page()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_2442                                   XREF[2]:     CODE:116f(c), CODE:11ba(c)  
+                             smcconfig_init_defaults_and_read_page           XREF[2]:     CODE:116f(c), CODE:11ba(c)  
        CODE:2442 90 24 66        MOV        DPTR,#smcconfig_default_settings                           load SMC config defaults
                                                                                                        in case we can't load from flash
        CODE:2445 12 2c e8        LCALL      init_intmem_values                                         undefined init_intmem_values()
@@ -6454,7 +6461,7 @@
                              table of SMC config defaults
                              each pair is dest_address, value
                              table zero-terminated
-                             smcconfig_default_settings                      XREF[1]:     FUN_CODE_2442:2442(*)  
+                             smcconfig_default_settings                      XREF[1]:     smcconfig_init_defaults_and_read
        CODE:2466 57              ??         g_fan1_target_speed_override                               set 0x57 -> 0xE4
        CODE:2467 e4              ??         E4h
        CODE:2468 58              ??         g_fan2_target_speed_override                               set 0x58 -> 0xE4
@@ -6506,10 +6513,10 @@
        CODE:2496 52              ??         g_edram_trip_temp                                          = ??
        CODE:2497 75              ??         75h    u                                                   set 0x52 (eDRAM trip temp) to 0x75
        CODE:2498 00              ??         00h                                                        end of buffer
-                             smc_config_block_location_table                 XREF[4]:     FUN_CODE_2442:2452(*), 
-                                                                                          FUN_CODE_2442:2455(*), 
-                                                                                          FUN_CODE_2442:245a(*), 
-                                                                                          FUN_CODE_2442:245f(*)  
+                             smc_config_block_location_table                 XREF[4]:     smcconfig_init_defaults_and_read
+                                                                                          smcconfig_init_defaults_and_read
+                                                                                          smcconfig_init_defaults_and_read
+                                                                                          smcconfig_init_defaults_and_read
        CODE:2499 00              ??         00h                                                        assuming this is for 16m systems,
                                                                                                        0x007BE0 * 0x210 -> 0x00FF7E00
                                                                                                        (matches actual SMC config location)
@@ -7262,7 +7269,7 @@
        CODE:2813 e5 18           MOV        A,BANK3_R0                                                 = ??
        CODE:2815 45 17           ORL        A,BANK2_R7                                                 = ??
        CODE:2817 60 18           JZ         LAB_CODE_2831
-       CODE:2819 d2 54           SETB       2a.4                                                       = ??
+       CODE:2819 d2 54           SETB       g_chassis_temp_updated                                     = ??
        CODE:281b 78 18           MOV        R0,#BANK3_R0                                               = ??
        CODE:281d 79 f2           MOV        R1,#DAT_INTMEM_f2                                          = ??
        CODE:281f c2 d5           CLR        F0                                                         = ??
@@ -8276,7 +8283,7 @@
                              **************************************************************
                              undefined init_intmem_values()
              undefined         ACC:1          <RETURN>
-                             init_intmem_values                              XREF[1]:     FUN_CODE_2442:2445(c)  
+                             init_intmem_values                              XREF[1]:     smcconfig_init_defaults_and_read
        CODE:2ce8 e4              CLR        A
        CODE:2ce9 93              MOVC       A,@A+DPTR
        CODE:2cea 70 f6           JNZ        LAB_CODE_2ce2                                              loop until 0 hit
@@ -9261,7 +9268,8 @@
        INTMEM:2c                 ??         ??
        INTMEM:2d                 ??         ??
        INTMEM:2e                 ??         ??
-                             DAT_INTMEM_2f                                   XREF[11]:    FUN_CODE_07ea:0807(W), 
+                             DAT_INTMEM_2f                                   XREF[12]:    FUN_CODE_07ea:07f1(*), 
+                                                                                          FUN_CODE_07ea:0807(W), 
                                                                                           FUN_CODE_080d:0835(R), 
                                                                                           FUN_CODE_080d:083b(W), 
                                                                                           ipc_handle_messages:0944(R), 
@@ -9441,11 +9449,11 @@
                                                                                           CODE:2496(*), 
                                                                                           smcconfig_load:258e(W)  
        INTMEM:52                 ??         ??
-                             DAT_INTMEM_53                                   XREF[3]:     FUN_CODE_080d:0822(W), 
+                             g_thermal_update_wait_timer                     XREF[3]:     FUN_CODE_080d:0822(W), 
                                                                                           thermal_monitor_check_if_temps_a
                                                                                           thermal_monitor_check_if_temps_a
        INTMEM:53                 ??         ??
-                             DAT_INTMEM_54                                   XREF[4]:     FUN_CODE_080d:0825(W), 
+                             g_thermal_protection_timeout                    XREF[4]:     FUN_CODE_080d:0825(W), 
                                                                                           FUN_CODE_0aca:0c02(W), 
                                                                                           thermal_monitor_check_if_temps_a
                                                                                           thermal_monitor_check_if_temps_a
@@ -9953,11 +9961,12 @@
                              g_rol_ipc_led_overrides                         XREF[3]:     FUN_CODE_0aca:0c90(W), 
                                                                                           CODE:1938(R), CODE:197a(R)  
        INTMEM:ae                 undefined1 ??
-                             g_rrod_base_pattern                             XREF[9]:     FUN_CODE_0aca:0d12(W), 
+                             g_rrod_base_pattern                             XREF[10]:    FUN_CODE_0aca:0d12(W), 
                                                                                           CODE:12b2(W), CODE:1773(R), 
                                                                                           CODE:186e(R), CODE:18a6(R), 
-                                                                                          CODE:1ce4(R), CODE:1ff1(W), 
-                                                                                          CODE:201c(W), CODE:2023(W)  
+                                                                                          CODE:1ce4(R), CODE:1fef(*), 
+                                                                                          CODE:1ff1(W), CODE:201c(W), 
+                                                                                          CODE:2023(W)  
        INTMEM:af                 undefined1 ??
                              g_argon_ipc_data_byte_1                         XREF[5]:     FUN_CODE_0aca:0cd1(W), 
                                                                                           ipc_handle_async_events:0e3a(R), 
@@ -9969,7 +9978,6 @@
                                                                                           CODE:187d(R), CODE:198c(W)  
        INTMEM:b1                 undefined1 ??
        INTMEM:b2                 ??         ??
-                             DAT_INTMEM_b3                                   XREF[1]:     thermal_monitor_do_checks:1577(R
        INTMEM:b3                 undefined1 ??
        INTMEM:b4                 ??         ??
        INTMEM:b5                 ??         ??
@@ -10377,7 +10385,7 @@
                                                                                           sfcx_flash_reset:00b0(W), 
                                                                                           sfcx_flash_reset:00b3(W), 
                                                                                           sfcx_flash_reset:00b6(W), 
-                                                                                          FUN_CODE_2442:2448(R)  
+                                                                                          smcconfig_init_defaults_and_read
           SFR:e3                 undefined1 ??
                              RXCON
           SFR:e4                 ??         ??
@@ -10406,13 +10414,13 @@
                                                                                           smcconfig_load:256f(W), 
                                                                                           smcconfig_load:2582(W)  
           SFR:ea                 ??         ??
-                             CCAP1L                                          XREF[3]:     FUN_CODE_2442:2460(W), 
+                             CCAP1L                                          XREF[3]:     smcconfig_init_defaults_and_read
                                                                                           smcconfig_load:24b6(W), 
                                                                                           smcconfig_load:2509(W)  
           SFR:eb                 ??         ??
-                             CCAP2L                                          XREF[1]:     FUN_CODE_2442:245b(W)  
+                             CCAP2L                                          XREF[1]:     smcconfig_init_defaults_and_read
           SFR:ec                 ??         ??
-                             CCAP3L                                          XREF[1]:     FUN_CODE_2442:2456(W)  
+                             CCAP3L                                          XREF[1]:     smcconfig_init_defaults_and_read
           SFR:ed                 ??         ??
                              CCAP4L                                          XREF[1]:     smcconfig_load:24a7(R)  
           SFR:ee                 undefined1 ??
@@ -10456,7 +10464,7 @@
                                                                                           smcconfig_load:256a(R), 
                                                                                           smcconfig_load:257f(R)  
           SFR:f4                 undefined1 ??
-                             TXFLG                                           XREF[12]:    FUN_CODE_2442:2462(W), 
+                             TXFLG                                           XREF[12]:    smcconfig_init_defaults_and_read
                                                                                           smcconfig_load:24bc(W), 
                                                                                           smcconfig_load:24c7(W), 
                                                                                           smcconfig_load:24d3(W), 
@@ -10513,7 +10521,7 @@
                                                                                           CODE:17a9(R), CODE:1df7(R), 
                                                                                           CODE:1e62(W), CODE:1f5a(R)  
          BITS:03                 ??         ??
-                             20.4                                            XREF[3]:     FUN_CODE_0aca:0b55(W), 
+                             g_smc_reset_pending                             XREF[3]:     FUN_CODE_0aca:0b55(W), 
                                                                                           CODE:115d(R), CODE:1f57(R)  
          BITS:04                 ??         ??
                              20.5                                            XREF[5]:     ipc_handle_messages:095c(R), 
@@ -10731,7 +10739,7 @@
                              26.1                                            XREF[4]:     CODE:1470(W), CODE:149d(R), 
                                                                                           CODE:1aa6(R), CODE:1b8f(W)  
          BITS:31                 ??         ??
-                             26.2                                            XREF[3]:     CODE:1ab5(R), CODE:1b60(W), 
+                             g_i2c_thermal_update_requested                  XREF[3]:     CODE:1ab5(R), CODE:1b60(W), 
                                                                                           thermal_monitor_check_if_temps_a
          BITS:32                 ??         ??
                              g_i2c_error_handler_operation_pending           XREF[18]:    FUN_CODE_0aca:0cf9(W), 
@@ -10761,17 +10769,17 @@
                                                                                           CODE:1d9e(W), CODE:1da6(R), 
                                                                                           CODE:1dab(R)  
          BITS:36                 ??         ??
-                             26.7                                            XREF[5]:     ipc_handle_async_events:0d4b(W), 
+                             g_ipc_avpack_event_pending                      XREF[5]:     ipc_handle_async_events:0d4b(W), 
                                                                                           ipc_handle_async_events:0d63(R), 
                                                                                           ipc_handle_async_events:0df8(W), 
                                                                                           CODE:1356(W), CODE:1f01(W)  
          BITS:37                 ??         ??
-                             27.0                                            XREF[4]:     ipc_handle_async_events:0d4d(W), 
+                             g_ipc_bindsw_event_pending                      XREF[4]:     ipc_handle_async_events:0d4d(W), 
                                                                                           ipc_handle_async_events:0d69(R), 
                                                                                           ipc_handle_async_events:0e0c(W), 
                                                                                           CODE:1871(W)  
          BITS:38                 ??         ??
-                             27.1                                            XREF[5]:     ipc_handle_async_events:0d4f(W), 
+                             g_ipc_tiltsw_event_pending                      XREF[5]:     ipc_handle_async_events:0d4f(W), 
                                                                                           ipc_handle_async_events:0d6f(R), 
                                                                                           ipc_handle_async_events:0e1b(W), 
                                                                                           CODE:208b(W), CODE:20a5(W)  
@@ -10862,7 +10870,7 @@
                                                                                           CODE:1e7d(W), CODE:1ff5(W), 
                                                                                           CODE:2025(W)  
          BITS:48                 ??         ??
-                             29.1                                            XREF[3]:     CODE:181b(R), CODE:1855(W), 
+                             g_argon_chkstop_event_pending                   XREF[3]:     CODE:181b(R), CODE:1855(W), 
                                                                                           vreg_monitor_statuses:1d40(W)  
          BITS:49                 ??         ??
                              29.2                                            XREF[4]:     CODE:1182(W), CODE:17b3(W), 
@@ -10887,7 +10895,7 @@
                                                                                           thermal_monitor_do_checks:14d0(W
                                                                                           thermal_monitor_do_checks:14e4(W
          BITS:4f                 ??         ??
-                             2a.0                                            XREF[4]:     CODE:0f61(R), 
+                             g_thermal_overheat_protection_tripped           XREF[4]:     CODE:0f61(R), 
                                                                                           thermal_monitor_do_checks:14e6(W
                                                                                           thermal_monitor_do_checks:1509(W
                                                                                           thermal_monitor_do_checks:150e(R
@@ -10904,7 +10912,7 @@
                                                                                           thermal_monitor_check_if_temps_a
                                                                                           FUN_CODE_279d:27a3(W)  
          BITS:53                 ??         ??
-                             2a.4                                            XREF[3]:     thermal_monitor_check_if_temps_a
+                             g_chassis_temp_updated                          XREF[3]:     thermal_monitor_check_if_temps_a
                                                                                           thermal_monitor_check_if_temps_a
                                                                                           FUN_CODE_2813:2819(W)  
          BITS:54                 ??         ??
@@ -11037,12 +11045,12 @@
                                                                                           usb_powerevent_check:0669(W), 
                                                                                           FUN_CODE_2383:23a4(W)  
          BITS:6b                 ??         ??
-                             2d.4                                            XREF[4]:     usb_powerevent_check:06b4(W), 
+                             g_usb_front_bottom_plugged                      XREF[4]:     usb_powerevent_check:06b4(W), 
                                                                                           usb_powerevent_check:06bb(R), 
                                                                                           usb_powerevent_check:06c1(W), 
                                                                                           FUN_CODE_2383:23a6(W)  
          BITS:6c                 ??         ??
-                             2d.5                                            XREF[4]:     usb_powerevent_check:070c(W), 
+                             g_usb_rear_plugged                              XREF[4]:     usb_powerevent_check:070c(W), 
                                                                                           usb_powerevent_check:0713(R), 
                                                                                           usb_powerevent_check:0719(W), 
                                                                                           FUN_CODE_2383:23a8(W)  
