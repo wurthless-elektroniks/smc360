@@ -16,6 +16,9 @@ If it does, then the device has requested a powerup, and the SMC obliges.
 This is likely a variant on the standard USB wake-from-standby procedure (read the USB specs), but
 that has to be confirmed...
 
+Monitoring this with a multimeter and a scope: the D+ pin will be pulled to about 3 volts when a device is
+plugged in. When you press the guide button, there is a short pulse on D-.
+
 ## Port mappings
 
 | Port     | Fat name  | Fat location   | Trinity name  | Trinity location | Corona name   | Corona location  |
@@ -30,20 +33,22 @@ that has to be confirmed...
 | USBB_D3  | MEMPORT1  | Memory unit    | BORONFPMPORT  | Boron RF board   | WAVEPORT      | Wireless adapter |
 | USBB_D4  | ARGONPORT | Argon RF board | MUPORT        | 4GB memory unit  | GAMEPORT2     | Front right      |
 
+All signals are active low from the SMC's point of view and active high physically.
+
 ### USBA channels
 
 Read from SFR 0D7h.
 
 | Bit | Purpose
 |-----|------------------------------
-| 7   | USBA_D3 doorknock
-| 6   | USBA_D3 presence detect
-| 5   | USBA_D2 doorknock
-| 4   | USBA_D2 presence detect
-| 3   | USBA_D1 doorknock
-| 2   | USBA_D1 presence detect
-| 1   | USBA_D0 doorknock
-| 0   | USBA_D0 presence detect
+| 7   | USBA_D3 doorknock (D-)
+| 6   | USBA_D3 presence detect (D+)
+| 5   | USBA_D2 doorknock (D-)
+| 4   | USBA_D2 presence detect (D+)
+| 3   | USBA_D1 doorknock (D-)
+| 2   | USBA_D1 presence detect (D+)
+| 1   | USBA_D0 doorknock (D-)
+| 0   | USBA_D0 presence detect (D+)
 
 ## USBB channels
 
@@ -51,13 +56,13 @@ Read from SFR 0FDh.
 
 | Bit | Purpose
 |-----|------------------------------
-| 7   | USBB_D3 doorknock
-| 6   | USBB_D3 presence detect
-| 5   | USBB_D2 doorknock
-| 4   | USBB_D2 presence detect
-| 3   | USBB_D1 doorknock
-| 2   | USBB_D1 presence detect
-| 1   | USBB_D0 doorknock
-| 0   | USBB_D0 presence detect
+| 7   | USBB_D3 doorknock (D-)
+| 6   | USBB_D3 presence detect (D+)
+| 5   | USBB_D2 doorknock (D-)
+| 4   | USBB_D2 presence detect (D+)
+| 3   | USBB_D1 doorknock (D-)
+| 2   | USBB_D1 presence detect (D+)
+| 1   | USBB_D0 doorknock (D-)
+| 0   | USBB_D0 presence detect (D+)
 
 USBB_D4 is read from SFR 087h (bit 0 = presence detect, bit 1 = doorknock).
