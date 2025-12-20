@@ -50,7 +50,7 @@ Read from SFR 0D7h.
 | 1   | USBA_D0 doorknock (D-)
 | 0   | USBA_D0 presence detect (D+)
 
-## USBB channels
+### USBB channels
 
 Read from SFR 0FDh.
 
