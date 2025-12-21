@@ -71,9 +71,11 @@ Setter messages aren't acknowledged at all; no response is sent, and unrecognize
 ### 0x01 - Get powerup cause (also complete handshake/disable reset watchdog)
 
 Input bytes:
-1. Command `0x01`
+0. Command `0x01`
 
 Output bytes:
+
+0. Command `0x01`
 1. Power-up cause (see table below)
 2. Always zero
 3. Number of boot attempts
@@ -111,7 +113,8 @@ Known power-up causes are taken from xeBuild and xenon-emu.
 ### 0x04 - Get RTC value and RTC alarm setting
 
 Input bytes:
-1. Command `0x04`
+
+0. Command `0x04`
 
 Output bytes:
 
@@ -120,9 +123,9 @@ Output bytes:
 2. RTC value in milliseconds, bits 8-15
 3. RTC value in milliseconds, bits 16-23
 4. RTC value in milliseconds, bits 24-31
-5. RTC value in milliseconds, bits 32-40
+5. RTC value in milliseconds, bits 32-39
 6. Flags: bit 0 = has time been set yet?, bit 1 = is RTC wake feature enabled?
-6. RTC wakeup value in milliseconds, bits 32-40
+6. RTC wakeup value in milliseconds, bits 32-39
 7. RTC wakeup value in milliseconds, bits 24-31
 8. RTC wakeup value in milliseconds, bits 16-23
 9. RTC wakeup value in milliseconds, bits 8-15
@@ -130,6 +133,7 @@ Output bytes:
 ### 0x07 - Get temperatures
 
 Input bytes:
+
 0. Command `0x07`
 
 Output bytes:
@@ -231,7 +235,8 @@ Output bytes:
 See versions.md for list of bytes expected to be returned here.
 
 This is actually the first command the CPU sends to the SMC, although it's in hwinit so it's understandable that
-a lot of people missed it. The Free60 Wiki actually [documented this](https://github.com/Free60Project/wiki/blob/75eedd404016907900722d577fb97e28c2ea71d8/Boot_Process.md), although in an incorrect way (it says that hwinit performs the SMC handshake).
+a lot of people missed it. This behavior was already documented all the way back in 2009 in hack.txt, although
+in an incorrect way (it says that hwinit performs the SMC handshake).
 
 For whatever reason, the program doesn't actually read the header bytes at 0x100~0x102; instead it
 hardcodes those values right into the command handler. Here's how it looks in the Falcon SMC:
@@ -259,12 +264,15 @@ About the persistent memory cells:
 
 ### 0x13 - Copy inbox contents to outbox
 
-This does exactly what it does on the tin: it copies the entire inbox to the outbox. It doesn't care how many bytes the CPU
+This does exactly what it says on the tin: it copies the entire inbox to the outbox. It doesn't care how many bytes the CPU
 has written to the inbox; it will always read and write 16 bytes.
 
 ### 0x16 - Get infrared address
 
-TODO
+Outputs:
+
+0. Command `0x16`
+1. Infrared address (value from 0x00-0x0F, defaults to 0x0F)
 
 ### 0x17 - Get tilt switch status
 
@@ -352,7 +360,7 @@ Input bytes:
 2. RTC value in milliseconds, bits 8-15
 3. RTC value in milliseconds, bits 16-23
 4. RTC value in milliseconds, bits 24-31
-5. RTC value in milliseconds, bits 32-40
+5. RTC value in milliseconds, bits 32-39
 
 Notes:
 - The SMC program will set the "has RTC been set?" flag when this command runs.
@@ -433,15 +441,27 @@ This is only really useful on Xenon, where both fans can be controlled independe
 driven by a single MOSFET, which in turn is controlled by the HANA. This command was removed from Trinity and the other
 slims, because slims only have one fan (the CGPU fan).
 
-### 0x95 - TODO
+### 0x95 - Set infrared address
 
-TODO
+Inputs:
 
-### 0x98 - TODO
+0. Command `0x95`
+1. New infrared address
 
-TODO
+The infrared address must be a value from 0x00-0x0F; it will be AND masked with 0x0F.
 
-Sets a flag that will stay set until the system powers off or reboots.
+When this function is called, a bit will be set that is later picked up by the Argon statemachine. The resulting
+behavior is strange; it looks like it disables the RTC wakeup as a side effect.
+
+### 0x98 - Schedule soft reset if tray not closed?
+
+Inputs:
+
+0. Command `0x98`
+
+This is another weird one. It sets a flag that will stay set until the system powers off or reboots.
+The flag is picked up by the DVD tray monitor, which will schedule a soft reset if the tray is not
+completely closed.
 
 ### 0x99 - Override Ring of Light LEDs
 
@@ -488,7 +508,7 @@ is reserved for SMC errors. If the error code is less than 0100, then the comman
 Input bytes:
 
 0. Command `0x9B`
-1. RTC wakeup value in milliseconds, bits 32-40
+1. RTC wakeup value in milliseconds, bits 32-39
 2. RTC wakeup value in milliseconds, bits 24-31
 3. RTC wakeup value in milliseconds, bits 16-23
 4. RTC wakeup value in milliseconds, bits 8-15
@@ -526,11 +546,13 @@ Buffer A locations (in INTMEM):
 - Falcon: 082h~08Dh
 - Jasper: 083h~08Eh
 - Trinity: 084h~08Fh
+- Winchester: 082h~08Dh
 
 Buffer B locations (in INTMEM):
 - Falcon: 08Eh~099h
 - Jasper: 08Fh~09Ah
 - Trinity: 090h~09Bh
+- Winchester: 08Eh~099h
 
 The IPC exposes the following commands to access these buffers:
 - 0x1E: Read Buffer A (response is `1E` followed by the contents of the buffer)
@@ -619,6 +641,14 @@ Bits
 
 TODO
 
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x42`
+2. Fixed byte `0x01` (there's no "pushed" or "unpushed" state)
+
+Seems to be related to /EXT_PWR_ON_N
+
 ### 0x44 - Argon event
 
 Outputs:
@@ -630,32 +660,26 @@ Outputs:
 
 TODO
 
-### 0x60 - DVD tray is now fully open
-
-TODO
-
 ### 0x61 - Eject switch pushed while DVD tray closed
 
-TODO
+Outputs:
+
+0. Command `0x83`
+1. Fixed byte `0x61`
 
 This is a signal that the DVD tray is about to be ejected and whatever is accessing the
-DVD drive should stop accessing it immediately.
+DVD drive should stop accessing it immediately. The CPU has maybe about 40 ms to cancel
+the event before the SMC performs the eject.
 
-### 0x62 - DVD tray is now fully closed
+### 0x6x - DVD tray state update
 
-TODO
+Outputs:
 
-### 0x63 - DVD tray is opening
+0. Command `0x83`
+1. New tray state: `0x60`,`0x62`,`0x63`,`0x64`,`0x65`
 
-TODO
-
-### 0x64 - DVD tray is closing
-
-TODO
-
-### 0x65 - DVD tray problem detected
-
-TODO
+All tray state changes are handled by the same block of code. States are the same
+as the ones [up here](#0x0a---get-dvd-tray-state).
 
 ## See also
 
