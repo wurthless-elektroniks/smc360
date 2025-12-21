@@ -81,9 +81,10 @@ Output bytes:
 3. Number of boot attempts
 4. Single bit, bit 0 indicates SMC config load error (1 if true)
 
-The SMC expects this command to be sent within a certain time period after the CPU is released from reset.
-If it doesn't get it in time, it resets everything and tries again. After five failed attempts, the SMC
-gives up with a RRoD.
+The SMC expects this command to be sent within a certain time period after the CPU is released from reset
+(7000 ms on pre-Jasper fats, 5200 ms on Jasper and all slims). If it doesn't get it in time, it resets
+everything and tries again. After five failed attempts, the SMC gives up with a RRoD. See watchdog
+behavior [here](resetwatchdog.md).
 
 The SMC doesn't care how many times this command is received; you can send it over and over and the values
 should be the same every time. All that matters is you send it at least once.
