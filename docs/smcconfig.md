@@ -55,7 +55,7 @@ This is for normal SFCX NANDs. On eMMC systems, the SMC config will always be re
 | 10   | Big boy (2kb pages/128kb blocks, up to 512mbytes)   | 0x03BE0000      | 0x03DBF000        |
 | 11   | Big boy (4kb pages/256kb blocks, up to 1gbytes)     | 0x03BC0000      | 0x03D9E000        |
 
-Taken from Winchester SMC.
+Taken from Winchester SMC, table is the same on Corona.
 
 Retail systems never used anything other than a 16 mbyte NAND, which is unfortunate because
 of how shitty and unreliable the eMMCs ended up being.

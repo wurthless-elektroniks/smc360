@@ -57,7 +57,7 @@ Checks powergood signals in the order: 12v, 5v, VMEM, VCPU, VEDRAM. (VCPU powers
 
 Checkstop behavior is similar to Falcon/Jasper (sends Argon command 0x49 but does nothing else).
 
-## Winchester
+## Corona/Winchester
 
 Checks powergood signals in the order: 12v, 5v, 3v3, VMEM, VCPU.
 

@@ -264,6 +264,18 @@ Commandlist table at 0x2ACF-0x2BAD (222 bytes).
 One byte changes between Trinity and Jasper. The HANA write to register 0xE4 is now `0B E4 00 00 00 1F`
 (that's `1F 00 00 00` byteswapped). The rest of the code is identical, so it will not be disassembled in detail.
 
+### Corona
+
+Commandlist table at 0x2D66-0x2E48 (226 bytes).
+
+Disassembly TODO.
+
+### Winchester
+
+Commandlist table at 0x2BC4-0x2C75 (177 bytes).
+
+Disassembly TODO.
+
 ## I2C over IPC
 
 The CPU-to-SMC IPC can be used to read or write different registers on the I2C bus. It all centers around 

@@ -24,11 +24,14 @@ without it. This is removed from slims.
 
 Locations:
 - Falcon: 0x13FC
+- Corona: 0x14DB
 
-This is a simple two-state state machine.
+This is a simple two-state state machine that didn't really need to be a state machine.
 
 - State 0 updates the LEDs in this order: boot status, boot attempt, PCIe link status. Then it
-  sets up the 100 ms delay and goes to state 1.
+  sets up the 100 ms delay and goes to state 1. On post-Xenon fats, the boot attempt and PCIe link
+  status flasher update code is still there, but the functions that update the LEDs are stubbed out
+  (immediate `ret`). On slims, only the boot attempt update code is present.
 - State 1 just runs the delay timer so the LEDs advance every 100 ms; when that timer expires, we
   go back to state 0.
 

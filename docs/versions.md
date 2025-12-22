@@ -57,6 +57,7 @@ TODO
 - Support for the second (GPU) fan dropped: PWM channel 2 duty cycle now set to 0 always, thermal stuff no
   longer updates the second fan, IPC command 0x94 is removed
 - SMC config loader now uses structure version 5
+- Register preservation in interrupt handlers now uses shadow registers instead of pushing values to the stack
 
 ### Corona
 

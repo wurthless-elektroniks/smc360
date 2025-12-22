@@ -8,7 +8,7 @@ Locations:
 - Falcon: 0x12C6
 - Jasper: 0x12D5
 - Trinity: 0x13E1
-- Corona: TODO
+- Corona: 0x13E2
 - Winchester: 0x13AD
 
 ## Falcon

@@ -25,10 +25,10 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 08Eh |
 | 08Fh | PCIe status (bits 4/5), IRQ mask?
 | 090h | GPIO port 1
-| 091h | PWM channel 1 duty cycle
-| 092h | PWM channel 1 frequency
-| 093h | PWM channel 2 duty cycle
-| 094h | PWM channel 2 frequency
+| 091h | PWM channel 2 duty cycle
+| 092h | PWM channel 2 frequency
+| 093h | PWM channel 1 duty cycle
+| 094h | PWM channel 1 frequency
 | 095h | Set to 0x88 constantly
 | 096h | Set to 0x00
 | 097h |
