@@ -144,5 +144,6 @@ The KSB adds more registers in EXTMEM space (use MOVX opcodes to read/write).
 - 0x0020~0x0023: eMMC read result
 - 0x00A8: HDMI presence detect? (on bit 0)
 - 0x00EC: eMMC command/status? (write 1 to set 256-byte block address, 0 to read within block)
-- 0x00ED~0x00EF: eMMC address (little endian)
+- 0x00ED~0x00EF: eMMC address, bits 8-31 (little endian)
+- 0x00F0: eMMC status? (bit 7 should not be 0 after a read)
 - 0x00F3: Extended SFCX configuration register, bits 24-31. bit 7 = 4gbytes eMMC present, bit 6 = NAND ready
