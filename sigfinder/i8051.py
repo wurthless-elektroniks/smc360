@@ -1,5 +1,15 @@
 import struct
 
+
+def i8051_decode_bitfield_address(address: int):
+    if address < 0x80:
+        return (0x20 + (address >> 3), address & 0x07)
+    return (address & 0xF8, address & 0x07)
+
+def i8051_decode_bitfield_address_formatted(address: int):
+    decoded = i8051_decode_bitfield_address(address)
+    return f"0{decoded[0]:02X}h.{decoded[1]}"
+
 def i8051_decode_sjmp_target(opcode_offset: int, opcode_bytes: bytes) -> int:
     rel_address = struct.unpack(">b", opcode_bytes[1])
     return (opcode_offset + 2) + rel_address

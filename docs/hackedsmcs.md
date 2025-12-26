@@ -17,6 +17,10 @@ sysreset_watchdog_exec_state_10:
 
 Then it's enough to change the `inc` instruction to a `nop` (change `05 xx` to `00 00`).
 
+There's one problem with this patch, however: any RRoD raised by CPU before GetPowerUpCause arrives
+will be ignored, and the system will reboot. This means that if hwinit encounters an error, then
+the reset watchdog will reboot infinitely instead of giving up.
+
 Evolution of the pattern between different SMC revisions:
 
 - Xenon:      `05 3E E5 3E B4 05 10`
