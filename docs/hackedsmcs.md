@@ -222,3 +222,148 @@ CD on Glitch2 (either by CDxell or Freeboot), so you can get the base times by c
 POST 0x40 -> 0x10 transistion (on Freeboot).
 
 In short, this could have been a dropdown in J-Runner.
+
+## RGH3
+
+RGH3 is, like most Xbox 360 scene productions, something that should have happened years ago but
+didn't because people were too busy making money and padding their CVs. It's actually a bit of a
+triumph because it's not just a SMC program, but a complete technique for glitching the system.
+
+RGH3 did the following things that hadn't really been done before:
+- Glitch attack now runs from the SMC (was attempted previously but deemed to be unstable).
+- SMC now monitors the boot process, not just to know when to time the glitch, but also to know
+  if the glitch succeeded or not.
+- CPU now gets an intermediate CB loader called CB_X, which speeds up glitch attempts.
+
+There are two different versions of RGH3 (nicknames mine): "RGH3 v1" is the closed source release
+from 2021, and "RGH3 v2" is the open source release from 2024/2025.
+
+### RGH3 v1
+
+Documentation applies to Falcon/Jasper code, which itself is based off the Jasper SMC.
+Not much differences apply between 10 MHz and 27 MHz except for the delays in the glitching code
+and the slowdown values written. 10 MHz uses the already known but unstable HANA register 0xCD;
+27 MHz uses the clock bypass mode in HANA register 0xCE.
+
+The bulk of the patch code is dropped in to 0x2D73, which is the end of the normal Jasper codespace.
+
+The reset vector (0x0000) is patched `e1 56 21` to `02 2e 21` which is a pretty fancy hack
+redirecting code to a new startup function while leaving the `ajmp` to the "every 1ms" IRQ handler.
+
+The code at 0x2E21 then does this:
+- If /CPU_RST_N is high, increment counter at 03Fh. Then, if GPU_RESET_DONE is high, fall through
+  to stock SMC code in the reset watchdog statemachine, which requests a reset and goes to state 10.
+
+- If /CPU_RST_N was NOT high, increment counter at 0C2h. Code then falls through to a very strange
+  handler...
+
+At 0x2E40 is this very odd code:
+```
+
+       CODE:2e40 e5 02           MOV        A,BANK0_R2
+       CODE:2e42 65 03           XRL        A,BANK0_R3
+       CODE:2e44 f6              MOV        @R0,A
+       CODE:2e45 e5 06           MOV        A,BANK0_R6
+       CODE:2e47 24 49           ADD        A,#0x49
+       CODE:2e49 c0 e0           PUSH       A
+       CODE:2e4b 54 32           ANL        A,#0x32
+       CODE:2e4d 24 f5           ADD        A,#0xf5
+       CODE:2e4f c0 e0           PUSH       A
+       CODE:2e51 22              RET
+```
+
+This code is doing two things:
+- It's obfuscating the real entry point to the code, which is lame and unnecessary.
+- It's seemingly trying to redirect code execution depending on how the SMC watchdog reset function
+  fires. Remember that if the SMC code gets stuck, a watchdog will eventually fire that resets it.
+
+Meanwhile, in the init/mainloop block at 0x756:
+- Stack pointer is moved up from 0B9h to 0C4h to make room for additional memory cells.
+- The call to 0x1408 in the mainloop, which runs the debug LED state machine, is removed, and
+  the "run as fast as possible" portion now calls a handler at 0x2D73.
+
+So what does the code at 0x2D73 do?
+- Read memory cell 03Fh into accumulator.
+- If /CPU_RST_N is low, clear DBG_LED0, which has been repurposed to assert CPU_PLL_BYPASS.
+  Check 03Fh.2; if it's 0, set 03Fh to 0 and exit. Otherwise, run I2C logic, retrying
+  until it succeeds, after which 03Fh is set to 0.
+
+The I2C handling code is:
+- If 0A6h is not zero, set carry and exit (failure/busy case).
+- Call 0x2692, which is the "reset I2C bus and exit" function.
+- Call 0x2A48, which checks the I2C SDA state (it should be high) and returns the inverse of it.
+- If 0x2A48 returned CY=0 (bus is OK), do some variant on the normal I2C reset process, where
+  SDA is manually driven, the I2C bus is reset, and code execution jumps to a freshly inserted
+  code block at 0x13CF, which toggles the I2C slowdown state.
+- Call 0x2A62, which tries to get the I2C bus back in stable condition. If it succeeds,
+  run the I2C toggle logic (same as previous case).
+- Otherwise, jump to 0x2690, which is the I2C "give up" case; it will set the carry flag too.
+
+The I2C toggle code seems to be "inspired" by the buggy CR4 code, in that it forces the I2C
+statemachine to manually write values instead of going through the commandlist like it's supposed to.
+Either way, slowdown is enabled when 03Fh is 4, and disabled otherwise.
+
+Now for the bulk of the statemachine code, which 03Fh determines.
+
+- State 0: Set 0C0h to 12 and jump to a common handler at 0x2E13.
+- State 1: Wait until memory cell at 077h (the milliseconds counter) is 0x15. Once it is,
+  decrement timer at 0C0h; once that hits 0, proceed to the next state. In practice this
+  is killing about 255 ms while the bootrom executes most of its logic.
+- State 2: Wait until GPU_RESET_DONE, which is now tied to POST bit 1, goes high. Once it
+  does, proceed to the next state. As in the open source release, this is waiting approximately
+  251 ms to get to POST 0x1E.
+- State 3: Disable interrupts, then track POST states. POST bit 1 must toggle high/low/high/low/high,
+  i.e., 0x1E/0xD0/0xD2/0xD4/0xD6. Once 0xD6 arrives, set DBG_LED0 to enable PLL bypass, re-enable
+  interrupts, set 0C0h to 5, and proceed to the next state.
+- State 4: Force I2C toggle logic to execute until it succeeds. When it does,
+  proceed to the next state.
+- State 5: Same logic as state 1: wait for timer to expire, then go to next state. (Not sure
+  where 0C0h is loaded from, if at all...)
+- State 6: The meat of the glitch attack. Clear PLL bypass and kill interrupts. Spin until POST 0xD8, kick watchdog, then
+  load PLL delay (valuies load to R2/R3/R4). Once delay expires, assert CPU_PLL_BYPASS, kick watchdog,
+  and begin reset delay (values copied from 0C2h/0C3h to R5/R6). Once second delay expires, do glitch
+  pulse (`CLR gpio_cpu_rst_n` immediately followed by `SETB gpio_cpu_rst_n`). Kick watchdog again,
+  de-assert CPU_PLL_BYPASS, re-enable interrupts, increment the 03Fh state, set 0C0h to 3 (delay for
+  state 8), then attempt to disable I2C slowdown. (Whether slowdown is successfully disabled or not is not
+  checked here.)
+- State 7: Same as state 4: force I2C toggle logic to execute until it succeeds. When it does,
+  proceed to the next state.
+- State 8: Same logic as state 1/5: wait for timer to expire, then go to next state. In this case,
+  we're waiting about 60 ms.
+- State 9: This is the same logic in the reset vector. Since /CPU_RST_N is high, execution falls through
+  to 0x2E52, which increments the state counter. It then checks the POST bit, which should now be 0.
+  If it is, then that means CB_X must have cleared it (POST 0x54) and the glitch has (seemingly) succeeded.
+  If it hasn't, then execution jumps to 0x12D1, which tells the reset watchdog statemachine to request a
+  reboot and start the reset process over again.
+- State 10 (and all other states) is the idle state.
+
+### RGH3 v2
+
+This is open source (read it [here](https://github.com/15432/RGH3)), so I won't document everything.
+
+- All calls in the mainloop get redirected to stubs which execute the main RGH3 statemachine logic
+  as often as possible, in an attempt to make timings more accurate.
+- I2C slowdown now executes through proper I2C commandlists that have been patched into the main
+  commandlist table. In addition to changing HANA register 0xCE, the Jasper code also writes to
+  HANA register 0xD4, which overclocks the SMC in an attempt to make glitching more precise.
+- The millisecond wait code is now finer-grained.
+- The Argon statemachine is disabled while the glitch is running.
+- In addition to checking for POST 0x54, the SMC code also checks for POST bit 1 to rise afterwards,
+  which it should at POST 0x2E (hwinit running). This however is controlled by an #ifdef statement
+  (`SKIP_CBB_POST_CHECK`).
+
+## RGH1.3
+
+This is where I have to toot my own horn and do shameless self-promotion like any 360 scene lamer should.
+I've written the bulk of the story before, but here are the basics.
+
+RGH1.3 is an stupid idea that turned serious. It's basically RGH3 but with a glitch chip. But by offloading the
+glitching logic to the glitch chip, the SMC is free to do boot progress monitoring even more aggressively than
+RGH3.
+
+I think this is the first SMC to do the following:
+- Extremely aggressive glitching against stubborn Jaspers, by hard-resetting the system under "badjasper" builds
+- Boot progress indication on the Ring of Light
+- Custom IPC logic handling for tracking boot progress on 1wire and 0wire builds
+
+Read the source [here](https://github.com/wurthless-elektroniks/RGH1.3).
