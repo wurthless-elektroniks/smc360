@@ -184,3 +184,90 @@ Behavior is more or less identical between these two.
 
 - Wait until the main reset sequence completes, then go to state 0.
 
+## Jasper
+
+Simplified/reorganized from Zephyr/Falcon.
+
+### State 0: Reset SMC config to defaults and request SFCX to load the config from flash
+
+- Clear any RRoD requested from IPC.
+- If the IPC requested a reboot, then ask the reset statemachine to reboot everything, and go to state 11.
+- If the system is starting from a cold boot, reset SMC config to defaults and read the SMC config
+  page from flash (but don't process it yet), set CPU powergood and go to state 1.
+
+### State 1: Parse SMC config
+
+- Parse the SMC config from the flash page we loaded earlier. If there was a problem loading it,
+  then fall back on defaults, and, if the SMC is not in development mode, set the "SMC config load
+  error" flag that will be sent when the CPU runs GetPowerUpCause.
+- Set southbridge powergood signal.
+- Write some XSB magic SFR (SFR 0FCh), then kill a ton of cycles by writing that value to EXTMEM.
+  Jasper always shipped with a XSB R0, so the code always writes 0x43.
+- Proceed to state 2.
+
+### State 2: Release CPU from reset
+
+- Set "CPU running" flag and, set SFRs 097h/0A9h/0DFh to zero, and de-assert /CPU_RST_N.
+- Go to state 3.
+
+### State 3: GPU_RESET_DONE should be low
+
+- Check GPU_RESET_DONE. If it's stuck high, queue RRoD 0020 and immediately run the error handling case.
+- De-assert /GPU_RST_N, set the shared timer cell to 2 (2*20=40 ms) then go to state 4.
+
+### State 4: Delay before releasing southbridge reset
+
+- Wait for the timer to expire.
+- De-assert /SB_RST_N.
+- Reload shared timer cell to 4 (4*20=80 ms) then go to state 5.
+
+### State 5: GPU_RESET_DONE must go high in 80 ms
+
+- If GPU_RESET_DONE is not 1, then tick the shared timer cell down; if that timer expires,
+  then queue RRoD 0020 and immediately run the error handling case.
+- Reload shared timer cell with 5 (=100 ms) and go to state 6.
+
+### State 6: PCIe link must be established in 100 ms
+
+- Check PCIe status; if there is a link issue, tick the shared timer cell down, and if that timer
+  expires, queue RRoD 0021 and immediately run the error handling case.
+- Otherwise, the PCIe link is up, so go to state 7.
+
+### State 7: Check XSB/PSB flag
+
+- Read a flag that depends on which southbridge revision the code's running on. For PSB, check 097h.0.
+  For XSB, check 0DFh.2.
+- If the flag we read was set, load the shared timer cell with 0x82 (130*20=2600ms, GetPowerUpCause
+  timeout part 1), and go to state 8.
+- If the flag was not set, there's a problem. Increment the counter at 03Eh; if it's not 6, then
+  then ask the reset statemachine to reboot everything, and go to state 10. Once that value hits
+  6, then queue RRoD 0022 and run the error handling case.
+
+### State 8: GetPowerUpCause timeout part 1
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, reload the timer (0x82 again, 2600ms more) and
+  go to state 9.
+
+### State 9: GetPowerUpCause timeout part 2
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, queue RRoD 0022 and run the error handling case.
+
+### Error handling case
+
+This is no longer a state in the state machine; it's now a common code block that's immediately jumped to by various error cases.
+
+- Set memory cell at 03Eh to zero (clears previous attempt counter set in state 7).
+- The boot attempt has failed, so increment the number of boot attempts so far. We try up to 5
+  times, so if this isn't our fifth attempt, then ask the reset statemachine to reboot everything,
+  and go to state 10.
+- The RRoD code has been set up for us already, but if the RRoD didn't get raised by the IPC, then
+  default the RRoD general error pattern to the classic RRoD three lights pattern.
+- Raise the RRoD and give up.
+
+### State 10: Wait for reset sequence to finish
+
+- Wait until the main reset sequence completes, then go to state 0.
