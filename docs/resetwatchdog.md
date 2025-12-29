@@ -123,7 +123,7 @@ Behavior is more or less identical between these two.
 - Set southbridge powergood signal.
 - Write some XSB magic SFR (SFR 0FCh), then kill a ton of cycles by writing that value to EXTMEM.
   On Zephyr, the value depends on the SB_DETECT I/O signal; if it's high (XSB R0) then write 0x43, otherwise
-  write 0xC2. Falcon always shipped with a XSB R0, so the southbridge detection is removed and the
+  (assuming XSB G0) write 0xC2. Falcon always shipped with a XSB R0, so the southbridge detection is removed and the
   code always writes 0x43.
 - Proceed to state 2.
 
@@ -191,7 +191,7 @@ Simplified/reorganized from Zephyr/Falcon.
 ### State 0: Reset SMC config to defaults and request SFCX to load the config from flash
 
 - Clear any RRoD requested from IPC.
-- If the IPC requested a reboot, then ask the reset statemachine to reboot everything, and go to state 11.
+- If the IPC requested a reboot, then ask the reset statemachine to reboot everything, and go to state 10.
 - If the system is starting from a cold boot, reset SMC config to defaults and read the SMC config
   page from flash (but don't process it yet), set CPU powergood and go to state 1.
 
@@ -202,12 +202,12 @@ Simplified/reorganized from Zephyr/Falcon.
   error" flag that will be sent when the CPU runs GetPowerUpCause.
 - Set southbridge powergood signal.
 - Write some XSB magic SFR (SFR 0FCh), then kill a ton of cycles by writing that value to EXTMEM.
-  Jasper always shipped with a XSB R0, so the code always writes 0x43.
+  Jasper always shipped with a PSB, which is backwards compatible with XSB R0, so the code always writes 0x43.
 - Proceed to state 2.
 
 ### State 2: Release CPU from reset
 
-- Set "CPU running" flag and, set SFRs 097h/0A9h/0DFh to zero, and de-assert /CPU_RST_N.
+- Set "CPU running" flag, set SFRs 097h/0A9h/0DFh to zero, and de-assert /CPU_RST_N.
 - Go to state 3.
 
 ### State 3: GPU_RESET_DONE should be low
@@ -269,5 +269,72 @@ This is no longer a state in the state machine; it's now a common code block tha
 - Raise the RRoD and give up.
 
 ### State 10: Wait for reset sequence to finish
+
+- Wait until the main reset sequence completes, then go to state 0.
+
+## Trinity
+
+Simplified again. The Trinity SMC code retains compatibility with XSB, so some XSB-specific stuff is
+still checked during this procedure, but in practice it's never used because Trinity uses PSB exclusively.
+
+### State 0: Reset SMC config to defaults and request SFCX to load the config from flash
+
+- Clear any RRoD requested from IPC.
+- If the IPC requested a reboot, then ask the reset statemachine to reboot everything, and go to state 8.
+- If the system is starting from a cold boot, reset SMC config to defaults and read the SMC config
+  page from flash (but don't process it yet), set CPU powergood and go to state 1.
+
+### State 1: Parse SMC config
+
+- Parse the SMC config from the flash page we loaded earlier. If there was a problem loading it,
+  then fall back on defaults, and, if the SMC is not in development mode, set the "SMC config load
+  error" flag that will be sent when the CPU runs GetPowerUpCause.
+- Set southbridge powergood signal.
+- Write some XSB magic SFR (SFR 0FCh), then kill a ton of cycles by writing that value to EXTMEM.
+  Trinity always shipped with a PSB, so the code always writes 0x43.
+- Proceed to state 2.
+
+### State 2: GPU_RESET_DONE should be low
+
+- Check GPU_RESET_DONE. If it's stuck high, queue RRoD 0020 and immediately run the error handling case.
+- De-assert /GPU_RST_N, set the shared timer cell to 2 (2*20=40 ms) then go to state 3.
+
+### State 3: GPU_RESET_DONE should be high
+
+- Tick down the shared timer cell until it reaches 0.
+- Check GPU_RESET_DONE. If it's stuck low, queue RRoD 0020 and immediately run the error handling case.
+- De-assert /SB_RST_N.
+- Set shared timer cell to 5 (5*20=100 ms) and go to state 4.
+
+### State 4: PCIe link must be established in 100 ms
+
+- Check PCIe status; if there is a link issue, tick the shared timer cell down, and if that timer
+  expires, queue RRoD 0021 and immediately run the error handling case.
+- Otherwise, the PCIe link is up. Set the "CPU running flag", set SFRs 097h/0A9h/0DFh to zero, and de-assert /CPU_RST_N.
+- Go to state 5.
+
+### State 5: Check XSB/PSB flag
+
+- Read a flag that depends on which southbridge revision the code's running on. For PSB, check 097h.0.
+  For XSB, check 0DFh.2.
+- If the flag we read was set, load the shared timer cell with 0x82 (130*20=2600ms, GetPowerUpCause
+  timeout part 1), and go to state 6.
+- If the flag was not set, there's a problem, but unlike on Jasper, we fail immediately. Queue RRoD 0032
+  and run the error handling case.
+
+### State 6: GetPowerUpCause timeout part 1
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, reload the timer (0x82 again, 2600ms more) and
+  go to state 7.
+
+### State 7: GetPowerUpCause timeout part 2
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, queue RRoD 0022 and run the error handling case.
+
+### State 8: Wait for reset sequence to finish
 
 - Wait until the main reset sequence completes, then go to state 0.
