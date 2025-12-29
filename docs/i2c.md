@@ -82,6 +82,7 @@ Byte format:
 - Jasper: `03`
 
 Handlers:
+
 - Falcon: 0x28DC -> 0x2686
 
 Stops executing the commandlist and returns success (via F0 flag).
@@ -89,9 +90,7 @@ Stops executing the commandlist and returns success (via F0 flag).
 ### Do nothing (NOP)
 
 Byte format:
-- Zephyr: `06`
-- Falcon: `06`
-- Jasper: `06`
+- Zephyr onwards: `06`
 
 Handlers:
 
@@ -103,21 +102,28 @@ Handlers:
 | Jasper       | TODO             | TODO            |
 | Trinity      | TODO             | TODO            |
 | Corona       | TODO             | TODO            |
-| Winchester   | TODO             | TODO            |
+| Winchester   | 0x2B95           | `ljmp 0x2998`   |
 
 Does nothing; it simply increments the commandlist execution pointer and continues on to the
-next instruction.
+next instruction. Could be a development leftover stubbed out on retail consoles.
 
 ### Run IPC-I2C transaction
 
 Byte format:
 - Xenon: `06`
-- Zephyr: `09`
-- Falcon: `09`
-- Jasper: `09`
+- Zephyr onwards: `09`
 
 Handlers:
-- Falcon: 0x28E2 -> 0x2891
+
+| SMC revision | Absolute offset  | Jumptable entry |
+|--------------|------------------|-----------------|
+| Xenon        | 0x281B           | `sjmp 0x27CD`   |
+| Zephyr       | 0x284A           | `sjmp 0x27F9`   |
+| Falcon       | 0x28E2           | `sjmp 0x2891`   |
+| Jasper       | 0x2934           | `sjmp 0x28E3`   |
+| Trinity      | 0x2AAA           | `sjmp 0x2A59`   |
+| Corona       | 0x2D2E           | `sjmp 0x2CDD`   |
+| Winchester   | 0x2B98           | `sjmp 0x2B47`   |
 
 This will block until the transfer completes.
 
@@ -137,21 +143,57 @@ Writes to the backup clock generator, which is a Cypress CY28517.
 ### Write ANA/HANA/KSB register
 
 Byte format:
-- Xenon: `08 rr dd dd dd dd`
-- Falcon: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
-- Jasper: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
+- Xenon: `08 rr dd dd dd dd` or `0B DB dd dd dd`  (registers 0xD5, 0xD9 and 0xDB treated specially, see below)
+- Zephyr, Falcon, Jasper, Trinity: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
+- Corona and Winchester: `0E rr dd dd dd dd`
 
 Handlers:
-- Falcon: 0x28E4 -> 0x268E
 
-Writes 4 bytes `dd dd dd dd` to the given HANA register `rr`. This will block until the transfer completes.
+| SMC revision | Absolute offset  | Jumptable entry |
+|--------------|------------------|-----------------|
+| Xenon        | 0x281D           | `ljmp 0x2611`   |
+| Zephyr       | 0x284C           | `ljmp 0x25F6`   |
+| Falcon       | 0x28E4           | `ljmp 0x268E`   |
+| Jasper       | 0x2936           | `ljmp 0x26E0`   |
+| Trinity      | 0x2AAC           | `ljmp 0x2850`   |
+| Corona       | 0x2D33           | `ljmp 0x2A30`   |
+| Winchester   | 0x2B9D           | `ljmp 0x29AC`   |
+
+Writes 4 bytes `dd dd dd dd` to the given ANA/HANA/KSB register `rr`. This will block until the transfer completes.
 
 The data is byteswapped due to how the I2C statemachine buffers work (last in/first out),
 so a write to the HANA clock mode select register 0xCE will have the data represented
 in the command as `08 e8 40 14` but the I2C bus will actually write `14 40 e8 08`.
 
-Important gotcha: HANA register 0xDB is treated specially because it is set by the SMC config. If register 0xDB is used,
-only three bytes will be read from the commandlist; the fourth will come from the SMC config cell.
+Special cases:
+- HANA register 0xDB is treated specially because it is set by the SMC config. If register 0xDB is used,
+  only three bytes will be read from the commandlist; the fourth will come from the SMC config cell.
+- Xenon handles 0xDB identically to HANA-based boards, but also has special cases for ANA registers 0xD5
+  and 0xD9. They both check if a flag somewhere (022h.1) is set to 1, and if it is, then overrides will
+  be performed. 0xD5 applies the override `-- -- e0 --`, 0xD9 applies the override `-- -- -- 01`.
+  Also note for 0xD5 and 0xD9 that the I2C commandlist pointer will still be incremented for those cases,
+  unlike 0xDB, which will skip reading a fourth byte.
+
+On KSB systems, there is no special case for register 0xDB as the registers have changed.
+
+### Write 0 to given KSB register
+
+Byte format:
+- Corona and Winchester: `0B rr`
+
+Handlers:
+
+| SMC revision | Absolute offset  | Jumptable entry |
+|--------------|------------------|-----------------|
+| Xenon        | Doesn't exist    | Doesn't exist   |
+| Zephyr       | Doesn't exist    | Doesn't exist   |
+| Falcon       | Doesn't exist    | Doesn't exist   |
+| Jasper       | Doesn't exist    | Doesn't exist   |
+| Trinity      | Doesn't exist    | Doesn't exist   |
+| Corona       | 0x2D30           | `ljmp 0x2A20`   |
+| Winchester   | 0x2B9A           | `ljmp 0x299C`   |
+
+Reuses the bulk of the "write ANA/HANA/KSB register" code, but writes 0 to the given register.
 
 ### Read HANA register
 
@@ -162,21 +204,21 @@ Byte format:
 Reads the given register into memory, then it's up to some other command to process the results.
 This will block until the transfer completes.
 
-### Store I2C result to temperature sensor fields
+### Convert I2C result to temperature sensor fields
 
 Byte format:
 - Falcon: `1A`
 
 TODO
 
-### Store I2C result to CPU temperature fields
+### Convert I2C result to CPU temperature fields
 
 Byte format:
 - Falcon: `1D`
 
 TODO
 
-### Store I2C result to chassis temperature fields
+### Convert I2C result to chassis temperature fields
 
 Byte format:
 - Falcon: `20`
@@ -193,7 +235,35 @@ TODO
 
 Commandlist table at 0x283E-0x28A2 (100 bytes).
 
-Disassembly TODO.
+
+| Rel offset | Abs offset | Bytecode            | Operation
+|------------|------------|---------------------|---------------------------------------------
+| `00`       | 0x283E     | `00`                | Init I2C bus
+|            | 0x283F     | `06`                | Run IPC-I2C transaction
+|            | 0x2840     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `03`       | 0x2841     | `00`                | Init I2C bus
+|            | 0x2842     | `08 E4 00 00 00 1B` | Write ANA register 0xE4: `1B 00 00 00`
+|            | 0x2848     | `08 E3 0F FF FF FF` | Write ANA register 0xE3: `FF FF FF 0F`
+|            | 0x284E     | `08 DB 00 00 00`    | Write ANA register 0xDB: `-- 00 00 00` (special case)
+|            | 0x2853     | `08 D5 00 00 00 0F` | Write ANA register 0xD5: `0F 00 00 00` (note: override possible)
+|            | 0x2859     | `08 D9 00 01 EE 00` | Write ANA register 0xD9: `00 EE 01 00` (note: override possible)
+|            | 0x285F     | `08 DC 00 00 42 AA` | Write ANA register 0xDC: `AA 42 00 00`
+|            | 0x2865     | `03`                | End of commandlist
+| `-`        | `-`        | `-`                 | `-`
+| `28`       | TODO       | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `36`       | TODO       | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `44`       | TODO       | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `53`       | TODO       | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `57`       | TODO       | TODO                | TODO
+| `-`        | `-`        | `-`                 | `-`
+| `62`       | 0x28A0     | `00`                | Init I2C bus
+|            | 0x28A1     | `26`                | Write current RRoD error code to I2C address 0x30
+|            | 0x28A2     | `03`                | End of commandlist
 
 ### Zephyr
 
@@ -244,7 +314,7 @@ Relative offset column only populated for known commandlist start points.
 |            | 0x2996     | `0E E0`             | Read HANA register 0xE0
 |            | 0x2998     | `1A`                | Use results of that read to update temperature sensor values
 |            | 0x2999     | `0E E1`             | Read HANA register 0xE1
-|            | 0x299B     | `1A`                | Use results of that read to update CPU temperature sensor values
+|            | 0x299B     | `1D`                | Use results of that read to update CPU temperature sensor values
 |            | 0x299C     | `0E E2`             | Read HANA register 0xE2
 |            | 0x299E     | `20`                | Use results of that read to update chassis temperature sensor values
 |            | 0x299F     | `03`                | End of commandlist
