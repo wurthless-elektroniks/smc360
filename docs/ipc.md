@@ -55,6 +55,52 @@ The "FIFOs" are actually 16 byte buffers that can be addressed in random order. 
 write the offset you want to access to the control register (remembering to set bit 4 to keep the inbox/outbox
 locked by the SMC). Then writes/reads will pick up from that offset.
 
+## State machines
+
+The SMC executes IPC state machine logic in the "run as fast as possible" part of the mainloop, likely because
+IPC events can't raise an IRQ on the SMC side.
+
+TODO: these are not "inbox" and "outbox" handlers, need better terminology here
+
+### Inbox handling
+
+This logic will always execute first, i.e., before the outbox handling logic.
+
+This is a two-state state machine, behaving as follows...
+
+State 0 waits for a message and then processes it.
+- Check the inbox SFR for an incoming message (bit 4 set). If there isn't a message there, keep idling.
+- Get the message type (bit 7 set indicates setter/command expecting no response). If bit 7 of the message
+  type is NOT set, then the logic effectively punts this message off to the outbox handler, setting a
+  flag (`g_ipc_getter_command_blocking`) and keeping the inbox locked until the message is handled.
+  The inbox handling state machine will then go to state 1.
+- If the message type DID have bit 7 set, then run the message handling code to process it, release
+  the inbox, and go back to waiting for more messages.
+
+State 1 waits for `g_ipc_getter_command_blocking` to clear before releasing the inbox and returning
+to state 0.
+
+### Outbox handling
+
+State 0 flushes any pending asynchronous events to the outbox before replying to messages from the CPU.
+- Set mutex flag on outbox and clear the entire outbox to 0.
+- Check for pending asynchronous events. If GetPowerUpCause hasn't arrived yet, cancel the event immediately.
+  If an asynchronous event ends up being handled, go to state 2.
+- Check if `g_ipc_getter_command_blocking` was set by the inbox handler. If it wasn't, keep idling.
+- Clear `g_ipc_setter_command_blocking` and handle the message. The main message handling logic will clear
+  `g_ipc_getter_command_blocking` if it doesn't recognize the message type; if that's the case, then keep
+  executing state 0 logic. (I think there might be a hazard here that can cause the SMC to lock the outbox
+  indefinitely, especially if GetPowerUpCause hasn't arrived yet...)
+- If `g_ipc_setter_command_blocking` was set (e.g., by IPC-to-I2C logic), go to state 1. Otherwise, release
+  the outbox, clear `g_ipc_getter_command_blocking`, and go to state 2.
+
+State 1 waits for `g_ipc_setter_command_blocking` to clear before releasing the outbox, clearing
+`g_ipc_getter_command_blocking`, and going to state 2. This is used for IPC-to-I2C transactions, as
+the I2C logic executes asynchronously.
+
+State 2 simply waits for the outbox SFR bit 4 to clear (probably waiting for the CPU to acknowledge the message).
+Once that's done, go back to state 0.
+
 ## Commands
 
 SMC commands are broken up into two kinds: getters (bit 7 clear), which are expected to return
@@ -67,6 +113,12 @@ else, only an acknowledgement that it got the message. If it does recognize the 
 of the message will be populated. This is why the output formats listed below start with index 0.
 
 Setter messages aren't acknowledged at all; no response is sent, and unrecognized commands are silently dropped.
+
+The main command handling code is located at:
+- Xenon: 0x0836
+- Zephyr, Falcon, Jasper: 0x083E
+- Trinity: 0x08D0
+- Corona, Winchester: 0x08A2
 
 ### 0x01 - Get powerup cause (also complete handshake/disable reset watchdog)
 
@@ -82,9 +134,9 @@ Output bytes:
 4. Single bit, bit 0 indicates SMC config load error (1 if true)
 
 The SMC expects this command to be sent within a certain time period after the CPU is released from reset
-(7000 ms on pre-Jasper fats, 5200 ms on Jasper and all slims). If it doesn't get it in time, it resets
-everything and tries again. After five failed attempts, the SMC gives up with a RRoD. See watchdog
-behavior [here](resetwatchdog.md).
+(7000 ms on pre-Jasper fats, 5200 ms on Jasper and all slims). If it doesn't get it in time, it triggers
+the reset watchdog error state, where, after five failed boot attempts, the SMC gives up with a RRoD.
+See watchdog behavior [here](resetwatchdog.md).
 
 The SMC doesn't care how many times this command is received; you can send it over and over and the values
 should be the same every time. All that matters is you send it at least once.
@@ -233,7 +285,7 @@ Output bytes:
 4. Persistent memory cell A
 5. Persistent memory cell B
 
-See versions.md for list of bytes expected to be returned here.
+See [versions.md](versions.md) for list of bytes expected to be returned here.
 
 This is actually the first command the CPU sends to the SMC, although it's in hwinit so it's understandable that
 a lot of people missed it. This behavior was already documented all the way back in 2009 in hack.txt, although
@@ -281,6 +333,9 @@ Outputs:
 
 0. Command `0x17`
 1. Single bit indicating tilt switch orientation (0 = no tilt, 1 = tilt)
+
+Although Stingray and Winchester do not have a tilt switch, they will still read the tilt switch I/O line
+and return its status.
 
 ### 0x1E - Read 12 bytes from SMC memory debug buffer A
 
@@ -503,6 +558,14 @@ The error codes are 4 digits long and are packed into a single byte in 4x2 bit f
 
 The error code specified here cannot be less than 0100 (hex 0x10) because any error code below that
 is reserved for SMC errors. If the error code is less than 0100, then the command will be ignored.
+
+Trinity adds the following logic (kept on Corona and Winchester):
+- If a power or overheat RRoD event has already triggered, then the message is ignored.
+  (This shouldn't be the case in normal operation - probably was added to catch an edge case.)
+- If the CPU attempts to raise an error below 0x10 (i.e., 0033 or less), then the SMC will
+  override the error code to 0x1F (0133) and force the error flags to 0 (RRoD classic pattern).
+  Similar logic runs checks against the second byte that will also override the error code to
+  0x1F (if less than 0x10 or 0xC0 or greater).
 
 ### 0x9B - Set RTC wake time
 
