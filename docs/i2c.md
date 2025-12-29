@@ -143,7 +143,7 @@ Writes to the backup clock generator, which is a Cypress CY28517.
 ### Write ANA/HANA/KSB register
 
 Byte format:
-- Xenon: `08 rr dd dd dd dd` or `0B DB dd dd dd`  (registers 0xD5, 0xD9 and 0xDB treated specially, see below)
+- Xenon: `08 rr dd dd dd dd` or `08 DB dd dd dd`  (registers 0xD5, 0xD9 and 0xDB treated specially, see below)
 - Zephyr, Falcon, Jasper, Trinity: `0B rr dd dd dd dd` or `0B DB dd dd dd` (register 0xDB treated specially, see below)
 - Corona and Winchester: `0E rr dd dd dd dd`
 
