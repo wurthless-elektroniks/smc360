@@ -310,24 +310,24 @@ Now for the bulk of the statemachine code, which 03Fh determines.
   decrement timer at 0C0h; once that hits 0, proceed to the next state. In practice this
   is killing about 255 ms while the bootrom executes most of its logic.
 - State 2: Wait until GPU_RESET_DONE, which is now tied to POST bit 1, goes high. Once it
-  does, proceed to the next state. As in the open source release, this is waiting approximately
-  251 ms to get to POST 0x1E.
+  does, proceed to the next state. At this point, the code is waiting for POST 0x1E.
 - State 3: Disable interrupts, then track POST states. POST bit 1 must toggle high/low/high/low/high,
   i.e., 0x1E/0xD0/0xD2/0xD4/0xD6. Once 0xD6 arrives, set DBG_LED0 to enable PLL bypass, re-enable
-  interrupts, set 0C0h to 5, and proceed to the next state.
+  interrupts, set 0C0h to 5, and proceed to the next state. (PLL bypass is enabled while I2C slowdown
+  is switched, probably to buy some time while the command executes on the slow I2C bus.)
 - State 4: Force I2C toggle logic to execute until it succeeds. When it does,
-  proceed to the next state.
-- State 5: Same logic as state 1: wait for timer to expire, then go to next state. (Not sure
-  where 0C0h is loaded from, if at all...)
+  proceed to the next state. Remember that state 4 is a special case; the I2C logic will try
+  to enable I2C slowdown here.
+- State 5: Same logic as state 1: wait for timer to expire (100 ms?), then go to next state.
 - State 6: The meat of the glitch attack. Clear PLL bypass and kill interrupts. Spin until POST 0xD8, kick watchdog, then
-  load PLL delay (valuies load to R2/R3/R4). Once delay expires, assert CPU_PLL_BYPASS, kick watchdog,
-  and begin reset delay (values copied from 0C2h/0C3h to R5/R6). Once second delay expires, do glitch
-  pulse (`CLR gpio_cpu_rst_n` immediately followed by `SETB gpio_cpu_rst_n`). Kick watchdog again,
-  de-assert CPU_PLL_BYPASS, re-enable interrupts, increment the 03Fh state, set 0C0h to 3 (delay for
-  state 8), then attempt to disable I2C slowdown. (Whether slowdown is successfully disabled or not is not
-  checked here.)
+  load PLL delay (valuies load to R2/R3/R4). Once delay expires, assert CPU_PLL_BYPASS, and wait for
+  the POST bit to rise again, taking us to POST 0xDA. Kick watchdog and begin reset delay (values copied from
+  0C2h/0C3h to R5/R6). Once second delay expires, do glitch pulse (`CLR gpio_cpu_rst_n` immediately
+  followed by `SETB gpio_cpu_rst_n`). Kick watchdog again, de-assert CPU_PLL_BYPASS, re-enable interrupts,
+  increment the 03Fh state, set 0C0h to 3 (delay for state 8), then attempt to disable I2C slowdown.
+  (Whether slowdown is successfully disabled or not is not checked here.)
 - State 7: Same as state 4: force I2C toggle logic to execute until it succeeds. When it does,
-  proceed to the next state.
+  proceed to the next state. Since the state value is now 7, this will try turning I2C slowdown off.
 - State 8: Same logic as state 1/5: wait for timer to expire, then go to next state. In this case,
   we're waiting about 60 ms.
 - State 9: This is the same logic in the reset vector. Since /CPU_RST_N is high, execution falls through

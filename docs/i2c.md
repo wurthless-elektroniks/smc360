@@ -403,15 +403,38 @@ as follows:
 
 0. Command byte `0x11`
 1. Number of bytes to write (in upper nibble)
-2. Number of bytes to read (in upper nibble), I2C data size? (in lower nibble)
-3. I2C address (lower 7 bits); bit 7 is still a mystery
-4. Mystery byte (lower 7 bits, shifted left once); bit 7 is still a mystery
-5. Mystery byte (lower 7 bits, shifted left once); bit 7 indicates read pending
+2. Not sure yet (in upper nibble), number of bytes to read (in lower nibble)
+3. I2C write address (lower 7 bits); bit 7 is the "operation pending" flag and should be set always
+4. I2C register??? (lower 7 bits, shifted left once); bit 7 is still a mystery
+5. I2C read address (lower 7 bits, shifted left once and ORed with 0x01); bit 7 indicates read (1) or write (0)
 6. Data to write (continues for remainder of message)
+
+A libxenon example, `xenon_smc_ana_read()` (see [here](https://github.com/Free60Project/libxenon/blob/master/libxenon/drivers/xenon_smc/xenon_smc.c)):
+
+```
+	buf[0] = 0x11;            <-- command 0x11
+	buf[1] = 0x10;            <-- write 1 byte (register field)
+	buf[2] = 5;               <-- read 5 bytes back
+	buf[3] = 0x80 | 0x70;     <-- write register 0x70, set bit 7 to make operation work
+	buf[5] = 0xF0;            <-- read register 0x70, bit 7 set to indicate read
+	buf[6] = addr;            <-- start of write buffer
+```
 
 Note that any error handling for this message will already have been done by the IPC handler.
 
 The I2C interrupt handler will continue reading the IPC inbox where this code left off.
 If the CPU requested a read, the results of the read will be dumped to the outbox starting at offset 0x03.
 
+Continuing the libxenon example in `xenon_smc_ana_read()`:
 
+```
+	if (buf[1] != 0)
+	{
+		uprintf("xenon_smc_ana_read failed, addr=%02x, err=%d\n", addr, buf[1]);
+		return -1;
+	}
+	*val = buf[4] | (buf[5] << 8) | (buf[6] << 16) | (buf[7] << 24);
+```
+
+In this case, `buf[3]` is ignored because that's the "size of message" field from the I2C response. The code
+assumes it'll always be 4 bytes wide, and copies the rest of the response to the output field.
