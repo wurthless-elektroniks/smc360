@@ -87,7 +87,7 @@
                              undefined gpu_reset_assert()
              undefined         ACC:1          <RETURN>
                              gpu_reset_assert                                XREF[2]:     CODE:10b7(c), CODE:11ed(c)  
-       CODE:0041 c2 81           CLR        P0.1                                                       = ??
+       CODE:0041 c2 81           CLR        gpio_gpu_rst_n                                             = ??
        CODE:0043 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -95,13 +95,12 @@
                              undefined gpu_reset_deassert()
              undefined         ACC:1          <RETURN>
                              gpu_reset_deassert                              XREF[2]:     CODE:11e8(c), CODE:11f2(c)  
-       CODE:0044 d2 c3           SETB       FIFLG.3                                                    holdover from xenon SMC
-                                                                                                       where a debugled was connected
-                                                                                                       to this GPIO
+       CODE:0044 d2 c3           SETB       FIFLG.3                                                    strobe GPU JTAG TCLK
+                                                                                                       for some reason
        CODE:0046 c2 c3           CLR        FIFLG.3                                                    = ??
        CODE:0048 d2 c3           SETB       FIFLG.3                                                    = ??
        CODE:004a c2 c3           CLR        FIFLG.3                                                    = ??
-       CODE:004c d2 81           SETB       P0.1                                                       actually deassert /GPU_RST_N
+       CODE:004c d2 81           SETB       gpio_gpu_rst_n                                             actually deassert /GPU_RST_N
        CODE:004e 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -278,10 +277,10 @@
                              undefined sfcx_flash_reset()
              undefined         ACC:1          <RETURN>
                              sfcx_flash_reset                                XREF[1]:     CODE:10c9(c)  
-       CODE:00ad 75 e3 01        MOV        RXDAT,#0x1                                                 = ??
-       CODE:00b0 75 e3 00        MOV        RXDAT,#0x0                                                 = ??
-       CODE:00b3 75 e3 01        MOV        RXDAT,#0x1                                                 = ??
-       CODE:00b6 75 e3 00        MOV        RXDAT,#0x0                                                 = ??
+       CODE:00ad 75 e3 01        MOV        sfr_sfcx_config_d0_lsb,#0x1                                = ??
+       CODE:00b0 75 e3 00        MOV        sfr_sfcx_config_d0_lsb,#0x0                                = ??
+       CODE:00b3 75 e3 01        MOV        sfr_sfcx_config_d0_lsb,#0x1                                = ??
+       CODE:00b6 75 e3 00        MOV        sfr_sfcx_config_d0_lsb,#0x0                                = ??
        CODE:00b9 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -421,7 +420,7 @@
                              undefined ipc_inbox_get_status()
              undefined         ACC:1          <RETURN>
                              ipc_inbox_get_status                            XREF[1]:     CODE:2289(c)  
-       CODE:00f4 e5 e2           MOV        A,RXSTAT                                                   = ??
+       CODE:00f4 e5 e2           MOV        A,sfr_ipc_inbox_ctrl_status                                = ??
        CODE:00f6 a2 e4           MOV        CY,ACC.4                                                   = ??
        CODE:00f8 22              RET
        CODE:00f9 00              ??         00h
@@ -493,7 +492,8 @@
                                                                                           CODE:0022(c), CODE:0024(c), 
                                                                                           CODE:0026(c), CODE:0028(c), 
                                                                                           CODE:002a(c), CODE:002c(c)  
-       CODE:012d 43 bc 36        ORL        DAT_SFR_bc,#0x36                                           = ??
+       CODE:012d 43 bc 36        ORL        DAT_SFR_bc,#0x36                                           sets bit 2 of this SFR
+                                                                                                       (maybe an "unexpected IRQ" flag?)
        CODE:0130 43 bd ff        ORL        DAT_SFR_bd,#0xff                                           = ??
        CODE:0133 43 bd 3f        ORL        DAT_SFR_bd,#0x3f                                           = ??
        CODE:0136 32              RETI
@@ -506,7 +506,7 @@
                              halt_execution                                  XREF[1]:     CODE:002e(c)  
        CODE:0137 02 23 bd        LJMP       halt_execution
                              timer_1ms_irq                                   XREF[1]:     CODE:0002(j)  
-       CODE:013a 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            inhibit interrupts?
+       CODE:013a 43 bf 01        ORL        sfr_irq_disable_all,#0x1                                   inhibit interrupts?
        CODE:013d c0 e0           PUSH       A
        CODE:013f c0 d0           PUSH       PSW
        CODE:0141 d2 d3           SETB       RS0                                                        = ??
@@ -523,7 +523,7 @@
        CODE:0159 c2 d3           CLR        RS0                                                        = ??
        CODE:015b d0 d0           POP        PSW
        CODE:015d d0 e0           POP        A
-       CODE:015f 53 bf fe        ANL        DAT_SFR_bf,#0xfe                                           re-enable IRQs?
+       CODE:015f 53 bf fe        ANL        sfr_irq_disable_all,#0xfe                                  re-enable IRQs?
        CODE:0162 32              RETI
                              **************************************************************
                              *                          FUNCTION                          *
@@ -531,7 +531,7 @@
                              undefined i2c_irq()
              undefined         ACC:1          <RETURN>
                              i2c_irq                                         XREF[2]:     CODE:000a(c), CODE:0012(c)  
-       CODE:0163 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            disable IRQs
+       CODE:0163 43 bf 01        ORL        sfr_irq_disable_all,#0x1                                   disable IRQs
        CODE:0166 c0 e0           PUSH       A
        CODE:0168 c0 d0           PUSH       PSW
        CODE:016a d2 d3           SETB       RS0                                                        = ??
@@ -563,13 +563,13 @@
        CODE:0195 c2 d3           CLR        RS0                                                        = ??
        CODE:0197 d0 d0           POP        PSW
        CODE:0199 d0 e0           POP        A
-       CODE:019b 53 bf fe        ANL        DAT_SFR_bf,#0xfe                                           reenable IRQs and exit
+       CODE:019b 53 bf fe        ANL        sfr_irq_disable_all,#0xfe                                  reenable IRQs and exit
        CODE:019e 32              RETI
                              LAB_CODE_019f                                   XREF[1]:     CODE:0179(j)  
        CODE:019f c2 d9           CLR        CCF.1                                                      = ??
        CODE:01a1 d2 db           SETB       CCF.3                                                      = ??
        CODE:01a3 75 1b 08        MOV        BANK3_R3,#0x8                                              = ??
-       CODE:01a6 20 5d 08        JB         2b.5,LAB_CODE_01b1                                         = ??
+       CODE:01a6 20 5d 08        JB         g_i2c_operation_pending,LAB_CODE_01b1                      = ??
        CODE:01a9 20 5e 0a        JB         2b.6,i2c_sm_go_state_3                                     = ??
        CODE:01ac 75 10 05        MOV        i2c_statemachine_state,#0x5                                = ??
        CODE:01af 21 87           AJMP       LAB_CODE_0187
@@ -608,7 +608,7 @@
        CODE:01e8 86 da           MOV        CCAPM0,@R0                                                 write data on buffer out to I2C
        CODE:01ea 21 ef           AJMP       LAB_CODE_01ef
                              LAB_CODE_01ec                                   XREF[1]:     CODE:01e0(j)  
-       CODE:01ec 85 e1 da        MOV        CCAPM0,EPCON                                               dump IPC inbox contents to I2C bus
+       CODE:01ec 85 e1 da        MOV        CCAPM0,sfr_ipc_inbox_data                                  dump IPC inbox contents to I2C bus
                              LAB_CODE_01ef                                   XREF[1]:     CODE:01ea(j)  
        CODE:01ef c2 d9           CLR        CCF.1                                                      = ??
        CODE:01f1 75 1b 28        MOV        BANK3_R3,#0x28                                             = ??
@@ -663,7 +663,7 @@
        CODE:0245 b5 d9 dc        CJNE       A,CMOD,LAB_CODE_0224                                       = ??
        CODE:0248 e5 16           MOV        A,BANK2_R6                                                 = ??
        CODE:024a 60 0c           JZ         LAB_CODE_0258
-       CODE:024c 85 e1 da        MOV        CCAPM0,EPCON                                               = ??
+       CODE:024c 85 e1 da        MOV        CCAPM0,sfr_ipc_inbox_data                                  = ??
        CODE:024f 15 16           DEC        BANK2_R6                                                   = ??
        CODE:0251 c2 d9           CLR        CCF.1                                                      = ??
        CODE:0253 75 1b 28        MOV        BANK3_R3,#0x28                                             = ??
@@ -712,7 +712,7 @@
        CODE:02a4 a6 da           MOV        @R0,CCAPM0                                                 = ??
        CODE:02a6 41 83           AJMP       LAB_CODE_0283
                              LAB_CODE_02a8                                   XREF[1]:     CODE:029c(j)  
-       CODE:02a8 85 da d5        MOV        HPSC,CCAPM0                                                = ??
+       CODE:02a8 85 da d5        MOV        sfr_ipc_outbox_data,CCAPM0                                 = ??
        CODE:02ab 41 83           AJMP       LAB_CODE_0283
                              **************************************************************
                              *                          FUNCTION                          *
@@ -779,7 +779,7 @@
        CODE:02f4 c2 d3           CLR        RS0                                                        = ??
        CODE:02f6 d0 d0           POP        PSW
        CODE:02f8 d0 e0           POP        A
-       CODE:02fa 53 bf fe        ANL        DAT_SFR_bf,#0xfe                                           = ??
+       CODE:02fa 53 bf fe        ANL        sfr_irq_disable_all,#0xfe                                  = ??
        CODE:02fd 32              RETI
                              **************************************************************
                              *                          FUNCTION                          *
@@ -787,7 +787,7 @@
                              undefined FUN_CODE_02fe()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_02fe                                   XREF[1]:     CODE:0006(c)  
-       CODE:02fe 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            = ??
+       CODE:02fe 43 bf 01        ORL        sfr_irq_disable_all,#0x1                                   = ??
        CODE:0301 c0 e0           PUSH       A
        CODE:0303 c0 d0           PUSH       PSW
        CODE:0305 d2 d3           SETB       RS0                                                        = ??
@@ -1355,17 +1355,17 @@
                              undefined usb_powerevent_check()
              undefined         ACC:1          <RETURN>
                              usb_powerevent_check                            XREF[1]:     CODE:014d(c)  
-       CODE:0648 e5 1f           MOV        A,BANK3_R7                                                 = ??
+       CODE:0648 e5 1f           MOV        A,g_usb_powerup_cause                                      = ??
        CODE:064a 60 01           JZ         LAB_CODE_064d                                              do nothing if we already detected
                                                                                                        a USB event
        CODE:064c 22              RET
                              LAB_CODE_064d                                   XREF[1]:     CODE:064a(j)  
-       CODE:064d e5 d7           MOV        A,HPSTAT                                                   check USB top device presence
+       CODE:064d e5 d7           MOV        A,sfr_usba_presence_wakeup                                 check USB top device presence
        CODE:064f 30 e0 11        JNB        ACC.0,LAB_CODE_0663                                        jump down if plugged
-       CODE:0652 e5 d7           MOV        A,HPSTAT                                                   = ??
+       CODE:0652 e5 d7           MOV        A,sfr_usba_presence_wakeup                                 = ??
        CODE:0654 30 e0 4e        JNB        ACC.0,usb_powerevent_check_front_bottom_usb                if the usb device was plugged
                                                                                                        in suddenly, jump down
-       CODE:0657 e5 d7           MOV        A,HPSTAT                                                   = ??
+       CODE:0657 e5 d7           MOV        A,sfr_usba_presence_wakeup                                 = ??
        CODE:0659 30 e0 49        JNB        ACC.0,usb_powerevent_check_front_bottom_usb                same deal
        CODE:065c c2 6b           CLR        g_usb_front_top_plugged                                    ok, there's no gamepad there
        CODE:065e 75 1c 64        MOV        g_usb_front_top_recheck_timer,#0x64                        wait 100 ms before checking
@@ -1377,55 +1377,57 @@
        CODE:0669 d2 6b           SETB       g_usb_front_top_plugged                                    = ??
        CODE:066b c2 71           CLR        g_usb_front_top_button_maybe_pressed                       = ??
        CODE:066d a2 e1           MOV        CY,ACC.1                                                   check bit 1 from that SFR
-       CODE:066f 92 6e           MOV        g_usb_front_top_button_last_poll,CY                        = ??
+       CODE:066f 92 6e           MOV        g_usb_front_top_wakeup_last_poll,CY                        = ??
        CODE:0671 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0673                                   XREF[1]:     CODE:0663(j)  
        CODE:0673 54 02           ANL        A,#0x2                                                     keep bit 1 (AND 2) from the
                                                                                                        result above
-       CODE:0675 a2 6e           MOV        CY,g_usb_front_top_button_last_poll                        read bit 1 from the last poll
+       CODE:0675 a2 6e           MOV        CY,g_usb_front_top_wakeup_last_poll                        read bit 1 from the last poll
        CODE:0677 13              RRC        A
        CODE:0678 20 71 0c        JB         g_usb_front_top_button_maybe_pressed,LAB_CODE_0687         = ??
        CODE:067b 30 d0 27        JNB        P,usb_powerevent_check_front_bottom_usb                    it should have been 1
                                                                                                        on both of those polls
                                                                                                        or else we jump here
        CODE:067e d2 71           SETB       g_usb_front_top_button_maybe_pressed                       = ??
-       CODE:0680 c2 74           CLR        g_usb_front_top_button_maybe_debounced                     = ??
+       CODE:0680 c2 74           CLR        g_usb_front_top_wakeup_maybe_debounced                     = ??
        CODE:0682 75 1c 32        MOV        g_usb_front_top_recheck_timer,#50                          state needs to change in 50 ms
        CODE:0685 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0687                                   XREF[1]:     CODE:0678(j)  
-       CODE:0687 20 74 0c        JB         g_usb_front_top_button_maybe_debounced,LAB_CODE_0696       = ??
+       CODE:0687 20 74 0c        JB         g_usb_front_top_wakeup_maybe_debounced,LAB_CODE_0696       = ??
        CODE:068a 30 d0 13        JNB        P,LAB_CODE_06a0                                            the button state should change
        CODE:068d d5 1c 15        DJNZ       g_usb_front_top_recheck_timer,usb_powerevent_check_front   before this timer expires
                              LAB_CODE_0690                                   XREF[1]:     CODE:0696(j)  
-       CODE:0690 b2 6e           CPL        g_usb_front_top_button_last_poll                           = ??
+       CODE:0690 b2 6e           CPL        g_usb_front_top_wakeup_last_poll                           = ??
        CODE:0692 c2 71           CLR        g_usb_front_top_button_maybe_pressed                       = ??
        CODE:0694 c1 a5           AJMP       usb_powerevent_check_front_bottom_usb
                              LAB_CODE_0696                                   XREF[1]:     CODE:0687(j)  
        CODE:0696 20 d0 f7        JB         P,LAB_CODE_0690                                            both polls should NOT be 1
                                                                                                        (line should be 0 or toggling?)
        CODE:0699 d5 1c 09        DJNZ       g_usb_front_top_recheck_timer,usb_powerevent_check_front   = ??
-       CODE:069c 75 1f 56        MOV        BANK3_R7,#0x56                                             powering up from front-top USB
+       CODE:069c 75 1f 56        MOV        g_usb_powerup_cause,#0x56                                  powering up from front-top USB
        CODE:069f 22              RET
                              LAB_CODE_06a0                                   XREF[1]:     CODE:068a(j)  
-       CODE:06a0 d2 74           SETB       g_usb_front_top_button_maybe_debounced                     = ??
+       CODE:06a0 d2 74           SETB       g_usb_front_top_wakeup_maybe_debounced                     = ??
        CODE:06a2 75 1c 64        MOV        g_usb_front_top_recheck_timer,#100                         = ??
                              usb_powerevent_check_front_bottom_usb           XREF[10]:    CODE:0654(j), CODE:0659(j), 
                                                                                           CODE:0661(j), CODE:0666(j), 
                                                                                           CODE:0671(j), CODE:067b(j), 
                                                                                           CODE:0685(j), CODE:068d(j), 
                                                                                           CODE:0694(j), CODE:0699(j)  
-       CODE:06a5 e5 d7           MOV        A,HPSTAT                                                   = ??
+       CODE:06a5 e5 d7           MOV        A,sfr_usba_presence_wakeup                                 won't repeat the comments above
+                                                                                                       but this basically does the same for
+                                                                                                       the other USB ports
        CODE:06a7 30 e2 11        JNB        ACC.2,LAB_CODE_06bb                                        = ??
-       CODE:06aa e5 d7           MOV        A,HPSTAT                                                   = ??
+       CODE:06aa e5 d7           MOV        A,sfr_usba_presence_wakeup                                 = ??
        CODE:06ac 30 e2 4e        JNB        ACC.2,LAB_CODE_06fd                                        = ??
-       CODE:06af e5 d7           MOV        A,HPSTAT                                                   = ??
+       CODE:06af e5 d7           MOV        A,sfr_usba_presence_wakeup                                 = ??
        CODE:06b1 30 e2 49        JNB        ACC.2,LAB_CODE_06fd                                        = ??
        CODE:06b4 c2 6c           CLR        g_usb_front_bottom_plugged                                 = ??
-       CODE:06b6 75 1d 64        MOV        BANK3_R5,#0x64                                             = ??
+       CODE:06b6 75 1d 64        MOV        g_usb_front_bottom_recheck_timer,#0x64                     = ??
        CODE:06b9 c1 fd           AJMP       LAB_CODE_06fd
                              LAB_CODE_06bb                                   XREF[1]:     CODE:06a7(j)  
        CODE:06bb 20 6c 0d        JB         g_usb_front_bottom_plugged,LAB_CODE_06cb                   = ??
-       CODE:06be d5 1d 3c        DJNZ       BANK3_R5,LAB_CODE_06fd                                     = ??
+       CODE:06be d5 1d 3c        DJNZ       g_usb_front_bottom_recheck_timer,LAB_CODE_06fd             = ??
        CODE:06c1 d2 6c           SETB       g_usb_front_bottom_plugged                                 = ??
        CODE:06c3 c2 72           CLR        2e.2                                                       = ??
        CODE:06c5 a2 e3           MOV        CY,ACC.3                                                   = ??
@@ -1439,73 +1441,73 @@
        CODE:06d3 30 d0 27        JNB        P,LAB_CODE_06fd                                            = ??
        CODE:06d6 d2 72           SETB       2e.2                                                       = ??
        CODE:06d8 c2 75           CLR        2e.5                                                       = ??
-       CODE:06da 75 1d 32        MOV        BANK3_R5,#0x32                                             = ??
+       CODE:06da 75 1d 32        MOV        g_usb_front_bottom_recheck_timer,#0x32                     = ??
        CODE:06dd c1 fd           AJMP       LAB_CODE_06fd
                              LAB_CODE_06df                                   XREF[1]:     CODE:06d0(j)  
        CODE:06df 20 75 0c        JB         2e.5,LAB_CODE_06ee                                         = ??
        CODE:06e2 30 d0 13        JNB        P,LAB_CODE_06f8                                            = ??
-       CODE:06e5 d5 1d 15        DJNZ       BANK3_R5,LAB_CODE_06fd                                     = ??
+       CODE:06e5 d5 1d 15        DJNZ       g_usb_front_bottom_recheck_timer,LAB_CODE_06fd             = ??
                              LAB_CODE_06e8                                   XREF[1]:     CODE:06ee(j)  
        CODE:06e8 b2 6f           CPL        2d.7                                                       = ??
        CODE:06ea c2 72           CLR        2e.2                                                       = ??
        CODE:06ec c1 fd           AJMP       LAB_CODE_06fd
                              LAB_CODE_06ee                                   XREF[1]:     CODE:06df(j)  
        CODE:06ee 20 d0 f7        JB         P,LAB_CODE_06e8                                            = ??
-       CODE:06f1 d5 1d 09        DJNZ       BANK3_R5,LAB_CODE_06fd                                     = ??
-       CODE:06f4 75 1f 57        MOV        BANK3_R7,#0x57                                             powering up from front-bottom USB
+       CODE:06f1 d5 1d 09        DJNZ       g_usb_front_bottom_recheck_timer,LAB_CODE_06fd             = ??
+       CODE:06f4 75 1f 57        MOV        g_usb_powerup_cause,#0x57                                  powering up from front-bottom USB
        CODE:06f7 22              RET
                              LAB_CODE_06f8                                   XREF[1]:     CODE:06e2(j)  
        CODE:06f8 d2 75           SETB       2e.5                                                       = ??
-       CODE:06fa 75 1d 64        MOV        BANK3_R5,#0x64                                             = ??
+       CODE:06fa 75 1d 64        MOV        g_usb_front_bottom_recheck_timer,#0x64                     = ??
                              LAB_CODE_06fd                                   XREF[10]:    CODE:06ac(j), CODE:06b1(j), 
                                                                                           CODE:06b9(j), CODE:06be(j), 
                                                                                           CODE:06c9(j), CODE:06d3(j), 
                                                                                           CODE:06dd(j), CODE:06e5(j), 
                                                                                           CODE:06ec(j), CODE:06f1(j)  
-       CODE:06fd e5 fd           MOV        A,CCAP3H                                                   = ??
+       CODE:06fd e5 fd           MOV        A,sfr_usbb_presence_wakeup                                 = ??
        CODE:06ff 30 e4 11        JNB        ACC.4,LAB_CODE_0713                                        = ??
-       CODE:0702 e5 fd           MOV        A,CCAP3H                                                   = ??
-       CODE:0704 30 e4 4e        JNB        ACC.4,LAB_CODE_0755                                        = ??
-       CODE:0707 e5 fd           MOV        A,CCAP3H                                                   = ??
-       CODE:0709 30 e4 49        JNB        ACC.4,LAB_CODE_0755                                        = ??
+       CODE:0702 e5 fd           MOV        A,sfr_usbb_presence_wakeup                                 = ??
+       CODE:0704 30 e4 4e        JNB        ACC.4,return_0755                                          = ??
+       CODE:0707 e5 fd           MOV        A,sfr_usbb_presence_wakeup                                 = ??
+       CODE:0709 30 e4 49        JNB        ACC.4,return_0755                                          = ??
        CODE:070c c2 6d           CLR        g_usb_rear_plugged                                         = ??
-       CODE:070e 75 1e 64        MOV        BANK3_R6,#0x64                                             = ??
-       CODE:0711 e1 55           AJMP       LAB_CODE_0755
+       CODE:070e 75 1e 64        MOV        g_usb_rear_recheck_timer,#0x64                             = ??
+       CODE:0711 e1 55           AJMP       return_0755
                              LAB_CODE_0713                                   XREF[1]:     CODE:06ff(j)  
        CODE:0713 20 6d 0d        JB         g_usb_rear_plugged,LAB_CODE_0723                           = ??
-       CODE:0716 d5 1e 3c        DJNZ       BANK3_R6,LAB_CODE_0755                                     = ??
+       CODE:0716 d5 1e 3c        DJNZ       g_usb_rear_recheck_timer,return_0755                       = ??
        CODE:0719 d2 6d           SETB       g_usb_rear_plugged                                         = ??
        CODE:071b c2 73           CLR        2e.3                                                       = ??
        CODE:071d a2 e5           MOV        CY,ACC.5                                                   = ??
        CODE:071f 92 70           MOV        2e.0,CY                                                    = ??
-       CODE:0721 e1 55           AJMP       LAB_CODE_0755
+       CODE:0721 e1 55           AJMP       return_0755
                              LAB_CODE_0723                                   XREF[1]:     CODE:0713(j)  
        CODE:0723 54 20           ANL        A,#0x20
        CODE:0725 a2 70           MOV        CY,2e.0                                                    = ??
        CODE:0727 13              RRC        A
        CODE:0728 20 73 0c        JB         2e.3,LAB_CODE_0737                                         = ??
-       CODE:072b 30 d0 27        JNB        P,LAB_CODE_0755                                            = ??
+       CODE:072b 30 d0 27        JNB        P,return_0755                                              = ??
        CODE:072e d2 73           SETB       2e.3                                                       = ??
        CODE:0730 c2 76           CLR        2e.6                                                       = ??
-       CODE:0732 75 1e 32        MOV        BANK3_R6,#0x32                                             = ??
-       CODE:0735 e1 55           AJMP       LAB_CODE_0755
+       CODE:0732 75 1e 32        MOV        g_usb_rear_recheck_timer,#0x32                             = ??
+       CODE:0735 e1 55           AJMP       return_0755
                              LAB_CODE_0737                                   XREF[1]:     CODE:0728(j)  
        CODE:0737 20 76 0c        JB         2e.6,LAB_CODE_0746                                         = ??
        CODE:073a 30 d0 13        JNB        P,LAB_CODE_0750                                            = ??
-       CODE:073d d5 1e 15        DJNZ       BANK3_R6,LAB_CODE_0755                                     = ??
+       CODE:073d d5 1e 15        DJNZ       g_usb_rear_recheck_timer,return_0755                       = ??
                              LAB_CODE_0740                                   XREF[1]:     CODE:0746(j)  
        CODE:0740 b2 70           CPL        2e.0                                                       = ??
        CODE:0742 c2 73           CLR        2e.3                                                       = ??
-       CODE:0744 e1 55           AJMP       LAB_CODE_0755
+       CODE:0744 e1 55           AJMP       return_0755
                              LAB_CODE_0746                                   XREF[1]:     CODE:0737(j)  
        CODE:0746 20 d0 f7        JB         P,LAB_CODE_0740                                            = ??
-       CODE:0749 d5 1e 09        DJNZ       BANK3_R6,LAB_CODE_0755                                     = ??
-       CODE:074c 75 1f 5a        MOV        BANK3_R7,#0x5a                                             = ??
+       CODE:0749 d5 1e 09        DJNZ       g_usb_rear_recheck_timer,return_0755                       = ??
+       CODE:074c 75 1f 5a        MOV        g_usb_powerup_cause,#0x5a                                  = ??
        CODE:074f 22              RET
                              LAB_CODE_0750                                   XREF[1]:     CODE:073a(j)  
        CODE:0750 d2 76           SETB       2e.6                                                       = ??
-       CODE:0752 75 1e 64        MOV        BANK3_R6,#0x64                                             = ??
-                             LAB_CODE_0755                                   XREF[10]:    CODE:0704(j), CODE:0709(j), 
+       CODE:0752 75 1e 64        MOV        g_usb_rear_recheck_timer,#0x64                             = ??
+                             return_0755                                     XREF[10]:    CODE:0704(j), CODE:0709(j), 
                                                                                           CODE:0711(j), CODE:0716(j), 
                                                                                           CODE:0721(j), CODE:072b(j), 
                                                                                           CODE:0735(j), CODE:073d(j), 
@@ -1517,8 +1519,11 @@
                                                                                                        anything up or down
        CODE:0759 12 22 b6        LCALL      FUN_CODE_22b6                                              undefined FUN_CODE_22b6()
        CODE:075c 12 23 b7        LCALL      argon_disable                                              undefined argon_disable()
-       CODE:075f 12 22 be        LCALL      FUN_CODE_22be                                              undefined FUN_CODE_22be()
-       CODE:0762 12 23 10        LCALL      FUN_CODE_2310                                              undefined FUN_CODE_2310()
+       CODE:075f 12 22 be        LCALL      FUN_CODE_22be                                              configure what appears to be
+                                                                                                       a lot of IRQ registers
+       CODE:0762 12 23 10        LCALL      FUN_CODE_2310                                              clear milliseconds counter,
+                                                                                                       clear some flag, and
+                                                                                                       enable interrupts
        CODE:0765 12 23 34        LCALL      watchdog_kick                                              undefined watchdog_kick()
        CODE:0768 12 08 0d        LCALL      FUN_CODE_080d                                              undefined FUN_CODE_080d()
        CODE:076b 12 07 ea        LCALL      FUN_CODE_07ea                                              clear memory ranges,
@@ -1539,25 +1544,30 @@
        CODE:077b 12 00 d7        LCALL      pcie_compute_link_state_blink_code                         undefined pcie_compute_link_state_b
        CODE:077e f5 39           MOV        g_pcie_status_blink_pattern,A                              = ??
        CODE:0780 12 25 d8        LCALL      rtc_read                                                   undefined rtc_read()
-       CODE:0783 ec              MOV        A,R4
+       CODE:0783 ec              MOV        A,R4                                                       whatever logic below is doing
+                                                                                                       executes every 8 or so minutes
        CODE:0784 a2 e2           MOV        CY,ACC.2                                                   = ??
        CODE:0786 50 0e           JNC        LAB_CODE_0796
-       CODE:0788 20 06 0b        JB         20.6,LAB_CODE_0796                                         = ??
+       CODE:0788 20 06 0b        JB         20.6,LAB_CODE_0796                                         if this was already checked,
+                                                                                                       jump down
        CODE:078b 20 17 05        JB         g_12v_enabled,LAB_CODE_0793                                = ??
-       CODE:078e 43 34 20        ORL        DAT_INTMEM_34,#0x20                                        = ??
+       CODE:078e 43 34 20        ORL        DAT_INTMEM_34,#0x20                                        seems to be argon-related
+                                                                                                       could just be a controller keepalive?
        CODE:0791 80 03           SJMP       LAB_CODE_0796
                              LAB_CODE_0793                                   XREF[1]:     CODE:078b(j)  
        CODE:0793 43 34 04        ORL        DAT_INTMEM_34,#0x4                                         = ??
                              LAB_CODE_0796                                   XREF[3]:     CODE:0786(j), CODE:0788(j), 
                                                                                           CODE:0791(j)  
        CODE:0796 92 06           MOV        20.6,CY                                                    = ??
-       CODE:0798 e5 60           MOV        A,DAT_INTMEM_60                                            = ??
+       CODE:0798 e5 60           MOV        A,DAT_INTMEM_60                                            DDC lock delay, I think
        CODE:079a 60 02           JZ         LAB_CODE_079e
        CODE:079c 15 60           DEC        DAT_INTMEM_60                                              = ??
                              LAB_CODE_079e                                   XREF[1]:     CODE:079a(j)  
        CODE:079e e5 60           MOV        A,DAT_INTMEM_60                                            = ??
        CODE:07a0 70 02           JNZ        LAB_CODE_07a4
-       CODE:07a2 c2 34           CLR        26.4                                                       = ??
+       CODE:07a2 c2 34           CLR        g_i2c_ddc_lock_requested                                   if we decremented the value and
+                                                                                                       it's still not zero (or it was
+                                                                                                       zero already), clear this flag
                              LAB_CODE_07a4                                   XREF[1]:     CODE:07a0(j)  
        CODE:07a4 12 1d 0f        LCALL      vreg_monitor_statuses                                      monitors powergood signals
                                                                                                        and RRoDs if something bad happens
@@ -1570,7 +1580,8 @@
        CODE:07b9 12 22 1b        LCALL      tray_sm_exec                                               undefined tray_sm_exec()
        CODE:07bc 12 20 29        LCALL      thermal_monitor_check_if_temps_available                   undefined thermal_monitor_check_if_
        CODE:07bf 12 14 ba        LCALL      thermal_monitor_do_checks                                  thermal monitoring
-       CODE:07c2 12 13 fc        LCALL      dbg_led_statemachine                                       dbg led statemachine
+                                                                                                       and fan speed updating
+       CODE:07c2 12 13 fc        LCALL      dbgled_sm_exec                                             dbg led statemachine
                                                                                                        can probably kill this
        CODE:07c5 12 1d ce        LCALL      FUN_CODE_1dce                                              power event monitor;
                                                                                                        checks button presses and
@@ -1633,10 +1644,10 @@
        CODE:082b 75 3c 80        MOV        g_dbgled_blinkpattern_andmask,#0x80                        = ??
        CODE:082e 75 61 00        MOV        g_rol_led_flags,#0x0                                       = ??
        CODE:0831 d2 25           SETB       24.5                                                       = ??
-       CODE:0833 d2 1f           SETB       23.7                                                       = ??
+       CODE:0833 d2 1f           SETB       g_ir_handle_special_poweron_cases                          = ??
        CODE:0835 e5 2f           MOV        A,DAT_INTMEM_2f                                            = ??
-       CODE:0837 54 20           ANL        A,#0x20
-       CODE:0839 44 5c           ORL        A,#0x5c
+       CODE:0837 54 20           ANL        A,#00100000b
+       CODE:0839 44 5c           ORL        A,#01011100b
        CODE:083b f5 2f           MOV        DAT_INTMEM_2f,A                                            = ??
        CODE:083d 22              RET
                              **************************************************************
@@ -1737,13 +1748,13 @@
        CODE:08e4 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:08e7 e5 f0           MOV        A,B
        CODE:08e9 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:08ec e5 33           MOV        A,DAT_INTMEM_33                                            = ??
+       CODE:08ec e5 33           MOV        A,g_wakeup_timestamp_byte_0                                = ??
        CODE:08ee 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:08f1 e5 32           MOV        A,DAT_INTMEM_32                                            = ??
+       CODE:08f1 e5 32           MOV        A,g_wakeup_timestamp_byte_1                                = ??
        CODE:08f3 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:08f6 e5 31           MOV        A,DAT_INTMEM_31                                            = ??
+       CODE:08f6 e5 31           MOV        A,g_wakeup_timestamp_byte_2                                = ??
        CODE:08f8 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
-       CODE:08fb e5 30           MOV        A,DAT_INTMEM_30                                            = ??
+       CODE:08fb e5 30           MOV        A,g_wakeup_timestamp_byte_3                                = ??
        CODE:08fd 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:0900 22              RET
                              ipc_handle_gettemperatures                      XREF[1]:     CODE:0861(j)  
@@ -1828,7 +1839,7 @@
        CODE:099a 30 d5 65        JNB        F0,LAB_CODE_0a02                                           if F0 is cleared, reject the message
        CODE:099d 75 60 fa        MOV        DAT_INTMEM_60,#0xfa                                        = ??
        CODE:09a0 30 e1 10        JNB        ACC.1,LAB_CODE_09b3                                        = ??
-       CODE:09a3 d2 34           SETB       26.4                                                       specific kind of I2C request
+       CODE:09a3 d2 34           SETB       g_i2c_ddc_lock_requested                                   specific kind of I2C request
                                                                                                        think this is DDC lock per libxenon
        CODE:09a5 75 60 02        MOV        DAT_INTMEM_60,#0x2                                         = ??
        CODE:09a8 74 01           MOV        A,#0x1
@@ -1838,14 +1849,14 @@
        CODE:09b2 22              RET
                              LAB_CODE_09b3                                   XREF[1]:     CODE:09a0(j)  
        CODE:09b3 30 e2 0d        JNB        ACC.2,LAB_CODE_09c3                                        = ??
-       CODE:09b6 c2 34           CLR        26.4                                                       = ??
+       CODE:09b6 c2 34           CLR        g_i2c_ddc_lock_requested                                   = ??
        CODE:09b8 74 01           MOV        A,#0x1
        CODE:09ba 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:09bd 74 00           MOV        A,#0x0                                                     mark message accepted
        CODE:09bf 12 24 2f        LCALL      ipc_outbox_write                                           undefined ipc_outbox_write()
        CODE:09c2 22              RET
                              LAB_CODE_09c3                                   XREF[1]:     CODE:09b3(j)  
-       CODE:09c3 20 34 0b        JB         26.4,LAB_CODE_09d1                                         = ??
+       CODE:09c3 20 34 0b        JB         g_i2c_ddc_lock_requested,LAB_CODE_09d1                     = ??
        CODE:09c6 74 01           MOV        A,#0x1
        CODE:09c8 12 24 2a        LCALL      ipc_outbox_set_write_pointer                               undefined ipc_outbox_set_write_poin
        CODE:09cb 74 04           MOV        A,#0x4                                                     reject the message
@@ -2176,10 +2187,10 @@
        CODE:0bca fe              MOV        R6,A
        CODE:0bcb 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:0bce f5 f0           MOV        B,A
-       CODE:0bd0 8e 30           MOV        DAT_INTMEM_30,R6                                           = ??
-       CODE:0bd2 8d 31           MOV        DAT_INTMEM_31,R5                                           = ??
-       CODE:0bd4 8c 32           MOV        DAT_INTMEM_32,R4                                           = ??
-       CODE:0bd6 8b 33           MOV        DAT_INTMEM_33,R3                                           = ??
+       CODE:0bd0 8e 30           MOV        g_wakeup_timestamp_byte_3,R6                               = ??
+       CODE:0bd2 8d 31           MOV        g_wakeup_timestamp_byte_2,R5                               = ??
+       CODE:0bd4 8c 32           MOV        g_wakeup_timestamp_byte_1,R4                               = ??
+       CODE:0bd6 8b 33           MOV        g_wakeup_timestamp_byte_0,R3                               = ??
        CODE:0bd8 a2 f0           MOV        CY,B.0                                                     = ??
        CODE:0bda 92 58           MOV        g_rtc_alarm_should_power_up,CY                             = ??
        CODE:0bdc d2 57           SETB       g_rtc_wake_set                                             = ??
@@ -3228,7 +3239,7 @@
        CODE:126f d2 12           SETB       g_cpu_running                                              = ??
        CODE:1271 12 00 6c        LCALL      cpu_reset_deassert                                         undefined cpu_reset_deassert()
        CODE:1274 75 3d af        MOV        g_shared_timer_cell,#0xaf                                  load timeout
-                                                                                                       (175 * 20ms = 3500 seconds)
+                                                                                                       (175 * 20ms = 3500 ms)
        CODE:1277 80 ca           SJMP       sysreset_watchdog_go_state_8                               go to state #8
                              sysreset_watchdog_exec_state_8                  XREF[1]:     CODE:12ef(j)  
        CODE:1279 20 13 23        JB         g_has_getpoweroncause_arrived,LAB_CODE_129f                = ??
@@ -3357,7 +3368,7 @@
        CODE:1331 12 25 b4        LCALL      avpack_read                                                undefined avpack_read()
        CODE:1334 f5 5d           MOV        g_avpack_last_read,A                                       = ??
        CODE:1336 65 f0           XRL        A,B
-       CODE:1338 54 5c           ANL        A,#0x5c
+       CODE:1338 54 5c           ANL        A,#01011100b
        CODE:133a 70 07           JNZ        LAB_CODE_1343
        CODE:133c d5 5e cb        DJNZ       DAT_INTMEM_5e,LAB_CODE_130a                                = ??
        CODE:133f d2 30           SETB       26.0                                                       = ??
@@ -3365,7 +3376,7 @@
                              LAB_CODE_1343                                   XREF[1]:     CODE:133a(j)  
        CODE:1343 e5 5d           MOV        A,g_avpack_last_read                                       = ??
        CODE:1345 65 2f           XRL        A,DAT_INTMEM_2f                                            = ??
-       CODE:1347 54 5c           ANL        A,#0x5c
+       CODE:1347 54 5c           ANL        A,#01011100b
        CODE:1349 60 b0           JZ         LAB_CODE_12fb
        CODE:134b 75 5e 04        MOV        DAT_INTMEM_5e,#0x4                                         = ??
        CODE:134e 80 ba           SJMP       LAB_CODE_130a
@@ -3493,16 +3504,16 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined dbg_led_statemachine()
+                             undefined dbgled_sm_exec()
              undefined         ACC:1          <RETURN>
-                             dbg_led_statemachine                            XREF[1]:     mainloop:07c2(c)  
+                             dbgled_sm_exec                                  XREF[1]:     mainloop:07c2(c)  
        CODE:13fc 78 a1           MOV        R0,#0xa1
        CODE:13fe e6              MOV        A,@R0=>g_dbgled_sm_state                                   = ??
        CODE:13ff 26              ADD        A,@R0=>g_dbgled_sm_state                                   = ??
        CODE:1400 26              ADD        A,@R0=>g_dbgled_sm_state                                   = ??
        CODE:1401 90 14 05        MOV        DPTR,#LAB_CODE_1405
        CODE:1404 73              JMP        @A+DPTR
-                             LAB_CODE_1405                                   XREF[1]:     dbg_led_statemachine:1401(*)  
+                             LAB_CODE_1405                                   XREF[1]:     dbgled_sm_exec:1401(*)  
        CODE:1405 02 13 c3        LJMP       dbgled_sm_exec_state_0                                     state 0: update LEDs
        CODE:1408 02 13 f7        LJMP       dbgled_sm_exec_state_1                                     state 1: wait 100 ms
                              LAB_CODE_140b                                   XREF[1]:     CODE:14ae(j)  
@@ -3686,32 +3697,33 @@
        CODE:151e 80 5a           SJMP       LAB_CODE_157a
                              LAB_CODE_1520                                   XREF[1]:     CODE:150e(j)  
        CODE:1520 12 15 b5        LCALL      FUN_CODE_15b5                                              undefined FUN_CODE_15b5()
-       CODE:1523 e5 48           MOV        A,DAT_INTMEM_48                                            = ??
+       CODE:1523 e5 48           MOV        A,g_cpu_last_temp                                          = ??
        CODE:1525 60 53           JZ         LAB_CODE_157a
-       CODE:1527 e5 4a           MOV        A,DAT_INTMEM_4a                                            = ??
+       CODE:1527 e5 4a           MOV        A,g_gpu_last_temp                                          = ??
        CODE:1529 60 4f           JZ         LAB_CODE_157a
-       CODE:152b e5 4c           MOV        A,DAT_INTMEM_4c                                            = ??
+       CODE:152b e5 4c           MOV        A,g_edram_last_temp                                        = ??
        CODE:152d 60 4b           JZ         LAB_CODE_157a
        CODE:152f 78 3f           MOV        R0,#g_cpu_current_temp_frac                                current CPU temperature
-       CODE:1531 79 47           MOV        R1,#DAT_INTMEM_47                                          last CPU temperature
-       CODE:1533 aa 4d           MOV        R2,DAT_INTMEM_4d                                           = ??
-       CODE:1535 12 16 26        LCALL      FUN_CODE_1626                                              undefined FUN_CODE_1626()
-       CODE:1538 79 b2           MOV        R1,#0xb2
+       CODE:1531 79 47           MOV        R1,#g_cpu_last_temp_frac                                   last CPU temperature
+       CODE:1533 aa 4d           MOV        R2,g_cpu_target_temp                                       = ??
+       CODE:1535 12 16 26        LCALL      temperature_calc_differences                               affects r6/r7
+                                                                                                       and F0/UD flags
+       CODE:1538 79 b2           MOV        R1,#DAT_INTMEM_b2                                          = ??
        CODE:153a 12 16 5e        LCALL      FUN_CODE_165e                                              undefined FUN_CODE_165e()
-       CODE:153d 78 41           MOV        R0,#0x41
-       CODE:153f 79 49           MOV        R1,#0x49
-       CODE:1541 aa 4e           MOV        R2,DAT_INTMEM_4e                                           = ??
-       CODE:1543 12 16 26        LCALL      FUN_CODE_1626                                              undefined FUN_CODE_1626()
-       CODE:1546 79 b4           MOV        R1,#0xb4
+       CODE:153d 78 41           MOV        R0,#g_gpu_current_temp_frac                                = ??
+       CODE:153f 79 49           MOV        R1,#g_gpu_last_temp_frac                                   = ??
+       CODE:1541 aa 4e           MOV        R2,g_gpu_target_temp                                       = ??
+       CODE:1543 12 16 26        LCALL      temperature_calc_differences                               undefined temperature_calc_differen
+       CODE:1546 79 b4           MOV        R1,#DAT_INTMEM_b4                                          = ??
        CODE:1548 12 16 5e        LCALL      FUN_CODE_165e                                              undefined FUN_CODE_165e()
-       CODE:154b 78 43           MOV        R0,#0x43
-       CODE:154d 79 4b           MOV        R1,#0x4b
-       CODE:154f aa 4f           MOV        R2,DAT_INTMEM_4f                                           = ??
-       CODE:1551 12 16 26        LCALL      FUN_CODE_1626                                              undefined FUN_CODE_1626()
-       CODE:1554 79 b6           MOV        R1,#0xb6
+       CODE:154b 78 43           MOV        R0,#g_edram_current_temp_frac                              = ??
+       CODE:154d 79 4b           MOV        R1,#g_edram_last_temp_frac                                 = ??
+       CODE:154f aa 4f           MOV        R2,g_edram_target_temp                                     = ??
+       CODE:1551 12 16 26        LCALL      temperature_calc_differences                               undefined temperature_calc_differen
+       CODE:1554 79 b6           MOV        R1,#DAT_INTMEM_b6                                          = ??
        CODE:1556 12 16 5e        LCALL      FUN_CODE_165e                                              undefined FUN_CODE_165e()
-       CODE:1559 78 b2           MOV        R0,#0xb2
-       CODE:155b 79 b4           MOV        R1,#0xb4
+       CODE:1559 78 b2           MOV        R0,#DAT_INTMEM_b2                                          = ??
+       CODE:155b 79 b4           MOV        R1,#DAT_INTMEM_b4                                          = ??
        CODE:155d 12 17 26        LCALL      FUN_CODE_1726                                              undefined FUN_CODE_1726()
        CODE:1560 79 b6           MOV        R1,#0xb6
        CODE:1562 12 17 26        LCALL      FUN_CODE_1726                                              undefined FUN_CODE_1726()
@@ -3865,26 +3877,31 @@
                              **************************************************************
                              *                          FUNCTION                          *
                              **************************************************************
-                             undefined FUN_CODE_1626()
+                             undefined temperature_calc_differences()
              undefined         ACC:1          <RETURN>
-                             FUN_CODE_1626                                   XREF[3]:     thermal_monitor_do_checks:1535(c
+                             temperature_calc_differences                    XREF[3]:     thermal_monitor_do_checks:1535(c
                                                                                           thermal_monitor_do_checks:1543(c
                                                                                           thermal_monitor_do_checks:1551(c
        CODE:1626 c3              CLR        CY
-       CODE:1627 e6              MOV        A,@R0
-       CODE:1628 87 f0           MOV        B,@R1
+       CODE:1627 e6              MOV        A,@R0                                                      read current temp frac
+       CODE:1628 87 f0           MOV        B,@R1                                                      read last temp frac
        CODE:162a 95 f0           SUBB       A,B
-       CODE:162c fc              MOV        R4,A
-       CODE:162d 08              INC        R0
+       CODE:162c fc              MOV        R4,A                                                       difference between them
+                                                                                                       goes in r4
+       CODE:162d 08              INC        R0                                                         move pointers up
        CODE:162e 09              INC        R1
-       CODE:162f e6              MOV        A,@R0
+       CODE:162f e6              MOV        A,@R0                                                      same thing - compute difference
+                                                                                                       between major temperature values
+                                                                                                       and store that in r5
        CODE:1630 87 f0           MOV        B,@R1
        CODE:1632 95 f0           SUBB       A,B
        CODE:1634 fd              MOV        R5,A
-       CODE:1635 18              DEC        R0
-       CODE:1636 a2 e7           MOV        CY,ACC.7                                                   = ??
+       CODE:1635 18              DEC        R0                                                         decrement only r0,
+                                                                                                       we're not reading the previous
+                                                                                                       temperature again in this function
+       CODE:1636 a2 e7           MOV        CY,ACC.7                                                   underflow flag goes in f0
        CODE:1638 92 d5           MOV        F0,CY                                                      = ??
-       CODE:163a 50 0a           JNC        LAB_CODE_1646
+       CODE:163a 50 0a           JNC        LAB_CODE_1646                                              skip if no underflow
        CODE:163c ec              MOV        A,R4
        CODE:163d f4              CPL        A
        CODE:163e 24 01           ADD        A,#0x1
@@ -3894,13 +3911,14 @@
        CODE:1643 34 00           ADDC       A,#0x0
        CODE:1645 fd              MOV        R5,A
                              LAB_CODE_1646                                   XREF[1]:     CODE:163a(j)  
-       CODE:1646 e6              MOV        A,@R0
+       CODE:1646 e6              MOV        A,@R0                                                      read current temp frac (again)
        CODE:1647 fe              MOV        R6,A
        CODE:1648 c3              CLR        CY
        CODE:1649 08              INC        R0
-       CODE:164a e6              MOV        A,@R0
-       CODE:164b 9a              SUBB       A,R2
-       CODE:164c ff              MOV        R7,A
+       CODE:164a e6              MOV        A,@R0                                                      read current major temp (again)
+       CODE:164b 9a              SUBB       A,R2                                                       calc difference between that and
+                                                                                                       target temperature
+       CODE:164c ff              MOV        R7,A                                                       store in r7
        CODE:164d a2 e7           MOV        CY,ACC.7                                                   = ??
        CODE:164f 92 d1           MOV        UD,CY                                                      = ??
        CODE:1651 50 0a           JNC        LAB_CODE_165d
@@ -4654,7 +4672,7 @@
                              LAB_CODE_1a91                                   XREF[1]:     CODE:1a8b(j)  
        CODE:1a91 02 1b 29        LJMP       LAB_CODE_1b29
                              LAB_CODE_1a94                                   XREF[1]:     CODE:1a85(j)  
-       CODE:1a94 20 34 1e        JB         26.4,LAB_CODE_1ab5                                         = ??
+       CODE:1a94 20 34 1e        JB         g_i2c_ddc_lock_requested,LAB_CODE_1ab5                     = ??
        CODE:1a97 30 30 0c        JNB        26.0,LAB_CODE_1aa6                                         = ??
        CODE:1a9a 12 26 0b        LCALL      FUN_CODE_260b                                              undefined FUN_CODE_260b()
        CODE:1a9d 20 d5 03        JB         F0,LAB_CODE_1aa3                                           = ??
@@ -4676,7 +4694,7 @@
                              LAB_CODE_1ac1                                   XREF[1]:     CODE:1abb(j)  
        CODE:1ac1 02 1b 60        LJMP       LAB_CODE_1b60
                              LAB_CODE_1ac4                                   XREF[1]:     CODE:1ab5(j)  
-       CODE:1ac4 20 34 0f        JB         26.4,hana_sm_release_mutex_and_go_state_0                  = ??
+       CODE:1ac4 20 34 0f        JB         g_i2c_ddc_lock_requested,hana_sm_release_mutex_and_go_st   = ??
        CODE:1ac7 30 33 0c        JNB        g_i2c_error_handler_operation_pending,hana_sm_release_mu   = ??
        CODE:1aca 12 26 1a        LCALL      FUN_CODE_261a                                              undefined FUN_CODE_261a()
        CODE:1acd 20 d5 03        JB         F0,LAB_CODE_1ad3                                           = ??
@@ -4902,35 +4920,41 @@
                              LAB_CODE_1c18                                   XREF[1]:     CODE:1c12(j)  
        CODE:1c18 c2 02           CLR        20.2                                                       code ends up here if an IR
                                                                                                        button has been pressed
-       CODE:1c1a ba 0c 06        CJNE       R2,#0xc,LAB_CODE_1c23
+       CODE:1c1a ba 0c 06        CJNE       R2,#0xc,LAB_CODE_1c23                                      IR power button
        CODE:1c1d 20 d5 4c        JB         F0,return_1c6c                                             = ??
        CODE:1c20 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c22 22              RET
                              LAB_CODE_1c23                                   XREF[1]:     CODE:1c1a(j)  
-       CODE:1c23 ba 28 06        CJNE       R2,#0x28,LAB_CODE_1c2c
+       CODE:1c23 ba 28 06        CJNE       R2,#0x28,LAB_CODE_1c2c                                     IR eject button
        CODE:1c26 20 d5 43        JB         F0,return_1c6c                                             = ??
        CODE:1c29 d2 23           SETB       g_ir_eject_button_pressed                                  = ??
        CODE:1c2b 22              RET
                              LAB_CODE_1c2c                                   XREF[1]:     CODE:1c23(j)  
-       CODE:1c2c 20 1f 0b        JB         23.7,LAB_CODE_1c3a                                         = ??
-       CODE:1c2f ba 29 06        CJNE       R2,#0x29,LAB_CODE_1c38
+       CODE:1c2c 20 1f 0b        JB         g_ir_handle_special_poweron_cases,LAB_CODE_1c3a            only handle certain poweron events
+                                                                                                       if this flag is set (in which case
+                                                                                                       the system is likely in standby)
+       CODE:1c2f ba 29 06        CJNE       R2,#0x29,LAB_CODE_1c38                                     mystery button that behaves like
+                                                                                                       a normal power button press.
+                                                                                                       likely an explicit power off
+                                                                                                       command
        CODE:1c32 20 d5 37        JB         F0,return_1c6c                                             = ??
        CODE:1c35 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c37 22              RET
                              LAB_CODE_1c38                                   XREF[1]:     CODE:1c2f(j)  
        CODE:1c38 80 1b           SJMP       ir_send_button_press_to_ipc
                              LAB_CODE_1c3a                                   XREF[1]:     CODE:1c2c(j)  
-       CODE:1c3a ba 0d 06        CJNE       R2,#0xd,LAB_CODE_1c43
+       CODE:1c3a ba 0d 06        CJNE       R2,#0xd,LAB_CODE_1c43                                      start/windows button
        CODE:1c3d 20 d5 2c        JB         F0,return_1c6c                                             = ??
        CODE:1c40 d2 22           SETB       g_ir_windows_button_pressed                                = ??
        CODE:1c42 22              RET
                              LAB_CODE_1c43                                   XREF[1]:     CODE:1c3a(j)  
-       CODE:1c43 ba 64 06        CJNE       R2,#0x64,LAB_CODE_1c4c
+       CODE:1c43 ba 64 06        CJNE       R2,#0x64,LAB_CODE_1c4c                                     X (guide) button
        CODE:1c46 20 d5 23        JB         F0,return_1c6c                                             = ??
        CODE:1c49 d2 21           SETB       g_ir_x_button_pressed                                      = ??
        CODE:1c4b 22              RET
                              LAB_CODE_1c4c                                   XREF[1]:     CODE:1c43(j)  
-       CODE:1c4c ba 2a 06        CJNE       R2,#0x2a,ir_send_button_press_to_ipc
+       CODE:1c4c ba 2a 06        CJNE       R2,#0x2a,ir_send_button_press_to_ipc                       mystery button
+                                                                                                       (explicit power on)
        CODE:1c4f 20 d5 1a        JB         F0,return_1c6c                                             = ??
        CODE:1c52 d2 20           SETB       g_ir_power_button_pressed                                  = ??
        CODE:1c54 22              RET
@@ -5198,8 +5222,9 @@
        CODE:1dd3 e6              MOV        A,@R0=>DAT_INTMEM_7d                                       = ??
        CODE:1dd4 26              ADD        A,@R0=>DAT_INTMEM_7d                                       = ??
        CODE:1dd5 26              ADD        A,@R0=>DAT_INTMEM_7d                                       = ??
-       CODE:1dd6 90 1d da        MOV        DPTR,#0x1dda
+       CODE:1dd6 90 1d da        MOV        DPTR,#LAB_CODE_1dda
        CODE:1dd9 73              JMP        @A+DPTR
+                             LAB_CODE_1dda                                   XREF[1]:     FUN_CODE_1dce:1dd6(*)  
        CODE:1dda 02 1e 95        LJMP       sm1dce_exec_state_0                                        state 0 - check if a bit is set
                                                                                                        if so go to state 1
        CODE:1ddd 02 1d ef        LJMP       sm1dce_exec_state_1                                        state 1 - wait for something that
@@ -5219,7 +5244,7 @@
                                                                                                        go back to state 0
                              sm1dce_exec_state_1                             XREF[1]:     CODE:1ddd(j)  
        CODE:1def 75 3b 80        MOV        g_boot_status_blink_pattern,#0x80                          = ??
-       CODE:1df2 d2 1f           SETB       23.7                                                       = ??
+       CODE:1df2 d2 1f           SETB       g_ir_handle_special_poweron_cases                          = ??
        CODE:1df4 75 37 62        MOV        g_tray_intended_state,#0x62                                = ??
        CODE:1df7 20 03 28        JB         g_ipc_requested_reboot,LAB_CODE_1e22                       = ??
        CODE:1dfa 20 09 2a        JB         g_ejectswitch_pushed,LAB_CODE_1e27                         = ??
@@ -5288,9 +5313,13 @@
        CODE:1e6e c2 0a           CLR        g_ext_pwr_on_active                                        = ??
        CODE:1e70 c2 0b           CLR        21.3                                                       = ??
        CODE:1e72 c2 4c           CLR        g_wireless_controller_powered_system_on                    = ??
-       CODE:1e74 c2 1f           CLR        23.7                                                       = ??
+       CODE:1e74 c2 1f           CLR        g_ir_handle_special_poweron_cases                          since the system is powering on,
+                                                                                                       we now allow certain IR button
+                                                                                                       presses to fall through to IPC
+                                                                                                       instead of treating them like
+                                                                                                       power-up events
        CODE:1e76 d2 02           SETB       20.2                                                       = ??
-       CODE:1e78 75 61 81        MOV        g_rol_led_flags,#0x81                                      = ??
+       CODE:1e78 75 61 81        MOV        g_rol_led_flags,#0x81                                      queue RoL enable
        CODE:1e7b d2 47           SETB       28.7                                                       = ??
        CODE:1e7d d2 48           SETB       29.0                                                       = ??
        CODE:1e7f 20 1c 05        JB         g_rrod_power_problem,LAB_CODE_1e87                         if this bit is set,
@@ -5957,7 +5986,8 @@
                              FUN_CODE_22b6                                   XREF[2]:     CODE:0759(c), mainloop:0778(c)  
        CODE:22b6 c2 d3           CLR        RS0                                                        = ??
        CODE:22b8 c2 d4           CLR        RS1                                                        = ??
-       CODE:22ba 53 8f f9        ANL        FADDR,#0xf9                                                = ??
+       CODE:22ba 53 8f f9        ANL        FADDR,#0xf9                                                clear IRQ busy flag
+                                                                                                       and bit 2 (not sure what yet)
        CODE:22bd 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -5965,7 +5995,7 @@
                              undefined FUN_CODE_22be()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_22be                                   XREF[2]:     CODE:075f(c), CODE:1154(c)  
-       CODE:22be 75 bf 01        MOV        DAT_SFR_bf,#0x1                                            no interrupts while we do this
+       CODE:22be 75 bf 01        MOV        sfr_irq_disable_all,#0x1                                   no interrupts while we do this
        CODE:22c1 75 bc ff        MOV        DAT_SFR_bc,#0xff                                           = ??
        CODE:22c4 75 bd ff        MOV        DAT_SFR_bd,#0xff                                           = ??
        CODE:22c7 75 be ff        MOV        SPH,#0xff                                                  = ??
@@ -6000,8 +6030,8 @@
              undefined         ACC:1          <RETURN>
                              FUN_CODE_2310                                   XREF[2]:     CODE:0762(c), CODE:1169(c)  
        CODE:2310 75 76 00        MOV        g_milliseconds_counter,#0x0                                = ??
-       CODE:2313 53 bc 7f        ANL        DAT_SFR_bc,#0x7f                                           = ??
-       CODE:2316 53 bf fe        ANL        DAT_SFR_bf,#0xfe                                           enable interrupts
+       CODE:2313 53 bc 7f        ANL        DAT_SFR_bc,#0x7f                                           enable 1ms IRQ?
+       CODE:2316 53 bf fe        ANL        sfr_irq_disable_all,#0xfe                                  enable interrupts
        CODE:2319 22              RET
        CODE:231a e5 76           MOV        A,g_milliseconds_counter                                   = ??
        CODE:231c 22              RET
@@ -6018,13 +6048,13 @@
        CODE:2323 c3              CLR        CY
        CODE:2324 22              RET
                              LAB_CODE_2325                                   XREF[1]:     CODE:2321(j)  
-       CODE:2325 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            no IRQs please
+       CODE:2325 43 bf 01        ORL        sfr_irq_disable_all,#0x1                                   no IRQs please
        CODE:2328 e5 76           MOV        A,g_milliseconds_counter                                   = ??
        CODE:232a c3              CLR        CY                                                         stupid useless opcode of idiot
        CODE:232b 94 14           SUBB       A,#0x14                                                    move ms counter back
        CODE:232d f5 76           MOV        g_milliseconds_counter,A                                   and update it in ram
        CODE:232f d3              SETB       CY                                                         set carry because 20 ms have passed
-       CODE:2330 53 bf fe        ANL        DAT_SFR_bf,#0xfe                                           IRQs back on
+       CODE:2330 53 bf fe        ANL        sfr_irq_disable_all,#0xfe                                  IRQs back on
        CODE:2333 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6045,7 +6075,7 @@
                              dbgled_read                                     XREF[1]:     CODE:1157(c)  
        CODE:233e 43 a5 01        ORL        DAT_SFR_a5,#0x1                                            set DBG_LED0 as input
        CODE:2341 a2 c0           MOV        CY,FIFLG.0                                                 read it
-       CODE:2343 92 11           MOV        g_ignore_smc_config_load_errors,CY                         if it's 1, inhibit SMC config
+       CODE:2343 92 11           MOV        g_smc_development_mode,CY                                  if it's 1, inhibit SMC config
                                                                                                        load errors (??? why?)
        CODE:2345 22              RET
                              **************************************************************
@@ -6067,8 +6097,8 @@
        CODE:2364 75 80 00        MOV        P0,#0x0                                                    set port 0 bits
        CODE:2367 75 90 10        MOV        P1,#0x10                                                   set port 1 bits
        CODE:236a 75 a0 04        MOV        P2,#0x4                                                    set port 2 bits
-       CODE:236d 75 c0 00        MOV        FIFLG,#0x0                                                 set port 3 bits
-       CODE:2370 75 c8 10        MOV        T2CON,#0x10                                                set port 4 bits
+       CODE:236d 75 c0 00        MOV        sfr_gpio_port3,#0x0                                        set port 3 bits
+       CODE:2370 75 c8 10        MOV        sfr_gpio_port4,#0x10                                       set port 4 bits
        CODE:2373 75 a2 80        MOV        FIE,#0x80                                                  then explicitly set DDRs
        CODE:2376 75 a3 47        MOV        FIE1,#0x47                                                 = ??
        CODE:2379 75 a4 b0        MOV        DAT_SFR_a4,#0xb0                                           = ??
@@ -6088,16 +6118,16 @@
        CODE:238d c2 63           CLR        2c.3                                                       = ??
        CODE:238f 75 68 00        MOV        g_argon_serialout_sm_state,#0x0                            = ??
        CODE:2392 75 96 00        MOV        DAT_SFR_96,#0x0                                            = ??
-       CODE:2395 75 92 64        MOV        DAT_SFR_92,#0x64                                           = ??
-       CODE:2398 75 94 64        MOV        DAT_SFR_94,#0x64                                           = ??
+       CODE:2395 75 92 64        MOV        sfr_pwm2_freq,#0x64                                        = ??
+       CODE:2398 75 94 64        MOV        sfr_pwm1_freq,#0x64                                        = ??
        CODE:239b 75 88 00        MOV        TCON,#0x0                                                  = ??
        CODE:239e 75 98 00        MOV        SCON,#0x0                                                  = ??
        CODE:23a1 75 95 88        MOV        DAT_SFR_95,#0x88                                           = ??
        CODE:23a4 c2 6b           CLR        g_usb_front_top_plugged                                    = ??
        CODE:23a6 c2 6c           CLR        g_usb_front_bottom_plugged                                 = ??
        CODE:23a8 c2 6d           CLR        g_usb_rear_plugged                                         = ??
-       CODE:23aa 75 1f 00        MOV        BANK3_R7,#0x0                                              = ??
-       CODE:23ad 75 e8 00        MOV        HIFLG,#0x0                                                 = ??
+       CODE:23aa 75 1f 00        MOV        g_usb_powerup_cause,#0x0                                   = ??
+       CODE:23ad 75 e8 00        MOV        sfr_uart_control_status,#0x0                               = ??
        CODE:23b0 43 c2 40        ORL        DAT_SFR_c2,#0x40                                           = ??
        CODE:23b3 43 87 80        ORL        PCON,#0x80                                                 = ??
        CODE:23b6 22              RET
@@ -6125,7 +6155,7 @@
                              halt_execution                                  XREF[2]:     halt_execution:0137(T), 
                                                                                           halt_execution:0137(j), 
                                                                                           CODE:1174(c)  
-       CODE:23bd 43 bf 01        ORL        DAT_SFR_bf,#0x1                                            disable interrupts
+       CODE:23bd 43 bf 01        ORL        sfr_irq_disable_all,#0x1                                   disable interrupts
        CODE:23c0 75 ff 00        MOV        DAT_SFR_ff,#0x0
        CODE:23c3 75 fe ff        MOV        CCAP4H,#0xff                                               turn off watchdog?
                              halt_execution_loop_forever                     XREF[1]:     CODE:23c6(j)  
@@ -6249,8 +6279,8 @@
                                                                                           CODE:228e(c)  
        CODE:23fc 75 e0 00        MOV        A,#0x0
        CODE:23ff d2 e4           SETB       ACC.4                                                      = ??
-       CODE:2401 f5 e2           MOV        RXSTAT,A                                                   =0x10, start of message
-       CODE:2403 e5 e1           MOV        A,EPCON                                                    read the message type
+       CODE:2401 f5 e2           MOV        sfr_ipc_inbox_ctrl_status,A                                =0x10, start of message
+       CODE:2403 e5 e1           MOV        A,sfr_ipc_inbox_data                                       read the message type
        CODE:2405 a2 e7           MOV        CY,ACC.7                                                   if >= 0x80 set carry
        CODE:2407 22              RET
                              **************************************************************
@@ -6278,7 +6308,7 @@
                                                                                           FUN_CODE_0aca:0d2b(c), 
                                                                                           FUN_CODE_0aca:0d38(c), [more]
        CODE:2408 d2 e4           SETB       ACC.4                                                      = ??
-       CODE:240a f5 e2           MOV        RXSTAT,A                                                   = ??
+       CODE:240a f5 e2           MOV        sfr_ipc_inbox_ctrl_status,A                                = ??
        CODE:240c 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6302,7 +6332,7 @@
                                                                                           FUN_CODE_0aca:0bbb(c), 
                                                                                           FUN_CODE_0aca:0bbf(c), 
                                                                                           FUN_CODE_0aca:0bc3(c), [more]
-       CODE:240d e5 e1           MOV        A,EPCON                                                    = ??
+       CODE:240d e5 e1           MOV        A,sfr_ipc_inbox_data                                       = ??
        CODE:240f 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6312,7 +6342,7 @@
                              ipc_fifo_read_to_buffer                         XREF[3]:     FUN_CODE_0aca:0d32(c), 
                                                                                           FUN_CODE_0aca:0d3f(c), 
                                                                                           CODE:2414(j)  
-       CODE:2410 e5 e1           MOV        A,EPCON                                                    = ??
+       CODE:2410 e5 e1           MOV        A,sfr_ipc_inbox_data                                       = ??
        CODE:2412 f6              MOV        @R0,A
        CODE:2413 08              INC        R0
        CODE:2414 da fa           DJNZ       R2,ipc_fifo_read_to_buffer
@@ -6323,7 +6353,7 @@
                              undefined ipc_inbox_release()
              undefined         ACC:1          <RETURN>
                              ipc_inbox_release                               XREF[2]:     CODE:2296(c), CODE:22a2(c)  
-       CODE:2417 75 e2 00        MOV        RXSTAT,#0x0                                                = ??
+       CODE:2417 75 e2 00        MOV        sfr_ipc_inbox_ctrl_status,#0x0                             = ??
        CODE:241a 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6333,12 +6363,12 @@
                              ipc_outbox_lock_and_clear                       XREF[1]:     CODE:1d93(c)  
        CODE:241b e4              CLR        A
        CODE:241c d2 e4           SETB       ACC.4                                                      lock mutex
-       CODE:241e f5 d6           MOV        DAT_SFR_d6,A                                               set outbox pointer 0x10
+       CODE:241e f5 d6           MOV        sfr_ipc_outbox_ctrl_status,A                               set outbox pointer 0x10
        CODE:2420 7a 10           MOV        R2,#0x10                                                   write 16 zero bytes
                                                                                                        which clears it
                              LAB_CODE_2422                                   XREF[1]:     CODE:2427(j)  
-       CODE:2422 75 d5 00        MOV        HPSC,#0x0                                                  = ??
-       CODE:2425 e5 d6           MOV        A,DAT_SFR_d6                                               = ??
+       CODE:2422 75 d5 00        MOV        sfr_ipc_outbox_data,#0x0                                   = ??
+       CODE:2425 e5 d6           MOV        A,sfr_ipc_outbox_ctrl_status                               = ??
        CODE:2427 da f9           DJNZ       R2,LAB_CODE_2422
        CODE:2429 22              RET
                              **************************************************************
@@ -6365,7 +6395,7 @@
                                                                                           ipc_handle_async_events:0da8(c), 
                                                                                           CODE:1ae6(c), [more]
        CODE:242a d2 e4           SETB       ACC.4                                                      = ??
-       CODE:242c f5 d6           MOV        DAT_SFR_d6,A                                               = ??
+       CODE:242c f5 d6           MOV        sfr_ipc_outbox_ctrl_status,A                               = ??
        CODE:242e 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6392,7 +6422,7 @@
                                                                                           ipc_handle_messages:0912(c), 
                                                                                           ipc_handle_messages:0917(c), 
                                                                                           CODE:1aeb(c), [more]
-       CODE:242f f5 d5           MOV        HPSC,A                                                     = ??
+       CODE:242f f5 d5           MOV        sfr_ipc_outbox_data,A                                      = ??
        CODE:2431 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6403,7 +6433,7 @@
                                                                                           ipc_handle_read_debugbuffer_b:0a
                                                                                           CODE:2436(j)  
        CODE:2432 e6              MOV        A,@R0
-       CODE:2433 f5 d5           MOV        HPSC,A                                                     = ??
+       CODE:2433 f5 d5           MOV        sfr_ipc_outbox_data,A                                      = ??
        CODE:2435 08              INC        R0
        CODE:2436 da fa           DJNZ       R2,ipc_outbox_write_buffer
        CODE:2438 22              RET
@@ -6414,7 +6444,7 @@
              undefined         ACC:1          <RETURN>
                              ipc_outbox_release                              XREF[2]:     ipc_handle_async_events:0d92(c), 
                                                                                           CODE:1dae(c)  
-       CODE:2439 75 d6 00        MOV        DAT_SFR_d6,#0x0                                            function guessed, but
+       CODE:2439 75 d6 00        MOV        sfr_ipc_outbox_ctrl_status,#0x0                            function guessed, but
                                                                                                        bit 4 being 0 is what matters
        CODE:243c 22              RET
                              **************************************************************
@@ -6423,7 +6453,7 @@
                              undefined ipc_outbox_is_locked()
              undefined         ACC:1          <RETURN>
                              ipc_outbox_is_locked                            XREF[1]:     CODE:1db5(c)  
-       CODE:243d e5 d6           MOV        A,DAT_SFR_d6                                               = ??
+       CODE:243d e5 d6           MOV        A,sfr_ipc_outbox_ctrl_status                               = ??
        CODE:243f a2 e4           MOV        CY,ACC.4                                                   = ??
        CODE:2441 22              RET
                              **************************************************************
@@ -6435,28 +6465,31 @@
        CODE:2442 90 24 66        MOV        DPTR,#smcconfig_default_settings                           load SMC config defaults
                                                                                                        in case we can't load from flash
        CODE:2445 12 2c e8        LCALL      init_intmem_values                                         undefined init_intmem_values()
-       CODE:2448 e5 e3           MOV        A,RXDAT                                                    not sure what sets this
-       CODE:244a c4              SWAP       A                                                          move upper 4 bits of whatever
-                                                                                                       that is to lower 4
+       CODE:2448 e5 e3           MOV        A,sfr_sfcx_config_d0_lsb                                   memory config register
+                                                                                                       trying to check what flash size
+                                                                                                       we have...
+       CODE:244a c4              SWAP       A                                                          flash size is in bits 4/5
+                                                                                                       so move those bits into place
        CODE:244b 54 03           ANL        A,#0x3
        CODE:244d 75 f0 03        MOV        B,#0x3
        CODE:2450 a4              MUL        AB                                                         a = (a & 3) * 3
-                                                                                                       likely checking flash size
-       CODE:2451 fa              MOV        R2,A                                                       using the offset we just computed,
-                                                                                                       read values from table below
-                                                                                                       into the flash controller(?)
+                                                                                                       to setup index into table below
+       CODE:2451 fa              MOV        R2,A
        CODE:2452 90 24 99        MOV        DPTR,#smc_config_block_location_table
        CODE:2455 93              MOVC       A,@A+DPTR=>smc_config_block_location_table
-       CODE:2456 f5 ed           MOV        CCAP3L,A                                                   = ??
+       CODE:2456 f5 ed           MOV        sfr_sfcx_address_d3_msb,A                                  = ??
        CODE:2458 0a              INC        R2
        CODE:2459 ea              MOV        A,R2
        CODE:245a 93              MOVC       A,@A+DPTR=>smc_config_block_location_table
-       CODE:245b f5 ec           MOV        CCAP2L,A                                                   = ??
+       CODE:245b f5 ec           MOV        sfr_sfcx_address_d2,A                                      = ??
        CODE:245d 0a              INC        R2
        CODE:245e ea              MOV        A,R2
        CODE:245f 93              MOVC       A,@A+DPTR=>smc_config_block_location_table
-       CODE:2460 f5 eb           MOV        CCAP1L,A                                                   = ??
-       CODE:2462 75 f5 02        MOV        TXFLG,#0x2                                                 send command to flash controller?
+       CODE:2460 f5 eb           MOV        sfr_sfcx_address_d1,A                                      = ??
+       CODE:2462 75 f5 02        MOV        sfr_sfcx_command,#0x2                                      SFCX command 2
+                                                                                                       read 256-byte page at
+                                                                                                       given logical address
+                                                                                                       (bits 0-7 ignored here)
        CODE:2465 22              RET
                              table of SMC config defaults
                              each pair is dest_address, value
@@ -6500,11 +6533,11 @@
        CODE:2489 6a              ??         6Ah    j
        CODE:248a e2              ??         DAT_INTMEM_e2                                              mystery HANA register
        CODE:248b 03              ??         03h
-       CODE:248c 4d              ??         DAT_INTMEM_4d                                              = ??
+       CODE:248c 4d              ??         g_cpu_target_temp                                          = ??
        CODE:248d 50              ??         50h    P
-       CODE:248e 4e              ??         DAT_INTMEM_4e                                              = ??
+       CODE:248e 4e              ??         g_gpu_target_temp                                          = ??
        CODE:248f 61              ??         61h    a
-       CODE:2490 4f              ??         DAT_INTMEM_4f                                              = ??
+       CODE:2490 4f              ??         g_edram_target_temp                                        = ??
        CODE:2491 64              ??         64h    d
        CODE:2492 50              ??         g_cpu_trip_temp                                            set 0x50 (CPU trip temp) to 0x64
        CODE:2493 64              ??         64h    d
@@ -6517,18 +6550,24 @@
                                                                                           smcconfig_init_defaults_and_read
                                                                                           smcconfig_init_defaults_and_read
                                                                                           smcconfig_init_defaults_and_read
-       CODE:2499 00              ??         00h                                                        assuming this is for 16m systems,
-                                                                                                       0x007BE0 * 0x210 -> 0x00FF7E00
-                                                                                                       (matches actual SMC config location)
+       CODE:2499 00              ??         00h                                                        %00 = 8mbytes NAND
+                                                                                                       smc config at logical addr
+                                                                                                       0x007BE000
        CODE:249a 7b              ??         7Bh    {
        CODE:249b e0              ??         E0h
-       CODE:249c 00              ??         00h                                                        ???? (32mbytes flash?)
+       CODE:249c 00              ??         00h                                                        %01 = 16mbytes NAND
+                                                                                                       smc config at logical addr
+                                                                                                       0x00F7C000
        CODE:249d f7              ??         F7h
        CODE:249e c0              ??         C0h
-       CODE:249f 01              ??         01h                                                        ???? (64mbytes flash?)
+       CODE:249f 01              ??         01h                                                        %10 = 32mbytes NAND
+                                                                                                       smc config at logical addr
+                                                                                                       0x01EFC000
        CODE:24a0 ef              ??         EFh
        CODE:24a1 c0              ??         C0h
-       CODE:24a2 03              ??         03h                                                        ???? (128mbytes flash?)
+       CODE:24a2 03              ??         03h                                                        %11 = 64mbytes NAND
+                                                                                                       smc config at logical addr
+                                                                                                       0x03DFC000
        CODE:24a3 df              ??         DFh
        CODE:24a4 c0              ??         C0h
                              **************************************************************
@@ -6538,40 +6577,40 @@
              undefined         ACC:1          <RETURN>
                              smcconfig_load                                  XREF[2]:     CODE:1177(c), CODE:11c9(c)  
        CODE:24a5 c2 59           CLR        g_smcconfig_load_error                                     = ??
-       CODE:24a7 e5 ee           MOV        A,CCAP4L                                                   = ??
+       CODE:24a7 e5 ee           MOV        A,sfr_sfcx_status                                          = ??
        CODE:24a9 20 e0 04        JB         ACC.0,smcconfig_load_failed                                bit 0 absolutely has to be 0
        CODE:24ac 54 b0           ANL        A,#0xb0                                                    same with bits 4,5,7
        CODE:24ae 60 06           JZ         LAB_CODE_24b6
                              smcconfig_load_failed                           XREF[3]:     CODE:24a9(j), CODE:24c1(j), 
                                                                                           CODE:2507(j)  
-       CODE:24b0 20 11 02        JB         g_ignore_smc_config_load_errors,LAB_CODE_24b5              = ??
+       CODE:24b0 20 11 02        JB         g_smc_development_mode,LAB_CODE_24b5                       = ??
        CODE:24b3 d2 59           SETB       g_smcconfig_load_error                                     = ??
                              LAB_CODE_24b5                                   XREF[1]:     CODE:24b0(j)  
        CODE:24b5 22              RET
                              LAB_CODE_24b6                                   XREF[1]:     CODE:24ae(j)  
-       CODE:24b6 75 eb 00        MOV        CCAP1L,#0x0                                                = ??
-       CODE:24b9 75 ea 0c        MOV        CCAP0L,#0xc                                                set pointer up to +0x0C
-       CODE:24bc 75 f5 00        MOV        TXFLG,#0x0                                                 read 4 bytes at that offset
-       CODE:24bf e5 f3           MOV        A,TXDAT                                                    is the 3rd byte of the read = 4?
+       CODE:24b6 75 eb 00        MOV        sfr_sfcx_address_d1,#0x0                                   = ??
+       CODE:24b9 75 ea 0c        MOV        sfr_sfcx_address_d0_lsb,#0xc                               set pointer up to +0x0C
+       CODE:24bc 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      read 4 bytes at that offset
+       CODE:24bf e5 f3           MOV        A,sfr_sfcx_data_d2                                         is the 3rd byte of the read = 4?
        CODE:24c1 b4 04 ec        CJNE       A,#0x4,smcconfig_load_failed                               if it isn't, fail
-       CODE:24c4 75 ea 00        MOV        CCAP0L,#0x0                                                = ??
-       CODE:24c7 75 f5 00        MOV        TXFLG,#0x0                                                 read first four bytes
+       CODE:24c4 75 ea 00        MOV        sfr_sfcx_address_d0_lsb,#0x0                               = ??
+       CODE:24c7 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      read first four bytes
                                                                                                        to set up for checksum below
-       CODE:24ca aa f1           MOV        R2,EPINDEX                                                 these should be the expected checksum
-       CODE:24cc ab f2           MOV        R3,TXSTAT                                                  = ??
+       CODE:24ca aa f1           MOV        R2,sfr_sfcx_data_d0_msb                                    these should be the expected checksum
+       CODE:24cc ab f2           MOV        R3,sfr_sfcx_data_d1                                        = ??
        CODE:24ce 7c 3f           MOV        R4,#0x3f                                                   checksum end address (inclusive)
-       CODE:24d0 75 ea 10        MOV        CCAP0L,#0x10                                               read start location
+       CODE:24d0 75 ea 10        MOV        sfr_sfcx_address_d0_lsb,#0x10                              read start location
                              smcconfig_calc_checksum                         XREF[1]:     CODE:24fd(j)  
-       CODE:24d3 75 f5 00        MOV        TXFLG,#0x0                                                 read four bytes
+       CODE:24d3 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      read four bytes
        CODE:24d6 75 f0 00        MOV        B,#0x0
        CODE:24d9 ea              MOV        A,R2
-       CODE:24da 25 f1           ADD        A,EPINDEX                                                  = ??
+       CODE:24da 25 f1           ADD        A,sfr_sfcx_data_d0_msb                                     = ??
        CODE:24dc 92 f0           MOV        B.0,CY                                                     = ??
-       CODE:24de 25 f2           ADD        A,TXSTAT                                                   = ??
+       CODE:24de 25 f2           ADD        A,sfr_sfcx_data_d1                                         = ??
        CODE:24e0 92 f1           MOV        B.1,CY                                                     = ??
-       CODE:24e2 25 f3           ADD        A,TXDAT                                                    = ??
+       CODE:24e2 25 f3           ADD        A,sfr_sfcx_data_d2                                         = ??
        CODE:24e4 92 f2           MOV        B.2,CY                                                     = ??
-       CODE:24e6 25 f4           ADD        A,TXCON                                                    = ??
+       CODE:24e6 25 f4           ADD        A,sfr_sfcx_data_d3_lsb                                     = ??
        CODE:24e8 92 f3           MOV        B.3,CY                                                     = ??
        CODE:24ea fa              MOV        R2,A
        CODE:24eb eb              MOV        A,R3
@@ -6592,67 +6631,67 @@
        CODE:2504 34 00           ADDC       A,#0x0
        CODE:2506 4a              ORL        A,R2
        CODE:2507 70 a7           JNZ        smcconfig_load_failed
-       CODE:2509 75 eb 00        MOV        CCAP1L,#0x0                                                = ??
-       CODE:250c 75 ea 14        MOV        CCAP0L,#0x14                                               = ??
-       CODE:250f 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
-       CODE:2512 e5 f1           MOV        A,EPINDEX                                                  = ??
+       CODE:2509 75 eb 00        MOV        sfr_sfcx_address_d1,#0x0                                   = ??
+       CODE:250c 75 ea 14        MOV        sfr_sfcx_address_d0_lsb,#0x14                              = ??
+       CODE:250f 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
+       CODE:2512 e5 f1           MOV        A,sfr_sfcx_data_d0_msb                                     = ??
        CODE:2514 20 e1 7a        JB         ACC.1,LAB_CODE_2591                                        = ??
-       CODE:2517 75 ea 10        MOV        CCAP0L,#0x10                                               = ??
-       CODE:251a 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
-       CODE:251d 85 f2 57        MOV        g_fan1_target_speed_override,TXSTAT                        = ??
-       CODE:2520 85 f3 58        MOV        g_fan2_target_speed_override,TXDAT                         = ??
-       CODE:2523 75 ea 18        MOV        CCAP0L,#0x18                                               = ??
-       CODE:2526 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
+       CODE:2517 75 ea 10        MOV        sfr_sfcx_address_d0_lsb,#0x10                              = ??
+       CODE:251a 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
+       CODE:251d 85 f2 57        MOV        g_fan1_target_speed_override,sfr_sfcx_data_d1              = ??
+       CODE:2520 85 f3 58        MOV        g_fan2_target_speed_override,sfr_sfcx_data_d2              = ??
+       CODE:2523 75 ea 18        MOV        sfr_sfcx_address_d0_lsb,#0x18                              = ??
+       CODE:2526 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
        CODE:2529 78 e3           MOV        R0,#0xe3
-       CODE:252b a6 f2           MOV        @R0=>DAT_INTMEM_e3,TXSTAT                                  = ??
+       CODE:252b a6 f2           MOV        @R0=>DAT_INTMEM_e3,sfr_sfcx_data_d1                        = ??
        CODE:252d 08              INC        R0
-       CODE:252e a6 f1           MOV        @R0=>DAT_INTMEM_e4,EPINDEX                                 = ??
+       CODE:252e a6 f1           MOV        @R0=>DAT_INTMEM_e4,sfr_sfcx_data_d0_msb                    = ??
        CODE:2530 08              INC        R0
-       CODE:2531 a6 f4           MOV        @R0=>DAT_INTMEM_e5,TXCON                                   = ??
+       CODE:2531 a6 f4           MOV        @R0=>DAT_INTMEM_e5,sfr_sfcx_data_d3_lsb                    = ??
        CODE:2533 08              INC        R0
-       CODE:2534 a6 f3           MOV        @R0=>DAT_INTMEM_e6,TXDAT                                   = ??
-       CODE:2536 75 ea 1c        MOV        CCAP0L,#0x1c                                               = ??
-       CODE:2539 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
+       CODE:2534 a6 f3           MOV        @R0=>DAT_INTMEM_e6,sfr_sfcx_data_d2                        = ??
+       CODE:2536 75 ea 1c        MOV        sfr_sfcx_address_d0_lsb,#0x1c                              = ??
+       CODE:2539 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
        CODE:253c 78 e7           MOV        R0,#0xe7
-       CODE:253e a6 f2           MOV        @R0=>DAT_INTMEM_e7,TXSTAT                                  = ??
+       CODE:253e a6 f2           MOV        @R0=>DAT_INTMEM_e7,sfr_sfcx_data_d1                        = ??
        CODE:2540 08              INC        R0
-       CODE:2541 a6 f1           MOV        @R0=>DAT_INTMEM_e8,EPINDEX                                 = ??
+       CODE:2541 a6 f1           MOV        @R0=>DAT_INTMEM_e8,sfr_sfcx_data_d0_msb                    = ??
        CODE:2543 08              INC        R0
-       CODE:2544 a6 f4           MOV        @R0=>DAT_INTMEM_e9,TXCON                                   = ??
+       CODE:2544 a6 f4           MOV        @R0=>DAT_INTMEM_e9,sfr_sfcx_data_d3_lsb                    = ??
        CODE:2546 08              INC        R0
-       CODE:2547 a6 f3           MOV        @R0=>DAT_INTMEM_ea,TXDAT                                   = ??
-       CODE:2549 75 ea 20        MOV        CCAP0L,#0x20                                               = ??
-       CODE:254c 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
+       CODE:2547 a6 f3           MOV        @R0=>DAT_INTMEM_ea,sfr_sfcx_data_d2                        = ??
+       CODE:2549 75 ea 20        MOV        sfr_sfcx_address_d0_lsb,#0x20                              = ??
+       CODE:254c 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
        CODE:254f 78 eb           MOV        R0,#0xeb
-       CODE:2551 a6 f2           MOV        @R0=>DAT_INTMEM_eb,TXSTAT                                  = ??
+       CODE:2551 a6 f2           MOV        @R0=>DAT_INTMEM_eb,sfr_sfcx_data_d1                        = ??
        CODE:2553 08              INC        R0
-       CODE:2554 a6 f1           MOV        @R0=>DAT_INTMEM_ec,EPINDEX                                 = ??
+       CODE:2554 a6 f1           MOV        @R0=>DAT_INTMEM_ec,sfr_sfcx_data_d0_msb                    = ??
        CODE:2556 08              INC        R0
-       CODE:2557 a6 f4           MOV        @R0=>DAT_INTMEM_ed,TXCON                                   = ??
+       CODE:2557 a6 f4           MOV        @R0=>DAT_INTMEM_ed,sfr_sfcx_data_d3_lsb                    = ??
        CODE:2559 08              INC        R0
-       CODE:255a a6 f3           MOV        @R0=>DAT_INTMEM_ee,TXDAT                                   = ??
-       CODE:255c 75 ea 24        MOV        CCAP0L,#0x24                                               = ??
-       CODE:255f 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
+       CODE:255a a6 f3           MOV        @R0=>DAT_INTMEM_ee,sfr_sfcx_data_d2                        = ??
+       CODE:255c 75 ea 24        MOV        sfr_sfcx_address_d0_lsb,#0x24                              = ??
+       CODE:255f 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
        CODE:2562 78 ef           MOV        R0,#0xef
-       CODE:2564 a6 f2           MOV        @R0=>DAT_INTMEM_ef,TXSTAT                                  = ??
+       CODE:2564 a6 f2           MOV        @R0=>DAT_INTMEM_ef,sfr_sfcx_data_d1                        = ??
        CODE:2566 08              INC        R0
-       CODE:2567 a6 f1           MOV        @R0=>DAT_INTMEM_f0,EPINDEX                                 = ??
+       CODE:2567 a6 f1           MOV        @R0=>DAT_INTMEM_f0,sfr_sfcx_data_d0_msb                    = ??
        CODE:2569 08              INC        R0
-       CODE:256a a6 f4           MOV        @R0=>DAT_INTMEM_f1,TXCON                                   = ??
+       CODE:256a a6 f4           MOV        @R0=>DAT_INTMEM_f1,sfr_sfcx_data_d3_lsb                    = ??
        CODE:256c 08              INC        R0
-       CODE:256d a6 f3           MOV        @R0=>DAT_INTMEM_f2,TXDAT                                   = ??
-       CODE:256f 75 ea 28        MOV        CCAP0L,#0x28                                               = ??
-       CODE:2572 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
+       CODE:256d a6 f3           MOV        @R0=>DAT_INTMEM_f2,sfr_sfcx_data_d2                        = ??
+       CODE:256f 75 ea 28        MOV        sfr_sfcx_address_d0_lsb,#0x28                              = ??
+       CODE:2572 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
        CODE:2575 78 e2           MOV        R0,#0xe2
-       CODE:2577 a6 f1           MOV        @R0=>DAT_INTMEM_e2,EPINDEX                                 = ??
-       CODE:2579 85 f2 4d        MOV        DAT_INTMEM_4d,TXSTAT                                       = ??
-       CODE:257c 85 f3 4e        MOV        DAT_INTMEM_4e,TXDAT                                        = ??
-       CODE:257f 85 f4 4f        MOV        DAT_INTMEM_4f,TXCON                                        = ??
-       CODE:2582 75 ea 2c        MOV        CCAP0L,#0x2c                                               = ??
-       CODE:2585 75 f5 00        MOV        TXFLG,#0x0                                                 = ??
-       CODE:2588 85 f1 50        MOV        g_cpu_trip_temp,EPINDEX                                    = ??
-       CODE:258b 85 f2 51        MOV        g_gpu_trip_temp,TXSTAT                                     = ??
-       CODE:258e 85 f3 52        MOV        g_edram_trip_temp,TXDAT                                    = ??
+       CODE:2577 a6 f1           MOV        @R0=>DAT_INTMEM_e2,sfr_sfcx_data_d0_msb                    = ??
+       CODE:2579 85 f2 4d        MOV        g_cpu_target_temp,sfr_sfcx_data_d1                         = ??
+       CODE:257c 85 f3 4e        MOV        g_gpu_target_temp,sfr_sfcx_data_d2                         = ??
+       CODE:257f 85 f4 4f        MOV        g_edram_target_temp,sfr_sfcx_data_d3_lsb                   = ??
+       CODE:2582 75 ea 2c        MOV        sfr_sfcx_address_d0_lsb,#0x2c                              = ??
+       CODE:2585 75 f5 00        MOV        sfr_sfcx_command,#0x0                                      = ??
+       CODE:2588 85 f1 50        MOV        g_cpu_trip_temp,sfr_sfcx_data_d0_msb                       = ??
+       CODE:258b 85 f2 51        MOV        g_gpu_trip_temp,sfr_sfcx_data_d1                           = ??
+       CODE:258e 85 f3 52        MOV        g_edram_trip_temp,sfr_sfcx_data_d2                         = ??
                              LAB_CODE_2591                                   XREF[1]:     CODE:2514(j)  
        CODE:2591 22              RET
                              **************************************************************
@@ -6677,7 +6716,7 @@
                              undefined pwm2_set_pulse_width()
              undefined         ACC:1          <RETURN>
                              pwm2_set_pulse_width                            XREF[1]:     thermal_monitor_do_checks:15b1(c
-       CODE:2598 f5 91           MOV        DAT_SFR_91,A                                               = ??
+       CODE:2598 f5 91           MOV        sfr_pwm2_pulse_width,A                                     = ??
        CODE:259a 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6685,7 +6724,7 @@
                              undefined pwm1_set_pulse_width()
              undefined         ACC:1          <RETURN>
                              pwm1_set_pulse_width                            XREF[1]:     thermal_monitor_do_checks:15ad(c
-       CODE:259b f5 93           MOV        DPX,A                                                      = ??
+       CODE:259b f5 93           MOV        sfr_pwm1_pulse_width,A                                     = ??
        CODE:259d 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6787,12 +6826,12 @@
                              rtc_read                                        XREF[3]:     mainloop:0780(c), 
                                                                                           ipc_handle_messages:08c0(c), 
                                                                                           rtc_has_wakeup_passed:2cb7(c)  
-       CODE:25d8 43 af 01        ORL        DAT_SFR_af,#0x1                                            = ??
-       CODE:25db ae ae           MOV        R6,HSTAT                                                   = ??
-       CODE:25dd ad ad           MOV        R5,DAT_SFR_ad                                              = ??
-       CODE:25df ac ac           MOV        R4,DAT_SFR_ac                                              = ??
-       CODE:25e1 ab ab           MOV        R3,DAT_SFR_ab                                              = ??
-       CODE:25e3 aa aa           MOV        R2,DAT_SFR_aa                                              = ??
+       CODE:25d8 43 af 01        ORL        sfr_rtc_command,#0x1                                       = ??
+       CODE:25db ae ae           MOV        R6,sfr_rtc_data_d4_msb                                     = ??
+       CODE:25dd ad ad           MOV        R5,sfr_rtc_data_d3                                         = ??
+       CODE:25df ac ac           MOV        R4,sfr_rtc_data_d2                                         = ??
+       CODE:25e1 ab ab           MOV        R3,sfr_rtc_data_d1                                         = ??
+       CODE:25e3 aa aa           MOV        R2,sfr_rtc_data_d0_lsb                                     = ??
        CODE:25e5 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6800,12 +6839,12 @@
                              undefined rtc_set()
              undefined         ACC:1          <RETURN>
                              rtc_set                                         XREF[1]:     FUN_CODE_0aca:0bac(c)  
-       CODE:25e6 8e ae           MOV        HSTAT,R6                                                   = ??
-       CODE:25e8 8d ad           MOV        DAT_SFR_ad,R5                                              = ??
-       CODE:25ea 8c ac           MOV        DAT_SFR_ac,R4                                              = ??
-       CODE:25ec 8b ab           MOV        DAT_SFR_ab,R3                                              = ??
-       CODE:25ee 8a aa           MOV        DAT_SFR_aa,R2                                              = ??
-       CODE:25f0 43 af 02        ORL        DAT_SFR_af,#0x2                                            = ??
+       CODE:25e6 8e ae           MOV        sfr_rtc_data_d4_msb,R6                                     = ??
+       CODE:25e8 8d ad           MOV        sfr_rtc_data_d3,R5                                         = ??
+       CODE:25ea 8c ac           MOV        sfr_rtc_data_d2,R4                                         = ??
+       CODE:25ec 8b ab           MOV        sfr_rtc_data_d1,R3                                         = ??
+       CODE:25ee 8a aa           MOV        sfr_rtc_data_d0_lsb,R2                                     = ??
+       CODE:25f0 43 af 02        ORL        sfr_rtc_command,#0x2                                       = ??
        CODE:25f3 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -6949,7 +6988,7 @@
        CODE:2650 75 10 00        MOV        i2c_statemachine_state,#0x0                                reset I2C irq handler state
        CODE:2653 d2 d9           SETB       CCF.1                                                      seems this will trigger an IRQ
                                                                                                        very shortly
-       CODE:2655 53 bc f7        ANL        DAT_SFR_bc,#0xf7                                           = ??
+       CODE:2655 53 bc f7        ANL        DAT_SFR_bc,#0xf7                                           clear bit 3 from this IRQ mask thing
                              LAB_CODE_2658                                   XREF[2]:     i2c_try_continue_commandlist_exe
                                                                                           i2c_try_continue_commandlist_exe
        CODE:2658 c2 d5           CLR        F0                                                         = ??
@@ -7024,7 +7063,7 @@
                              undefined i2c_opcode_hana_write()
              undefined         ACC:1          <RETURN>
                              i2c_opcode_hana_write                           XREF[1]:     CODE:28e4(c)  
-       CODE:268e d2 5d           SETB       2b.5                                                       i2c message waiting, i guess?
+       CODE:268e d2 5d           SETB       g_i2c_operation_pending                                    i2c message waiting, i guess?
        CODE:2690 75 11 e0        MOV        BANK2_R1,#0xe0                                             I2C address 0x70, write
        CODE:2693 75 12 06        MOV        BANK2_R2,#0x6                                              six bytes to be written
        CODE:2696 c2 5e           CLR        2b.6                                                       kill these two thingies
@@ -7076,7 +7115,7 @@
                              undefined i2c_opcode_hana_read()
              undefined         ACC:1          <RETURN>
                              i2c_opcode_hana_read                            XREF[1]:     CODE:28e7(c)  
-       CODE:26d6 d2 5d           SETB       2b.5                                                       = ??
+       CODE:26d6 d2 5d           SETB       g_i2c_operation_pending                                    = ??
        CODE:26d8 75 11 e0        MOV        BANK2_R1,#0xe0                                             = ??
        CODE:26db 75 12 01        MOV        BANK2_R2,#0x1                                              = ??
        CODE:26de c2 5e           CLR        2b.6                                                       = ??
@@ -7098,7 +7137,7 @@
                              undefined FUN_CODE_26f9()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_26f9                                   XREF[1]:     CODE:28ea(c)  
-       CODE:26f9 d2 5d           SETB       2b.5                                                       = ??
+       CODE:26f9 d2 5d           SETB       g_i2c_operation_pending                                    = ??
        CODE:26fb 75 11 72        MOV        BANK2_R1,#0x72                                             I2C address 0x39
                                                                                                        (not sure what's there yet)
        CODE:26fe c2 5e           CLR        2b.6                                                       = ??
@@ -7137,7 +7176,7 @@
                              undefined FUN_CODE_272c()
              undefined         ACC:1          <RETURN>
                              FUN_CODE_272c                                   XREF[1]:     CODE:28ed(c)  
-       CODE:272c d2 5d           SETB       2b.5                                                       = ??
+       CODE:272c d2 5d           SETB       g_i2c_operation_pending                                    = ??
        CODE:272e 75 11 72        MOV        BANK2_R1,#0x72                                             = ??
        CODE:2731 75 12 01        MOV        BANK2_R2,#0x1                                              = ??
        CODE:2734 c2 5e           CLR        2b.6                                                       = ??
@@ -7188,7 +7227,7 @@
        CODE:277f d2 9a           SETB       RB8                                                        = ??
                              LAB_CODE_2781                                   XREF[1]:     CODE:276d(j)  
        CODE:2781 c2 77           CLR        2e.7                                                       = ??
-       CODE:2783 d2 5d           SETB       2b.5                                                       = ??
+       CODE:2783 d2 5d           SETB       g_i2c_operation_pending                                    = ??
        CODE:2785 75 11 72        MOV        BANK2_R1,#0x72                                             = ??
        CODE:2788 75 12 01        MOV        BANK2_R2,#0x1                                              = ??
        CODE:278b 75 15 f2        MOV        BANK2_R5,#0xf2                                             = ??
@@ -7209,8 +7248,8 @@
        CODE:279f 45 17           ORL        A,BANK2_R7                                                 = ??
        CODE:27a1 60 1e           JZ         LAB_CODE_27c1
        CODE:27a3 d2 53           SETB       g_edram_temp_updated                                       = ??
-       CODE:27a5 85 44 4c        MOV        DAT_INTMEM_4c,g_edram_current_temp                         = ??
-       CODE:27a8 85 43 4b        MOV        DAT_INTMEM_4b,g_edram_current_temp_frac                    = ??
+       CODE:27a5 85 44 4c        MOV        g_edram_last_temp,g_edram_current_temp                     = ??
+       CODE:27a8 85 43 4b        MOV        g_edram_last_temp_frac,g_edram_current_temp_frac           = ??
        CODE:27ab 78 18           MOV        R0,#0x18
        CODE:27ad 79 ee           MOV        R1,#0xee
        CODE:27af c2 d5           CLR        F0                                                         = ??
@@ -7225,8 +7264,8 @@
        CODE:27c3 45 15           ORL        A,BANK2_R5                                                 = ??
        CODE:27c5 60 1e           JZ         LAB_CODE_27e5
        CODE:27c7 d2 52           SETB       g_gpu_temp_updated                                         = ??
-       CODE:27c9 85 42 4a        MOV        DAT_INTMEM_4a,g_gpu_current_temp                           = ??
-       CODE:27cc 85 41 49        MOV        DAT_INTMEM_49,g_gpu_current_temp_frac                      = ??
+       CODE:27c9 85 42 4a        MOV        g_gpu_last_temp,g_gpu_current_temp                         = ??
+       CODE:27cc 85 41 49        MOV        g_gpu_last_temp_frac,g_gpu_current_temp_frac               = ??
        CODE:27cf 78 16           MOV        R0,#0x16
        CODE:27d1 79 ea           MOV        R1,#0xea
        CODE:27d3 c2 d5           CLR        F0                                                         = ??
@@ -7241,14 +7280,15 @@
        CODE:27e7 02 26 5c        LJMP       i2c_command_step                                           undefined i2c_command_step()
                              -- Flow Override: CALL_RETURN (CALL_TERMINATOR)
                              LAB_CODE_27ea                                   XREF[1]:     CODE:28f6(j)  
-       CODE:27ea e5 18           MOV        A,BANK3_R0                                                 = ??
+       CODE:27ea e5 18           MOV        A,BANK3_R0                                                 if both of these are zero,
+                                                                                                       ignore the response
        CODE:27ec 45 17           ORL        A,BANK2_R7                                                 = ??
        CODE:27ee 60 1e           JZ         LAB_CODE_280e
        CODE:27f0 d2 51           SETB       g_cpu_temp_updated                                         = ??
-       CODE:27f2 85 40 48        MOV        DAT_INTMEM_48,g_cpu_current_temp                           = ??
-       CODE:27f5 85 3f 47        MOV        DAT_INTMEM_47,g_cpu_current_temp_frac                      = ??
-       CODE:27f8 78 18           MOV        R0,#0x18
-       CODE:27fa 79 e6           MOV        R1,#0xe6
+       CODE:27f2 85 40 48        MOV        g_cpu_last_temp,g_cpu_current_temp                         = ??
+       CODE:27f5 85 3f 47        MOV        g_cpu_last_temp_frac,g_cpu_current_temp_frac               = ??
+       CODE:27f8 78 18           MOV        R0,#BANK3_R0                                               = ??
+       CODE:27fa 79 e6           MOV        R1,#DAT_INTMEM_e6                                          = ??
        CODE:27fc d2 d5           SETB       F0                                                         = ??
        CODE:27fe 12 2a 5b        LCALL      FUN_CODE_2a5b                                              undefined FUN_CODE_2a5b()
        CODE:2801 78 18           MOV        R0,#0x18
@@ -7367,7 +7407,7 @@
        CODE:28a9 53 16 0f        ANL        BANK2_R6,#0xf                                              = ??
        CODE:28ac 12 24 0d        LCALL      ipc_fifo_read                                              undefined ipc_fifo_read()
        CODE:28af a2 e7           MOV        CY,ACC.7                                                   = ??
-       CODE:28b1 92 5d           MOV        2b.5,CY                                                    = ??
+       CODE:28b1 92 5d           MOV        g_i2c_operation_pending,CY                                 = ??
        CODE:28b3 c3              CLR        CY
        CODE:28b4 33              RLC        A                                                          appears to be a write
                                                                                                        (lsb of address byte is
@@ -8222,7 +8262,7 @@
                              undefined usb_powerevent_get_cause()
              undefined         ACC:1          <RETURN>
                              usb_powerevent_get_cause                        XREF[1]:     CODE:1e12(c)  
-       CODE:2cb4 e5 1f           MOV        A,BANK3_R7                                                 = ??
+       CODE:2cb4 e5 1f           MOV        A,g_usb_powerup_cause                                      = ??
        CODE:2cb6 22              RET
                              **************************************************************
                              *                          FUNCTION                          *
@@ -8236,22 +8276,22 @@
        CODE:2cbe 22              RET
                              LAB_CODE_2cbf                                   XREF[1]:     CODE:2cbb(j)  
        CODE:2cbf ee              MOV        A,R6
-       CODE:2cc0 95 30           SUBB       A,DAT_INTMEM_30                                            = ??
+       CODE:2cc0 95 30           SUBB       A,g_wakeup_timestamp_byte_3                                = ??
        CODE:2cc2 40 16           JC         LAB_CODE_2cda
        CODE:2cc4 70 14           JNZ        LAB_CODE_2cda
        CODE:2cc6 c3              CLR        CY
        CODE:2cc7 ed              MOV        A,R5
-       CODE:2cc8 95 31           SUBB       A,DAT_INTMEM_31                                            = ??
+       CODE:2cc8 95 31           SUBB       A,g_wakeup_timestamp_byte_2                                = ??
        CODE:2cca 40 0e           JC         LAB_CODE_2cda
        CODE:2ccc 70 0c           JNZ        LAB_CODE_2cda
        CODE:2cce c3              CLR        CY
        CODE:2ccf ec              MOV        A,R4
-       CODE:2cd0 95 32           SUBB       A,DAT_INTMEM_32                                            = ??
+       CODE:2cd0 95 32           SUBB       A,g_wakeup_timestamp_byte_1                                = ??
        CODE:2cd2 40 06           JC         LAB_CODE_2cda
        CODE:2cd4 70 04           JNZ        LAB_CODE_2cda
        CODE:2cd6 c3              CLR        CY
        CODE:2cd7 eb              MOV        A,R3
-       CODE:2cd8 95 33           SUBB       A,DAT_INTMEM_33                                            = ??
+       CODE:2cd8 95 33           SUBB       A,g_wakeup_timestamp_byte_0                                = ??
                              LAB_CODE_2cda                                   XREF[6]:     CODE:2cc2(j), CODE:2cc4(j), 
                                                                                           CODE:2cca(j), CODE:2ccc(j), 
                                                                                           CODE:2cd2(j), CODE:2cd4(j)  
@@ -9194,12 +9234,13 @@
                              // REG_BANK_4 
                              // INTMEM:18-INTMEM:1f
                              //
-                             BANK3_R0                                        XREF[13]:    CODE:01ca(*), 
+                             BANK3_R0                                        XREF[14]:    CODE:01ca(*), 
                                                                                           i2c_opcode_hana_write:26c4(W), 
                                                                                           i2c_opcode_hana_write:26cd(W), 
                                                                                           FUN_CODE_279d:279d(R), 
                                                                                           FUN_CODE_279d:27be(R), 
-                                                                                          CODE:27ea(R), CODE:280b(R), 
+                                                                                          CODE:27ea(R), CODE:27f8(*), 
+                                                                                          CODE:280b(R), 
                                                                                           FUN_CODE_2813:2813(R), 
                                                                                           FUN_CODE_2813:281b(*), 
                                                                                           FUN_CODE_2813:2824(*), 
@@ -9228,21 +9269,21 @@
                                                                                           usb_powerevent_check:0699(RW), 
                                                                                           usb_powerevent_check:06a2(W)  
        INTMEM:1c                 ??         ??
-                             BANK3_R5                                        XREF[6]:     usb_powerevent_check:06b6(W), 
+                             g_usb_front_bottom_recheck_timer                XREF[6]:     usb_powerevent_check:06b6(W), 
                                                                                           usb_powerevent_check:06be(RW), 
                                                                                           usb_powerevent_check:06da(W), 
                                                                                           usb_powerevent_check:06e5(RW), 
                                                                                           usb_powerevent_check:06f1(RW), 
                                                                                           usb_powerevent_check:06fa(W)  
        INTMEM:1d                 ??         ??
-                             BANK3_R6                                        XREF[6]:     usb_powerevent_check:070e(W), 
+                             g_usb_rear_recheck_timer                        XREF[6]:     usb_powerevent_check:070e(W), 
                                                                                           usb_powerevent_check:0716(RW), 
                                                                                           usb_powerevent_check:0732(W), 
                                                                                           usb_powerevent_check:073d(RW), 
                                                                                           usb_powerevent_check:0749(RW), 
                                                                                           usb_powerevent_check:0752(W)  
        INTMEM:1e                 ??         ??
-                             BANK3_R7                                        XREF[6]:     usb_powerevent_check:0648(R), 
+                             g_usb_powerup_cause                             XREF[6]:     usb_powerevent_check:0648(R), 
                                                                                           usb_powerevent_check:069c(W), 
                                                                                           usb_powerevent_check:06f4(W), 
                                                                                           usb_powerevent_check:074c(W), 
@@ -9279,19 +9320,19 @@
                                                                                           CODE:1353(W), CODE:1467(R), 
                                                                                           ir_update:1bcc(R)  
        INTMEM:2f                 undefined1 ??
-                             DAT_INTMEM_30                                   XREF[3]:     ipc_handle_messages:08fb(R), 
+                             g_wakeup_timestamp_byte_3                       XREF[3]:     ipc_handle_messages:08fb(R), 
                                                                                           FUN_CODE_0aca:0bd0(W), 
                                                                                           rtc_has_wakeup_passed:2cc0(R)  
        INTMEM:30                 undefined1 ??
-                             DAT_INTMEM_31                                   XREF[3]:     ipc_handle_messages:08f6(R), 
+                             g_wakeup_timestamp_byte_2                       XREF[3]:     ipc_handle_messages:08f6(R), 
                                                                                           FUN_CODE_0aca:0bd2(W), 
                                                                                           rtc_has_wakeup_passed:2cc8(R)  
        INTMEM:31                 undefined1 ??
-                             DAT_INTMEM_32                                   XREF[3]:     ipc_handle_messages:08f1(R), 
+                             g_wakeup_timestamp_byte_1                       XREF[3]:     ipc_handle_messages:08f1(R), 
                                                                                           FUN_CODE_0aca:0bd4(W), 
                                                                                           rtc_has_wakeup_passed:2cd0(R)  
        INTMEM:32                 undefined1 ??
-                             DAT_INTMEM_33                                   XREF[3]:     ipc_handle_messages:08ec(R), 
+                             g_wakeup_timestamp_byte_0                       XREF[3]:     ipc_handle_messages:08ec(R), 
                                                                                           FUN_CODE_0aca:0bd6(W), 
                                                                                           rtc_has_wakeup_passed:2cd8(R)  
        INTMEM:33                 undefined1 ??
@@ -9380,7 +9421,8 @@
                                                                                           thermal_monitor_do_checks:14ed(R
                                                                                           CODE:27f2(R), CODE:2808(W)  
        INTMEM:40                 undefined1 ??
-                             g_gpu_current_temp_frac                         XREF[3]:     ipc_handle_messages:0910(R), 
+                             g_gpu_current_temp_frac                         XREF[4]:     ipc_handle_messages:0910(R), 
+                                                                                          thermal_monitor_do_checks:153d(*
                                                                                           FUN_CODE_279d:27cc(R), 
                                                                                           FUN_CODE_279d:27e2(W)  
        INTMEM:41                 undefined1 ??
@@ -9390,7 +9432,8 @@
                                                                                           FUN_CODE_279d:27c9(R), 
                                                                                           FUN_CODE_279d:27df(W)  
        INTMEM:42                 undefined1 ??
-                             g_edram_current_temp_frac                       XREF[3]:     ipc_handle_messages:091a(R), 
+                             g_edram_current_temp_frac                       XREF[4]:     ipc_handle_messages:091a(R), 
+                                                                                          thermal_monitor_do_checks:154b(*
                                                                                           FUN_CODE_279d:27a8(R), 
                                                                                           FUN_CODE_279d:27be(W)  
        INTMEM:43                 undefined1 ??
@@ -9409,31 +9452,33 @@
                                                                                           FUN_CODE_15b5:15b5(R), 
                                                                                           FUN_CODE_2813:282b(W)  
        INTMEM:46                 undefined1 ??
-                             DAT_INTMEM_47                                   XREF[2]:     thermal_monitor_do_checks:1531(*
+                             g_cpu_last_temp_frac                            XREF[2]:     thermal_monitor_do_checks:1531(*
                                                                                           CODE:27f5(W)  
        INTMEM:47                 ??         ??
-                             DAT_INTMEM_48                                   XREF[2]:     thermal_monitor_do_checks:1523(R
+                             g_cpu_last_temp                                 XREF[2]:     thermal_monitor_do_checks:1523(R
                                                                                           CODE:27f2(W)  
        INTMEM:48                 undefined1 ??
-                             DAT_INTMEM_49                                   XREF[1]:     FUN_CODE_279d:27cc(W)  
+                             g_gpu_last_temp_frac                            XREF[2]:     thermal_monitor_do_checks:153f(*
+                                                                                          FUN_CODE_279d:27cc(W)  
        INTMEM:49                 ??         ??
-                             DAT_INTMEM_4a                                   XREF[2]:     thermal_monitor_do_checks:1527(R
+                             g_gpu_last_temp                                 XREF[2]:     thermal_monitor_do_checks:1527(R
                                                                                           FUN_CODE_279d:27c9(W)  
        INTMEM:4a                 undefined1 ??
-                             DAT_INTMEM_4b                                   XREF[1]:     FUN_CODE_279d:27a8(W)  
+                             g_edram_last_temp_frac                          XREF[2]:     thermal_monitor_do_checks:154d(*
+                                                                                          FUN_CODE_279d:27a8(W)  
        INTMEM:4b                 ??         ??
-                             DAT_INTMEM_4c                                   XREF[2]:     thermal_monitor_do_checks:152b(R
+                             g_edram_last_temp                               XREF[2]:     thermal_monitor_do_checks:152b(R
                                                                                           FUN_CODE_279d:27a5(W)  
        INTMEM:4c                 undefined1 ??
-                             DAT_INTMEM_4d                                   XREF[3]:     thermal_monitor_do_checks:1533(R
+                             g_cpu_target_temp                               XREF[3]:     thermal_monitor_do_checks:1533(R
                                                                                           CODE:248c(*), 
                                                                                           smcconfig_load:2579(W)  
        INTMEM:4d                 undefined1 ??
-                             DAT_INTMEM_4e                                   XREF[3]:     thermal_monitor_do_checks:1541(R
+                             g_gpu_target_temp                               XREF[3]:     thermal_monitor_do_checks:1541(R
                                                                                           CODE:248e(*), 
                                                                                           smcconfig_load:257c(W)  
        INTMEM:4e                 undefined1 ??
-                             DAT_INTMEM_4f                                   XREF[3]:     thermal_monitor_do_checks:154f(R
+                             g_edram_target_temp                             XREF[3]:     thermal_monitor_do_checks:154f(R
                                                                                           CODE:2490(*), 
                                                                                           smcconfig_load:257f(W)  
        INTMEM:4f                 undefined1 ??
@@ -9889,9 +9934,9 @@
                                                                                           bindsw_sm_exec:1389(R)  
        INTMEM:a0                 undefined1 ??
                              g_dbgled_sm_state                               XREF[5]:     CODE:13ba(W), CODE:13bf(W), 
-                                                                                          dbg_led_statemachine:13fe(R), 
-                                                                                          dbg_led_statemachine:13ff(R), 
-                                                                                          dbg_led_statemachine:1400(R)  
+                                                                                          dbgled_sm_exec:13fe(R), 
+                                                                                          dbgled_sm_exec:13ff(R), 
+                                                                                          dbgled_sm_exec:1400(R)  
        INTMEM:a1                 undefined1 ??
                              g_extpwron_sm_state                             XREF[6]:     CODE:1417(W), CODE:141c(W), 
                                                                                           CODE:1421(W), 
@@ -9977,10 +10022,15 @@
                                                                                           ipc_handle_async_events:0e3e(R), 
                                                                                           CODE:187d(R), CODE:198c(W)  
        INTMEM:b1                 undefined1 ??
+                             DAT_INTMEM_b2                                   XREF[2]:     thermal_monitor_do_checks:1538(*
+                                                                                          thermal_monitor_do_checks:1559(*
        INTMEM:b2                 ??         ??
        INTMEM:b3                 undefined1 ??
+                             DAT_INTMEM_b4                                   XREF[2]:     thermal_monitor_do_checks:1546(*
+                                                                                          thermal_monitor_do_checks:155b(*
        INTMEM:b4                 ??         ??
        INTMEM:b5                 ??         ??
+                             DAT_INTMEM_b6                                   XREF[1]:     thermal_monitor_do_checks:1554(*
        INTMEM:b6                 ??         ??
        INTMEM:b7                 ??         ??
                              DAT_INTMEM_b8                                   XREF[4]:     CODE:0756(*), CODE:1b7f(R), 
@@ -10044,8 +10094,9 @@
                              DAT_INTMEM_e5                                   XREF[2]:     CODE:246e(*), 
                                                                                           smcconfig_load:2531(W)  
        INTMEM:e5                 undefined1 ??
-                             DAT_INTMEM_e6                                   XREF[2]:     CODE:2470(*), 
-                                                                                          smcconfig_load:2534(W)  
+                             DAT_INTMEM_e6                                   XREF[3]:     CODE:2470(*), 
+                                                                                          smcconfig_load:2534(W), 
+                                                                                          CODE:27fa(*)  
        INTMEM:e6                 undefined1 ??
                              DAT_INTMEM_e7                                   XREF[2]:     CODE:2472(*), 
                                                                                           smcconfig_load:253e(W)  
@@ -10140,13 +10191,13 @@
           SFR:8f                 undefined1 ??
                              P1                                              XREF[1]:     gpios_reset:2367(W)  
           SFR:90                 ??         ??
-                             DAT_SFR_91                                      XREF[1]:     pwm2_set_pulse_width:2598(W)  
+                             sfr_pwm2_pulse_width                            XREF[1]:     pwm2_set_pulse_width:2598(W)  
           SFR:91                 ??         ??
-                             DAT_SFR_92                                      XREF[1]:     FUN_CODE_2383:2395(W)  
+                             sfr_pwm2_freq                                   XREF[1]:     FUN_CODE_2383:2395(W)  
           SFR:92                 ??         ??
-                             DPX                                             XREF[1]:     pwm1_set_pulse_width:259b(W)  
+                             sfr_pwm1_pulse_width                            XREF[1]:     pwm1_set_pulse_width:259b(W)  
           SFR:93                 ??         ??
-                             DAT_SFR_94                                      XREF[1]:     FUN_CODE_2383:2398(W)  
+                             sfr_pwm1_freq                                   XREF[1]:     FUN_CODE_2383:2398(W)  
           SFR:94                 ??         ??
                              DAT_SFR_95                                      XREF[3]:     FUN_CODE_2383:23a1(W), 
                                                                                           FUN_CODE_2755:2776(W), 
@@ -10213,22 +10264,22 @@
           SFR:a8                 ??         ??
                              SADDR
           SFR:a9                 undefined1 ??
-                             DAT_SFR_aa                                      XREF[2]:     rtc_read:25e3(R), 
+                             sfr_rtc_data_d0_lsb                             XREF[2]:     rtc_read:25e3(R), 
                                                                                           rtc_set:25ee(W)  
           SFR:aa                 undefined1 ??
-                             DAT_SFR_ab                                      XREF[2]:     rtc_read:25e1(R), 
+                             sfr_rtc_data_d1                                 XREF[2]:     rtc_read:25e1(R), 
                                                                                           rtc_set:25ec(W)  
           SFR:ab                 undefined1 ??
-                             DAT_SFR_ac                                      XREF[2]:     rtc_read:25df(R), 
+                             sfr_rtc_data_d2                                 XREF[2]:     rtc_read:25df(R), 
                                                                                           rtc_set:25ea(W)  
           SFR:ac                 undefined1 ??
-                             DAT_SFR_ad                                      XREF[2]:     rtc_read:25dd(R), 
+                             sfr_rtc_data_d3                                 XREF[2]:     rtc_read:25dd(R), 
                                                                                           rtc_set:25e8(W)  
           SFR:ad                 undefined1 ??
-                             HSTAT                                           XREF[2]:     rtc_read:25db(R), 
+                             sfr_rtc_data_d4_msb                             XREF[2]:     rtc_read:25db(R), 
                                                                                           rtc_set:25e6(W)  
           SFR:ae                 undefined1 ??
-                             DAT_SFR_af                                      XREF[2]:     rtc_read:25d8(RW), 
+                             sfr_rtc_command                                 XREF[2]:     rtc_read:25d8(RW), 
                                                                                           rtc_set:25f0(RW)  
           SFR:af                 ??         ??
                              P3                                              XREF[3]:     FUN_CODE_02fe:02ee(W), 
@@ -10276,7 +10327,7 @@
           SFR:bd                 ??         ??
                              SPH                                             XREF[1]:     FUN_CODE_22be:22c7(W)  
           SFR:be                 undefined1 ??
-                             DAT_SFR_bf                                      XREF[11]:    CODE:013a(RW), CODE:015f(RW), 
+                             sfr_irq_disable_all                             XREF[11]:    CODE:013a(RW), CODE:015f(RW), 
                                                                                           i2c_irq:0163(RW), CODE:019b(RW), 
                                                                                           FUN_CODE_02fe:02fa(RW), 
                                                                                           FUN_CODE_02fe:02fe(RW), 
@@ -10286,7 +10337,7 @@
                                                                                           have_20ms_elapsed:2330(RW), 
                                                                                           halt_execution:23bd(RW)  
           SFR:bf                 ??         ??
-                             FIFLG                                           XREF[1]:     gpios_reset:236d(W)  
+                             sfr_gpio_port3                                  XREF[1]:     gpios_reset:236d(W)  
           SFR:c0                 ??         ??
                              FIFLG1                                          XREF[1]:     FUN_CODE_22be:22d9(W)  
           SFR:c1                 ??         ??
@@ -10303,7 +10354,7 @@
           SFR:c6                 ??         ??
                              EPCONFIG                                        XREF[1]:     FUN_CODE_22be:22eb(W)  
           SFR:c7                 ??         ??
-                             T2CON                                           XREF[1]:     gpios_reset:2370(W)  
+                             sfr_gpio_port4                                  XREF[1]:     gpios_reset:2370(W)  
           SFR:c8                 ??         ??                                                         port 4 as a byte
                              T2MOD                                           XREF[1]:     FUN_CODE_22be:22ee(W)  
           SFR:c9                 ??         ??
@@ -10329,18 +10380,18 @@
           SFR:d3                 ??         ??
                              HPINDEX                                         XREF[1]:     FUN_CODE_22be:230c(W)  
           SFR:d4                 ??         ??
-                             HPSC                                            XREF[4]:     CODE:02a8(W), 
+                             sfr_ipc_outbox_data                             XREF[4]:     CODE:02a8(W), 
                                                                                           ipc_outbox_lock_and_clear:2422(W
                                                                                           ipc_outbox_write:242f(W), 
                                                                                           ipc_outbox_write_buffer:2433(W)  
           SFR:d5                 ??         ??
-                             DAT_SFR_d6                                      XREF[5]:     ipc_outbox_lock_and_clear:241e(W
+                             sfr_ipc_outbox_ctrl_status                      XREF[5]:     ipc_outbox_lock_and_clear:241e(W
                                                                                           ipc_outbox_lock_and_clear:2425(R
                                                                                           ipc_outbox_set_write_pointer:242
                                                                                           ipc_outbox_release:2439(W), 
                                                                                           ipc_outbox_is_locked:243d(R)  
           SFR:d6                 undefined1 ??
-                             HPSTAT                                          XREF[6]:     usb_powerevent_check:064d(R), 
+                             sfr_usba_presence_wakeup                        XREF[6]:     usb_powerevent_check:064d(R), 
                                                                                           usb_powerevent_check:0652(R), 
                                                                                           usb_powerevent_check:0657(R), 
                                                                                           usb_powerevent_check:06a5(R), 
@@ -10371,17 +10422,17 @@
           SFR:df                 ??         ??
                              ACC
           SFR:e0                 ??         ??
-                             EPCON                                           XREF[5]:     CODE:01ec(R), CODE:024c(R), 
+                             sfr_ipc_inbox_data                              XREF[5]:     CODE:01ec(R), CODE:024c(R), 
                                                                                           ipc_inbox_get_message_type:2403(
                                                                                           ipc_fifo_read:240d(R), 
                                                                                           ipc_fifo_read_to_buffer:2410(R)  
           SFR:e1                 undefined1 ??
-                             RXSTAT                                          XREF[4]:     ipc_inbox_get_status:00f4(R), 
+                             sfr_ipc_inbox_ctrl_status                       XREF[4]:     ipc_inbox_get_status:00f4(R), 
                                                                                           ipc_inbox_get_message_type:2401(
                                                                                           ipc_inbox_set_read_pointer:240a(
                                                                                           ipc_inbox_release:2417(W)  
           SFR:e2                 undefined1 ??
-                             RXDAT                                           XREF[5]:     sfcx_flash_reset:00ad(W), 
+                             sfr_sfcx_config_d0_lsb                          XREF[5]:     sfcx_flash_reset:00ad(W), 
                                                                                           sfcx_flash_reset:00b0(W), 
                                                                                           sfcx_flash_reset:00b3(W), 
                                                                                           sfcx_flash_reset:00b6(W), 
@@ -10396,13 +10447,13 @@
                              RXCNTH
           SFR:e7                 ??         ??                                                         UART data out (unused)
                                                                                                        (from RGH3 source)
-                             HIFLG                                           XREF[1]:     FUN_CODE_2383:23ad(W)  
+                             sfr_uart_control_status                         XREF[1]:     FUN_CODE_2383:23ad(W)  
           SFR:e8                 ??         ??                                                         UART enable/disable
                                                                                                        0xC0 enables, 0 disables
                              CL
           SFR:e9                 ??         ??                                                         UART speed (unused)
                                                                                                        (from RGH3 source)
-                             CCAP0L                                          XREF[11]:    smcconfig_load:24b9(W), 
+                             sfr_sfcx_address_d0_lsb                         XREF[11]:    smcconfig_load:24b9(W), 
                                                                                           smcconfig_load:24c4(W), 
                                                                                           smcconfig_load:24d0(W), 
                                                                                           smcconfig_load:250c(W), 
@@ -10414,20 +10465,20 @@
                                                                                           smcconfig_load:256f(W), 
                                                                                           smcconfig_load:2582(W)  
           SFR:ea                 ??         ??
-                             CCAP1L                                          XREF[3]:     smcconfig_init_defaults_and_read
+                             sfr_sfcx_address_d1                             XREF[3]:     smcconfig_init_defaults_and_read
                                                                                           smcconfig_load:24b6(W), 
                                                                                           smcconfig_load:2509(W)  
           SFR:eb                 ??         ??
-                             CCAP2L                                          XREF[1]:     smcconfig_init_defaults_and_read
+                             sfr_sfcx_address_d2                             XREF[1]:     smcconfig_init_defaults_and_read
           SFR:ec                 ??         ??
-                             CCAP3L                                          XREF[1]:     smcconfig_init_defaults_and_read
+                             sfr_sfcx_address_d3_msb                         XREF[1]:     smcconfig_init_defaults_and_read
           SFR:ed                 ??         ??
-                             CCAP4L                                          XREF[1]:     smcconfig_load:24a7(R)  
+                             sfr_sfcx_status                                 XREF[1]:     smcconfig_load:24a7(R)  
           SFR:ee                 undefined1 ??
           SFR:ef                 ??         ??
                              B
           SFR:f0                 ??         ??
-                             EPINDEX                                         XREF[9]:     smcconfig_load:24ca(R), 
+                             sfr_sfcx_data_d0_msb                            XREF[9]:     smcconfig_load:24ca(R), 
                                                                                           smcconfig_load:24da(R), 
                                                                                           smcconfig_load:2512(R), 
                                                                                           smcconfig_load:252e(R), 
@@ -10437,7 +10488,7 @@
                                                                                           smcconfig_load:2577(R), 
                                                                                           smcconfig_load:2588(R)  
           SFR:f1                 undefined1 ??
-                             TXSTAT                                          XREF[9]:     smcconfig_load:24cc(R), 
+                             sfr_sfcx_data_d1                                XREF[9]:     smcconfig_load:24cc(R), 
                                                                                           smcconfig_load:24de(R), 
                                                                                           smcconfig_load:251d(R), 
                                                                                           smcconfig_load:252b(R), 
@@ -10447,7 +10498,7 @@
                                                                                           smcconfig_load:2579(R), 
                                                                                           smcconfig_load:258b(R)  
           SFR:f2                 undefined1 ??
-                             TXDAT                                           XREF[9]:     smcconfig_load:24bf(R), 
+                             sfr_sfcx_data_d2                                XREF[9]:     smcconfig_load:24bf(R), 
                                                                                           smcconfig_load:24e2(R), 
                                                                                           smcconfig_load:2520(R), 
                                                                                           smcconfig_load:2534(R), 
@@ -10457,14 +10508,14 @@
                                                                                           smcconfig_load:257c(R), 
                                                                                           smcconfig_load:258e(R)  
           SFR:f3                 undefined1 ??
-                             TXCON                                           XREF[6]:     smcconfig_load:24e6(R), 
+                             sfr_sfcx_data_d3_lsb                            XREF[6]:     smcconfig_load:24e6(R), 
                                                                                           smcconfig_load:2531(R), 
                                                                                           smcconfig_load:2544(R), 
                                                                                           smcconfig_load:2557(R), 
                                                                                           smcconfig_load:256a(R), 
                                                                                           smcconfig_load:257f(R)  
           SFR:f4                 undefined1 ??
-                             TXFLG                                           XREF[12]:    smcconfig_init_defaults_and_read
+                             sfr_sfcx_command                                XREF[12]:    smcconfig_init_defaults_and_read
                                                                                           smcconfig_load:24bc(W), 
                                                                                           smcconfig_load:24c7(W), 
                                                                                           smcconfig_load:24d3(W), 
@@ -10490,7 +10541,7 @@
           SFR:fb                 ??         ??
                              CCAP2H                                          XREF[1]:     FUN_CODE_0082:0084(W)  
           SFR:fc                 ??         ??
-                             CCAP3H                                          XREF[3]:     usb_powerevent_check:06fd(R), 
+                             sfr_usbb_presence_wakeup                        XREF[3]:     usb_powerevent_check:06fd(R), 
                                                                                           usb_powerevent_check:0702(R), 
                                                                                           usb_powerevent_check:0707(R)  
           SFR:fd                 undefined1 ??
@@ -10587,7 +10638,7 @@
                                                                                           CODE:1ef0(W), CODE:200a(W), 
                                                                                           CODE:2014(W)  
          BITS:10                 ??         ??
-                             g_ignore_smc_config_load_errors                 XREF[2]:     dbgled_read:2343(W), 
+                             g_smc_development_mode                          XREF[2]:     dbgled_read:2343(W), 
                                                                                           smcconfig_load:24b0(R)  
          BITS:11                 ??         ??
                              g_cpu_running                                   XREF[4]:     CODE:10bd(W), CODE:126f(W), 
@@ -10667,7 +10718,7 @@
                                                                                           CODE:11b3(W), CODE:127c(R), 
                                                                                           CODE:128a(R), CODE:12aa(R)  
          BITS:1e                 ??         ??
-                             23.7                                            XREF[4]:     FUN_CODE_080d:0833(W), 
+                             g_ir_handle_special_poweron_cases               XREF[4]:     FUN_CODE_080d:0833(W), 
                                                                                           ir_update:1c2c(R), CODE:1df2(W), 
                                                                                           CODE:1e74(W)  
          BITS:1f                 ??         ??
@@ -10756,7 +10807,7 @@
                                                                                           vreg_monitor_statuses:1d80(W), 
                                                                                           thermal_monitor_check_if_temps_a
          BITS:33                 ??         ??
-                             26.4                                            XREF[6]:     mainloop:07a2(W), CODE:09a3(W), 
+                             g_i2c_ddc_lock_requested                        XREF[6]:     mainloop:07a2(W), CODE:09a3(W), 
                                                                                           CODE:09b6(W), CODE:09c3(R), 
                                                                                           CODE:1a94(R), CODE:1ac4(R)  
          BITS:34                 ??         ??
@@ -10953,7 +11004,7 @@
                                                                                           FUN_CODE_2755:2798(W), 
                                                                                           CODE:28d2(W)  
          BITS:5c                 ??         ??
-                             2b.5                                            XREF[7]:     CODE:01a6(R), 
+                             g_i2c_operation_pending                         XREF[7]:     CODE:01a6(R), 
                                                                                           i2c_opcode_hana_write:268e(W), 
                                                                                           i2c_opcode_hana_read:26d6(W), 
                                                                                           FUN_CODE_26f9:26f9(W), 
@@ -11055,7 +11106,7 @@
                                                                                           usb_powerevent_check:0719(W), 
                                                                                           FUN_CODE_2383:23a8(W)  
          BITS:6d                 ??         ??
-                             g_usb_front_top_button_last_poll                XREF[3]:     usb_powerevent_check:066f(W), 
+                             g_usb_front_top_wakeup_last_poll                XREF[3]:     usb_powerevent_check:066f(W), 
                                                                                           usb_powerevent_check:0675(R), 
                                                                                           usb_powerevent_check:0690(RW)  
          BITS:6e                 ??         ??
@@ -11082,7 +11133,7 @@
                                                                                           usb_powerevent_check:072e(W), 
                                                                                           usb_powerevent_check:0742(W)  
          BITS:73                 ??         ??
-                             g_usb_front_top_button_maybe_debounced          XREF[3]:     usb_powerevent_check:0680(W), 
+                             g_usb_front_top_wakeup_maybe_debounced          XREF[3]:     usb_powerevent_check:0680(W), 
                                                                                           usb_powerevent_check:0687(R), 
                                                                                           usb_powerevent_check:06a0(W)  
          BITS:74                 ??         ??
@@ -11122,7 +11173,7 @@
                              P0.0                                            XREF[2]:     cpu_pwrgd_set:0063(W), 
                                                                                           cpu_pwrgd_clear:0066(W)  
          BITS:80                 ??         ??
-                             P0.1                                            XREF[2]:     gpu_reset_assert:0041(W), 
+                             gpio_gpu_rst_n                                  XREF[2]:     gpu_reset_assert:0041(W), 
                                                                                           gpu_reset_deassert:004c(W)  
          BITS:81                 ??         ??
                              gpio_argon_clk                                  XREF[9]:     CODE:04cc(W), CODE:04e1(R), 
@@ -11344,7 +11395,7 @@
                                                                                           CODE:1481(RW), CODE:1483(R), 
                                                                                           CODE:1488(W), CODE:1491(W), 
                                                                                           CODE:1493(RW), 
-                                                                                          FUN_CODE_1626:164f(W), 
+                                                                                          temperature_calc_differences:164
                                                                                           FUN_CODE_165e:1661(R), 
                                                                                           FUN_CODE_165e:16a8(R)  
          BITS:d1                 ??         ??
@@ -11361,7 +11412,7 @@
          BITS:d4                 ??         ??
                              F0                                              XREF[70]:    FUN_CODE_15b5:15d7(W), 
                                                                                           FUN_CODE_15b5:15e6(R), 
-                                                                                          FUN_CODE_1626:1638(W), 
+                                                                                          temperature_calc_differences:163
                                                                                           FUN_CODE_165e:16c4(R), 
                                                                                           ir_update:1bd9(W), 
                                                                                           ir_update:1bea(W), 
@@ -11494,8 +11545,8 @@
                              ACC.7                                           XREF[26]:    CODE:09ec(*), CODE:09f0(*), 
                                                                                           CODE:09f4(*), CODE:0a15(*), 
                                                                                           CODE:0a43(*), 
-                                                                                          FUN_CODE_1626:1636(*), 
-                                                                                          FUN_CODE_1626:164d(*), 
+                                                                                          temperature_calc_differences:163
+                                                                                          temperature_calc_differences:164
                                                                                           FUN_CODE_165e:1707(*), 
                                                                                           FUN_CODE_1726:1730(*), 
                                                                                           FUN_CODE_1726:1736(*), 

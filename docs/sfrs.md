@@ -23,7 +23,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 08Ch | ???
 | 08Dh |
 | 08Eh |
-| 08Fh | PCIe status (bits 4/5), IRQ mask?
+| 08Fh | PCIe status (bits 4/5, read only); IRQ busy flag (bit 1; read/write); bits 3/2/0 a mystery
 | 090h | GPIO port 1
 | 091h | PWM channel 2 duty cycle
 | 092h | PWM channel 2 frequency
@@ -68,7 +68,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0B9h | Initialized to 0
 | 0BAh | Initialized to 0
 | 0BBh | Initialized to 0
-| 0BCh | IRQ mask? 
+| 0BCh | IRQ mask? (bit 0 set during I2C IRQ)
 | 0BDh | Set to 0xFF
 | 0BEh | Set to 0xFF
 | 0BFh | IRQ control (0 = enable all, 1 = disable all)

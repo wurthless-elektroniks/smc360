@@ -527,9 +527,8 @@ Inputs:
 1. Single bit (bit 0 = enable override)
 2. New Ring of Light LED state
 
-The Ring of Light LEDs are set as a 4x2 bitfield, where the upper 4 bits are the green LEDs and the
-lower 4 bits are the red LEDs. The SMC will automatically re-orientate the LED pattern depending on
-the tilt switch.
+The Ring of Light LEDs are set as one byte of two nibbles, where the upper 4 bits are the green LEDs and the
+lower 4 bits are the red LEDs. The Argon RF board automatically reorients these if the SMC tells it to.
 
 The LED positions are:
 - Bit 0/4 - top left

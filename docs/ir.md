@@ -64,8 +64,8 @@ with some typos corrected. Buttons were pressed from the top to the bottom of th
 | 0x1D  | 100/Asterisk                     | No
 | 0x00  | 0                                | No
 | 0x1C  | Back arrow/Pound                 | No
-| 0x29  | ???? (behaves like power button) | Yes
-| 0x2A  | ???? (can power system on)       | Yes
+| 0x29  | Explicit power off(???)          | Yes
+| 0x2A  | Explicit power on(???)           | Yes
 
 Pressing the big "TV" button (between the volume/channel controls) does nothing here.
 
