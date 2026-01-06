@@ -5,6 +5,7 @@
 | Revision      | Rev. Byte @ 0x100 | Version @ 0x101,0x102 |
 |---------------|-------------------|-----------------------|
 | Xenon v2      | 0x12              | 1.51                  |
+| Xenon v3      | 0x13              | 1.01                  |
 | Zephyr v1     | 0x21              | 1.10                  |
 | Falcon v1     | 0x31              | 1.06                  |
 | Jasper v1     | 0x41              | 2.03                  |
@@ -12,17 +13,23 @@
 | Corona v2     | 0x62              | 2.05                  |
 | Winchester v1 | 0x71              | 1.03                  |
 
-TODO: there must be a Xenon v1, but I couldn't find it in any of my NAND dumps... someone else have it?
-
 ## Version differences
 
 These basically mirror hardware revisions, but whatevs...
 
-### Xenon
+### Xenon v2
 
 TODO
 
 - SFR 0FCh is always set to 0xC2
+
+### Xenon v3
+
+Much to document still
+
+- SFR 0FCh is still set to 0xC2
+- Multiple variables shuffled around compared to Xenon v2
+- Adds IPC async event 0x13 for bindswitch pushes
 
 ### Zephyr
 
