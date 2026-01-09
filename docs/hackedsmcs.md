@@ -31,6 +31,18 @@ Evolution of the pattern between different SMC revisions:
 - Corona:     `05 3D E5 3D B4 05 1E`
 - Winchester: `05 3D E5 3D B4 05 1E`
 
+## xeBuild patches
+
+The infinite reboot patch is as described above, but it searches for `05 xx E5 xx B4 05`.
+
+The eject button disable patch looks for `A2 90 B3 22` and replaces it with `00 00 C3 22`.
+This patches `ejectsw_read` to explicitly return false in the carry flag (i.e., pretend the eject button
+is never pressed).
+
+The Ring of Light blink disable patch (used when there's no DVD drive) looks for `E4 A2 CF 92 E0 A2 CE 22`
+and replaces it with `E4 D3 22 00 00 00 00 00`. This patches `tray_read_status_and_open_state` to
+clear the accumulator and set the carry flag, then immediately return.
+
 ## JTAG
 
 This is probably the most important SMC hack ever made, simply because of how much of a joke it made of Microsoft's efforts
