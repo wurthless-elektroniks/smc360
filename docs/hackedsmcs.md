@@ -41,7 +41,8 @@ is never pressed).
 
 The Ring of Light blink disable patch (used when there's no DVD drive) looks for `E4 A2 CF 92 E0 A2 CE 22`
 and replaces it with `E4 D3 22 00 00 00 00 00`. This patches `tray_read_status_and_open_state` to
-clear the accumulator and set the carry flag, then immediately return.
+clear the accumulator and set the carry flag, then immediately return. This pretends that
+TRAY_OPEN_R is 0 and TRAY_STATUS is 1.
 
 ## JTAG
 
