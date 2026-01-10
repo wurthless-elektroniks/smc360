@@ -38,12 +38,13 @@ The infinite reboot patch is as described above, but it searches for `05 xx E5 x
 The eject button disable patch looks for `A2 90 B3 22` and replaces it with `00 00 C3 22`.
 This patches `ejectsw_read` to explicitly return false in the carry flag (i.e., pretend the eject button
 is never pressed). This patch does not work on Corona, which has moved /EJECTSW_N to a different I/O line.
+(For Corona/Winchester, the pattern should be `A2 93 B3 22`.)
 
 The Ring of Light blink disable patch (used when there's no DVD drive) looks for `E4 A2 CF 92 E0 A2 CE 22`
 and replaces it with `E4 D3 22 00 00 00 00 00`. This patches `tray_read_status_and_open_state` to
 clear the accumulator and set the carry flag, then immediately return. This pretends that
 TRAY_OPEN_R is 0 and TRAY_STATUS is 1. This patch is also broken on Corona, as TRAY_OPEN_R and TRAY_STATUS
-have been remapped.
+have been remapped. (For Corona/Winchester, the pattern should be `E4 A2 C3 92 E0 A2 C0 22`.)
 
 ## JTAG
 
