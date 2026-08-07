@@ -5,7 +5,7 @@
 | Revision      | Rev. Byte @ 0x100 | Version @ 0x101,0x102 |
 |---------------|-------------------|-----------------------|
 | Xenon v2      | 0x12              | 1.51                  |
-| Xenon v3      | 0x13              | 1.01                  |
+| Xenon v3      | 0x13              | 1.01 (G0), 1.02 (R0)  |
 | Zephyr v1     | 0x21              | 1.10                  |
 | Falcon v1     | 0x31              | 1.06                  |
 | Jasper v1     | 0x41              | 2.03                  |
@@ -25,11 +25,13 @@ TODO
 
 ### Xenon v3
 
+There are two known builds of this version, v1.01 and v1.02.
+
 Much to document still
 
-- SFR 0FCh is still set to 0xC2
+- SFR 0FCh is set depending on the build (v1.01 is for G0 and sets it to 0xC2, v1.02 is for R0 and sets it to 0x43 instead)
 - Multiple variables shuffled around compared to Xenon v2
-- Adds IPC async event 0x13 for bindswitch pushes
+- Adds IPC async event 0x13 for bindswitch pushes 
 
 ### Zephyr
 
