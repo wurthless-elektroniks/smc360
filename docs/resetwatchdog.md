@@ -233,10 +233,10 @@ Simplified/reorganized from Zephyr/Falcon.
   expires, queue RRoD 0021 and immediately run the error handling case.
 - Otherwise, the PCIe link is up, so go to state 7.
 
-### State 7: Check XSB/PSB flag
+### State 7: Check for CPU activity
 
 - Read a flag that depends on which southbridge revision the code's running on. For PSB, check 097h.0.
-  For XSB, check 0DFh.2.
+  For XSB, check 0DFh.2. These will be set if the CPU is alive and reading from flash.
 - If the flag we read was set, load the shared timer cell with 0x82 (130*20=2600ms, GetPowerUpCause
   timeout part 1), and go to state 8.
 - If the flag was not set, there's a problem. Increment the counter at 03Eh; if it's not 6, then
@@ -313,13 +313,92 @@ still checked during this procedure, but in practice it's never used because Tri
 - Otherwise, the PCIe link is up. Set the "CPU running flag", set SFRs 097h/0A9h/0DFh to zero, and de-assert /CPU_RST_N.
 - Go to state 5.
 
-### State 5: Check XSB/PSB flag
+### State 5: Check for CPU activity
 
 - Read a flag that depends on which southbridge revision the code's running on. For PSB, check 097h.0.
-  For XSB, check 0DFh.2.
+  For XSB, check 0DFh.2. These will be set if the CPU is alive and reading from flash.
 - If the flag we read was set, load the shared timer cell with 0x82 (130*20=2600ms, GetPowerUpCause
   timeout part 1), and go to state 6.
 - If the flag was not set, there's a problem, but unlike on Jasper, we fail immediately. Queue RRoD 0032
+  and run the error handling case.
+
+### State 6: GetPowerUpCause timeout part 1
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, reload the timer (0x82 again, 2600ms more) and
+  go to state 7.
+
+### State 7: GetPowerUpCause timeout part 2
+
+- If GetPowerUpCause arrived from IPC, shut the statemachine off as there's nothing more to do.
+- If we got a RRoD from the IPC (probably hwinit failed), go to the error handling case immediately.
+- Tick the shared timer cell down, and if it expires, queue RRoD 0022 and run the error handling case.
+
+### State 8: Wait for reset sequence to finish
+
+- Wait until the main reset sequence completes, then go to state 0.
+
+## Corona
+
+Reset order is different and KSB support has been added.
+
+### State 0: Reset SMC config to defaults and request flash controller to load the config page
+
+- Clear any RRoD requested from IPC.
+- If the IPC requested a reboot, then ask the reset statemachine to reboot everything, and go to state 8.
+- Tell the flash controller (eMMC if present, SFCX otherwise) to read the SMC config page, but don't parse it yet.
+- Set CPU powergood I/O and SFR 0B8h.6. Then write 0x08 to EXTMEM register at 0x00A0.
+- Go to state 1.
+
+### State 1: Southbridge init
+
+- Set SB_MAIN_PWRGD_R and init EXTMEM registers 0xA1-0xA4 across two banks. EXTMEM 0x00A0 appears to be a bank
+  control register here; the first bank is selected with a write of 0x0C and the second is selected with 0x0E.
+  Then it sets it to 0x08 and exits.
+- Go to state 2.
+
+### State 2: Load SMC config and check GPU_RESET_DONE
+
+- Set all SMC config values to their defaults in case of a failed flash read from earlier. If the SMC config
+  page read succeeded, read the values into memory. Otherwise, short-circuit to the failure path, which
+  sets the SMC config load failure flag when not running in SMC development mode.
+
+- Check if GPU_RESET_DONE is low, which it should be because the GPU should still be held in reset.
+  If it isn't, queue RRoD 0020 and run the error handling case.
+
+- De-assert /GPU_RST_N, set the shared timer cell to 2 (2*20=40 ms) then go to state 4.
+
+### State 3: Delay, check that GPU reset is complete, and release southbridge from reset
+
+- Wait for the timer to expire.
+
+- GPU_RESET_DONE should now be high; if it isn't, then queue RRoD 0020 and run the error handling case.
+
+- De-assert /SB_RST_N.
+
+- Reload shared timer cell to 4 (4*20=80 ms) then go to state 5.
+
+### State 4: PCIe link must be established in 100 ms
+
+- Check PCIe status; if there is a link issue, tick the shared timer cell down, and if that timer
+  expires, queue RRoD 0021 and immediately run the error handling case.
+
+- Set CPU running flag.
+
+- Set SFCX SFRs 097h/0A9h/0DFh to zero, and eMMC EXTMEM register 0x000C to 4.
+
+- Release the CPU from reset.
+
+### State 5: Check for CPU activity
+
+- Read a flag depending on the flash controller in use. For SFCX, check SFR 097h.0.
+  For eMMC, check EXTMEM 0x000C bit 2. These will be set if the CPU is alive and reading from flash.
+
+- If the flag we read was set, load the shared timer cell with 0x82 (130*20=2600ms, GetPowerUpCause
+  timeout part 1), and go to state 6.
+
+- If the flag wasn't set, then the CPU is either dead or running too slowly, so queue RRoD 0032
   and run the error handling case.
 
 ### State 6: GetPowerUpCause timeout part 1
