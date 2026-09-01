@@ -25,14 +25,58 @@ The I2C devices themselves shouldn't be documented here, that's a whole other ba
 
 Other things like the voltage regulators live on the I2C bus as well
 
-## The big I2C command list buffer
+## How the vanilla SMC programs handle I2C in a nutshell
 
-Due to I2C being asynchronous, the actual code to drive the I2C bus (to do reads and writes) is a large
-state machine that acts off a command list somewhere. To tell the I2C statemachine to do something, you
-give it an offset within that command list, and it runs the commands for you. However, disassembling the
-command list is annoying for one particular reason...
+The vanilla SMCs basically break down I2C handling as follows:
 
-Here's an example from the Falcon SMC, which is offset 0 in the command list, and at 0x2907 in the SMC
+- Statemachines can request I2C operations through the main HANA/I2C handler in the "as fast as possible" part of the mainloop
+  by setting bitflags.
+
+- When the HANA/I2C handler is in state 0, and I2C processing is enabled, it will loop through the flags and react to them,
+  usually by setting other flags, then calling a function that sets up a pointer to the start of a block in the I2C commandlist
+  table and starts executing the command asynchronously.
+
+- When a command is being handled asynchronously, the HANA/I2C statemachine will be placed in a state that isn't 0. Actual
+  I2C driving is mostly done in an interrupt handler, but it's still expected that the HANA/I2C statemachine will constantly call
+  the "try to continue execution" function, which will keep executing the commandlist until an end state is reached.
+
+## The main HANA/I2C statemachine
+
+This statemachine is typically the first to be updated in the "as fast as possible" loop.
+
+| SMC revision | SM address | Interpreter start routine address | Interpreter continue routine address
+|--------------|------------|-----------------------------------|------------------------------------
+| Xenon v2     | 0x1936     | 0x258D                            | 0x2592
+| Xenon v3     | 0x1969     | 0x25C0                            | 0x25C5
+| Zephyr       | 0x19B7     | 0x258A                            | 0x299A
+| Falcon       | 0x1A2E     | 0x265C                            | 0x2627
+| Jasper       | 0x1A3A     | 0x2674                            | 0x2679
+| Trinity      | 0x1B2C     | 0x27E4                            | 0x27E9
+| Corona       | 0x1B31     | 0x2995                            | 0x29A3
+
+The states vary depending on the SMC program and hardware revision, but state 0 is virtually always the same workflow:
+- Set some mutex (which the program never reads by default)
+- If the "run HANA/I2C logic" flag is clear (always the case in power off), exit immediately.
+- Check if a flag has been set that requests some operation from this statemachine. If true,
+  then the program calls a routine that sets up execution values for the I2C commandlist interpreter
+  (start offset within the commandlist table, number of retry attempts, etc.) and execution falls through
+  to the interpreter start routine. The HANA/I2C statemachine then changes its state value accordingly.
+
+The other states will usually call the interpreter continue routine and react to its output:
+- Carry flag: Set if execution has stopped, cleared if execution is still running
+- F0 flag: Error occurred if set, success if cleared
+
+These outputs are the same for the interpreter start routine.
+
+The interpreter will try a given number of attempts to complete the operation; if it gives up, then
+execution can fall through to an error handling case. The most important example is if the SMC can't
+read the HANA temperature sensors: if that's the case, the system goes to an RRoD and shuts down.
+
+## The commandlist (bytecode) table
+
+The actual I2C driving is done through bytecode stored in the "commandlist table" that the interpreter executes.
+
+Here's an example of bytecode from the Falcon SMC, which is offset 0 in the command list, and at 0x2907 in the SMC
 program itself:
 
 ``00 09 03``
@@ -59,11 +103,11 @@ Now, let's look at what that Falcon example means:
 
 The jump table varies between SMC program revisions, so documenting that will be "fun" in its own right...
 
-## List of commandlist handlers
+### List of commandlist opeerations
 
 Oh boy, this is gonna be fun to untangle and explain.
 
-### Init I2C bus
+#### Init I2C bus
 
 Byte format:
 - Falcon: `00`
@@ -74,7 +118,7 @@ The initialization procedure is:
   healthy condition, giving up if we can't (setting F0 in this case)
 - Manually toggle SCL, then hand over I2C bus control to the I2C unit
 
-### End commandlist execution
+#### End commandlist execution
 
 Byte format:
 - Xenon: `03`
@@ -87,7 +131,7 @@ Handlers:
 
 Stops executing the commandlist and returns success (via F0 flag).
 
-### Do nothing (NOP)
+#### Do nothing (NOP)
 
 Byte format:
 - Zephyr onwards: `06`
@@ -107,7 +151,7 @@ Handlers:
 Does nothing; it simply increments the commandlist execution pointer and continues on to the
 next instruction. Could be a development leftover stubbed out on retail consoles.
 
-### Run IPC-I2C transaction
+#### Run IPC-I2C transaction
 
 Byte format:
 - Xenon: `06`
@@ -130,7 +174,7 @@ This will block until the transfer completes.
 The logic here is spaghetti code because of how the I2C interrupt handler works. When an IPC transaction is running
 the I2C IRQ handler overrides the usual read/write buffers and uses the IPC inbox and outbox instead for those operations.
 
-### Write backup clockgen register (Xenon only)
+#### Write backup clockgen register (Xenon only)
 
 Byte format:
 - Xenon: `17 rr dd` (to be confirmed)
@@ -140,7 +184,7 @@ Handlers:
 
 Writes to the backup clock generator, which is a Cypress CY28517.
 
-### Write ANA/HANA/KSB register
+#### Write ANA/HANA/KSB register
 
 Byte format:
 - Xenon: `08 rr dd dd dd dd` or `08 DB dd dd dd`  (registers 0xD5, 0xD9 and 0xDB treated specially, see below)
@@ -176,7 +220,7 @@ Special cases:
 
 On KSB systems, there is no special case for register 0xDB as the registers have changed.
 
-### Write 0 to given KSB register
+#### Write 0 to given KSB register
 
 Byte format:
 - Corona and Winchester: `0B rr`
@@ -195,7 +239,7 @@ Handlers:
 
 Reuses the bulk of the "write ANA/HANA/KSB register" code, but writes 0 to the given register.
 
-### Read HANA register
+#### Read HANA register
 
 Byte format:
 - Xenon: `0B rr`
@@ -204,28 +248,28 @@ Byte format:
 Reads the given register into memory, then it's up to some other command to process the results.
 This will block until the transfer completes.
 
-### Convert I2C result to temperature sensor fields
+#### Convert I2C result to temperature sensor fields
 
 Byte format:
 - Falcon: `1A`
 
 TODO
 
-### Convert I2C result to CPU temperature fields
+#### Convert I2C result to CPU temperature fields
 
 Byte format:
 - Falcon: `1D`
 
 TODO
 
-### Convert I2C result to chassis temperature fields
+#### Convert I2C result to chassis temperature fields
 
 Byte format:
 - Falcon: `20`
 
 TODO
 
-### Dump RRoD error code to I2C buffer
+#### Dump RRoD error code to I2C buffer
 
 TODO
 
@@ -438,3 +482,23 @@ Continuing the libxenon example in `xenon_smc_ana_read()`:
 
 In this case, `buf[3]` is ignored because that's the "size of message" field from the I2C response. The code
 assumes it'll always be 4 bytes wide, and copies the rest of the response to the output field.
+
+## Hacking custom operations into the commandlist table
+
+This is what you're after, aren't you?
+
+- The commandlist table, by default, can't be more than 256 bytes, as the interpreter reads opcodes
+  using a single 8-bit memory cell, that is added to the dptr to read values.
+
+- There are usually some functions in that 256 byte range that you'll have to relocate if you want
+  to add custom bytecode.
+
+The open source RGH3 code is the best example of how to handle things. It patches custom operations
+at the end of the commandlist table while relocating functions that live there. It will start operations
+in its own statemaching when the main HANA/I2C statemachine is in state 0. Once it's kicked off an operation,
+it will then override the HANA/I2C statemachine state to 4, as that's a state which will call the interpreter
+continue routine and exit silently with little side effects regardless if the slowdown/speedup operation
+succeeds.
+
+See [snippets/i2c_custom_example.s](snippets/i2c_custom_example.s) for a basic way of patching custom I2C bytecode
+into the commandlist table on the Corona SMC.
