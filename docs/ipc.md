@@ -7,7 +7,7 @@ Incomplete docs, might be different between SMC program revisions...
 To talk to the SMC, you must initialize the PCI space fully. Normally hwinit does this for you and you'll
 be able to talk to the SMC (and other southbridgey stuff) at 0xEA001000. But if your code runs before hwinit
 happens, or you're running a completely custom CB or other payload, then it's up to you to initialize everything
-before accessing the SMC. [Mate's CPU key dumper](https://codeberg.org/hax360/tools/src/branch/main/glitchtools/dumpkey/src/dumpkey.S)
+before accessing the SMC. [Mate's CPU key dumper](https://codeberg.org/hax360/tools/src/commit/9f197cdf75df719b3c76a4271527fc96be43fca1/glitchtools/dumpkey/src/dumpkey.S)
 was probably the first custom code to do this; [CB_Y in RGH1.3](https://github.com/wurthless-elektroniks/RGH1.3/blob/main/ppc/cb_y.s)
 takes a similar approach but was written to be easier to read and maintain.
 

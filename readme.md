@@ -26,7 +26,7 @@ Keep these points in mind:
 
 ## Muchas gracias
 
-Free60Project members, xenon-emu devs, 15432, and everyone else who did reverse engineering of this silly microcontroller
+Free60Project members, xenon-emu devs, 15432, Mate the GOAT, and everyone else who did reverse engineering of this silly microcontroller
 
 ## License
 

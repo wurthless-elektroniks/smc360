@@ -10,10 +10,10 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 |------|--------------------------------------------------|
 | 080h | GPIO port 0
 | 081h | Stack pointer
-| 082h |
-| 083h |
-| 084h |
-| 085h |
+| 082h | DPL0 (dptr #0 low 8 bits)
+| 083h | DPH0 (dptr #0 high 8 bits)
+| 084h | DPL1 (dptr #1 low 8 bits)
+| 085h | DPH1 (dptr #1 high 8 bits)
 | 086h |
 | 087h | ???, USBB presence detect/wakeup channel 4
 | 088h | Mystery bitfield
@@ -23,7 +23,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 08Ch | ???
 | 08Dh |
 | 08Eh |
-| 08Fh | PCIe status (bits 4/5, read only); IRQ busy flag (bit 1; read/write); bits 3/2/0 a mystery
+| 08Fh | PCIe status (bits 4/5, read only); dptr select (bit 1; 0 = dptr #0, 1 = dptr #1); bits 3/2/0 a mystery
 | 090h | GPIO port 1
 | 091h | PWM channel 2 duty cycle
 | 092h | PWM channel 2 frequency
@@ -31,7 +31,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 094h | PWM channel 1 frequency
 | 095h | Set to 0x88 constantly
 | 096h | Set to 0x00
-| 097h |
+| 097h | PSB/KSB: flash access flag? (bit 0 is 1 after flash accessed by CPU at startup)
 | 098h | ???
 | 099h |
 | 09Ah |
@@ -49,7 +49,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0A6h | DDR port 4
 | 0A7h | Pinmode port 4
 | 0A8h | ??? (some bitfield modified by certain GPIO polls)
-| 0A9h |
+| 0A9h | ??? (Jasper onwards: cleared by SMC prior to releasing CPU from reset)
 | 0AAh | RTC timestamp in milliseconds, bits 0-7
 | 0ABh | RTC timestamp in milliseconds, bits 8-15
 | 0ACh | RTC timestamp in milliseconds, bits 16-23
@@ -103,7 +103,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0DCh | I2C related (3 when releasing bus, 0 when locking it)
 | 0DDh | I2C (set to 0xE1 on handover)
 | 0DEh | I2C (set to 0x83 on handover)
-| 0DFh |
+| 0DFh | XSB: flash access flag? (bit 2 is 1 after flash accessed by CPU at startup)
 | 0E0h | 8051 accumulator (A) register
 | 0E1h | CPU-to-SMC IPC inbox, data
 | 0E2h | CPU-to-SMC IPC inbox, control
@@ -132,7 +132,7 @@ Anything marked as "???" below is accessed by the SMC program, but its purpose i
 | 0F9h |
 | 0FAh |
 | 0FBh |
-| 0FCh | ???
+| 0FCh | XSB/PSB: SB config register? (XSB G0 = 0xC2, XSB R0/PSB = 0x43). **Different purpose on KSB**
 | 0FDh | USBB presence detect/wakeup, channels 0-3
 | 0FEh | Program to map on watchdog reboot? (0x00 = SRAM?, 0xFF = bootstrap ROM?)
 | 0FFh | Watchdog? (write 0 to kick)
