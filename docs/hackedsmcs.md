@@ -382,3 +382,71 @@ I think this is the first SMC to do the following:
 - Custom IPC logic handling for tracking boot progress on 1wire and 0wire builds
 
 Read the source [here](https://github.com/wurthless-elektroniks/RGH1.3).
+
+## Peer Pressure
+
+Hoarding a PoC for a whole year just to create your own modding ecosystem with exclusive features,
+and then not releasing the source code? Not sure who that benefits, especially when the exploit is
+for a console that's been end of life for 10 years and has a community that's already been set back
+by decades of sourcecode and knowledge hoarding.
+
+This is just for the SMC side of things, don't ask me to reverse engineer the whole exploit chain. I really don't
+care much for the 360 these days, and lameness on this level makes me glad I'm putting the bulk
+of my efforts elsewhere.
+
+UpdateData.zip has an arbitrary header of so-and-so bytes before the PKzip header. Remove them and you can
+unzip it. In the Flash/ directory you will find the stock SMC images along with
+delta patches in a xeBuild-like format.
+
+So a patch like:
+
+`00 00 07 70 00 00 00 03 12 2e 61`
+
+means "at 0x0770, write the three bytes 12 2e 61". The important difference is that there's no end-of-file
+marker like there is with the xeBuild patches. You can also use the code in snippets/pppatch.py.
+
+Anyway, the gist of the patches for the Falcon SMC. Let's break 'em down.
+
+- 0x0770: Reroutes the top of the init block to go through a function that clears 03Ch to zero,
+  then runs ext_pwr_on_read like the stock code does.
+- 0x07C2: Standard debugled statemachine stub-out.
+- 0x07D4: Reroute that runs the powerdown statemachine as normal, then continues to custom code
+  at 0x2E86.
+- 0x0814: Changes the memory clear loop to clear from 030h instead of 033h.
+- 0x082B: Patches out a write to 03Ch, normally used for the debugled statemachine, to repurpose
+  that memory cell for the hacked state.
+- 0x08BD: Reroute from the IPC code to intercept GetPowerOnCause. If GetPowerOnCause has
+  already arrived and 03Ch.1 is set, then run some logic at 0x2D40. Otherwise, go to 0x2EAC.
+- 0x0ADE: Reroute from the IPC code to intercept command 0x88, which sets up thermal modes.
+  It runs custom code at 0x2D12, then execution returns to the vanilla IPC handler.
+- 0x0B29: Reroute from the IPC code to add a custom IPC command 0xA0, which is handled by the
+  block at 0x2D88.
+- 0x0B6E: Reroute from the IPC code when a power-off event is scheduled. It twiddles flags in 03Ch
+  before returning to the normal code path at 0x0B8E.
+- 0x11A7: Reroute from a statemachine that resets a bunch of things. If 03Ch.0 is set, strobe
+  the flash reset lines like how the code at 0x00AD does it, then exit. Otherwise, continue down
+  the normal code path at 0x1151.
+- 0x1E84: Reroute from the power event statemachine that triggers when someone has powered up the system.
+  03Ch is AND masked to 1. If the bindswitch is held at power on, it ORs 03Ch with 8.
+- 0x258E: Reroute from the SMC config loader to custom code at 0x2E07.
+
+And that leaves the main blob of code at 0x2D03-0x2EBD.
+
+Real 360 heads may have guessed that the SMC is needed here to trigger a NAND-to-SDRAM DMA,
+and that is exactly what's happening here. However it's using SFCX command 6 this time,
+which uses a logical page address instead. In either case, the SFCX on the KSB probably
+blocks or doesn't have these commands, which is why the softmod doesn't work on Corona
+and Winchester. Or Barracuda. Whatever you kids are calling it these days. You still
+haven't hardmodded that board, by the way. Get to it.
+
+Selected functions of interest:
+
+- 0x2D88: Custom command handler for IPC 0xA0. 
+- 0x2E07: SFCX config read. Reads from 0x110 in the SMC config, checks for the magic word 'XBPP' (which you
+  should recognize from the security sector payload), and if it's there, then it reads the DMA payload address
+  in from the word in the SMC config at 0x118 to the memory cells at 031h-033h.
+- 0x2E59: Triggers the DMA if conditions are met. Source address from flash is set in 031h-033h.
+
+Anyway, you guys have fun reverse engineering the whole exploit chain. And here's a tip:
+now that the xeBuild freeBoot sources are out, you should try building a rebooter so that
+this silly softmod exploit chain reboots the system into a hacked kernel like how JTAG does it.
